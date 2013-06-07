@@ -6,7 +6,7 @@
 
 ## Create encapsulated environments for your objects.
 
-Keep the distraction of other features out of your way. Focus on just the business logic.
+Keep the distraction of other features out of your way. Write use cases and focus on just the business logic
 
 ## Usage
 
