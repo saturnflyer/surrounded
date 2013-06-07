@@ -1,16 +1,5 @@
 require 'test_helper'
 
-User = Struct.new(:name)
-class User
-  include Surrounded
-end
-
-class TestContext
-  extend Surrounded::Context
-
-  setup(:user, :other_user)
-end
-
 describe "Surrounded" do
   let(:jim){ User.new("Jim") }
   let(:guille){ User.new("Guille") }

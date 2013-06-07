@@ -51,6 +51,10 @@ module Surrounded
         roles.values.include?(accessor) && roles[name.to_s]
       end
 
+      def triggers
+        self.class.triggers
+      end
+
       private
 
       def roles
