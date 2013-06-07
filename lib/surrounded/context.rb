@@ -1,3 +1,4 @@
+require 'set'
 module Surrounded
   module Context
     def setup(*setup_args)
@@ -15,8 +16,7 @@ module Surrounded
     end
 
     def trigger(name, *args, &block)
-      @triggers ||= []
-      @triggers << name
+      store_trigger(name)
 
       define_method(:"trigger_#{name}", *args, &block)
 
@@ -38,6 +38,11 @@ module Surrounded
     end
 
     private
+
+    def store_trigger(name)
+      @triggers ||= Set.new
+      @triggers << name
+    end
 
     def self.classify_string(string)
       string.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }
