@@ -5,12 +5,16 @@ module Surrounded
       attr_reader *setup_args
 
       define_method(:initialize){ |*args|
-        Hash[setup_args.zip(args)].each{ |key, value|
-          role_mod_name = Context.classify_string(key)
-          if self.class.const_defined?(role_mod_name)
-            value = Surrounded::Context.modify(value, self.class.const_get(role_mod_name))
+        Hash[setup_args.zip(args)].each{ |role, object|
+
+          role_module_name = Context.classify_string(role)
+          klass = self.class
+
+          if klass.const_defined?(role_module_name)
+            object = Context.modify(object, klass.const_get(role_module_name))
           end
-          instance_variable_set("@#{key}", value)
+
+          instance_variable_set("@#{role}", object)
         }
       }
     end
@@ -24,11 +28,10 @@ module Surrounded
 
       define_method(name, *args){
         begin
-          Thread.current[:context] ||= []
-          Thread.current[:context].unshift(self)
+          (Thread.current[:context] ||= []).unshift(self)
           self.send("trigger_#{name}", *args)
         ensure
-          Thread.current[:context].shift
+          (Thread.current[:context] ||= []).shift
         end
       }
     end
