@@ -20,5 +20,9 @@ module Surrounded
     Thread.current[:context].first || NullContext.new
   end
 
-  class NullContext < BasicObject; end
+  class NullContext < BasicObject
+    def respond_to?(*args)
+      false
+    end
+  end
 end
