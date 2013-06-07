@@ -2,7 +2,7 @@ require 'set'
 module Surrounded
   module Context
     def setup(*setup_args)
-      attr_reader *setup_args
+      attr_reader(*setup_args)
 
       define_method(:initialize){ |*args|
         Hash[setup_args.zip(args)].each{ |role, object|
