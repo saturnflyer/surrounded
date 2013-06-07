@@ -135,6 +135,47 @@ _OK. I think I understand. So I can change business logic just by changing the p
 
 Damn right.
 
+But you don't want to continually set those `Thread` variables, do you?
+
+_No. That's annoying._
+
+Yeah. Instead, it would be easier to have this library do the work for us.
+Here's what you can do:
+
+```ruby
+class MyEnvironment
+  # the other code from above...
+
+  trigger :shove_it do
+    employee.quit
+  end
+end
+```
+
+By using this `trigger` keyword, our block is the code we care about, but internally the method is written to set the `Thread` variables.
+
+_Hmm. I don't like having to do that._
+
+Me either. I'd rather just use `def` but getting automatic code for setting the context is really convenient.
+It also allows us to store the triggers so that you can, for example, provide details outside of the environment about what triggers exist.
+
+```ruby
+context = MyEnvironment.new(current_user, the_boss)
+context.triggers #=> [:shove_it]
+```
+
+You might find that useful for dynamically defining user interfaces.
+
+## Dependencies
+
+The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need.
+
+If you're using [Casting](http://github.com/saturnflyer/casting), for example, Surrounded will attempt to use that before extending an object, but it will still work without it.
+
+## To Do
+
+Casting provides a way to remove features outside of a block. For now, the code doesn't attempt to `uncast` an object. It will in the future though.
+
 ## Installation
 
 Add this line to your application's Gemfile:
