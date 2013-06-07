@@ -5,7 +5,7 @@ module Surrounded
 
       define_method(:initialize){ |*args|
         Hash[setup_args.zip(args)].each{ |key, value|
-          role_mod_name = key.to_s.classify
+          role_mod_name = Context.classify_string(key)
           if self.class.const_defined?(role_mod_name)
             value = Surrounded::Context.modify(value, self.class.const_get(role_mod_name))
           end
