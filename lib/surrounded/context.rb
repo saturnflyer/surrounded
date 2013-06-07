@@ -1,8 +1,13 @@
 require 'set'
 module Surrounded
   module Context
+    def self.extended(base)
+      base.send(:include, InstanceMethods)
+    end
+
     def setup(*setup_args)
       attr_reader(*setup_args)
+      private(*setup_args)
 
       define_method(:initialize){ |*args|
         Hash[setup_args.zip(args)].each{ |role, object|
@@ -14,6 +19,7 @@ module Surrounded
             object = Context.modify(object, klass.const_get(role_module_name))
           end
 
+          roles[role.to_s] = object
           instance_variable_set("@#{role}", object)
         }
       }
@@ -38,6 +44,18 @@ module Surrounded
 
     def triggers
       @triggers.dup
+    end
+
+    module InstanceMethods
+      def role?(name, accessor)
+        roles.values.include?(accessor) && roles[name.to_s]
+      end
+
+      private
+
+      def roles
+        @roles ||= {}
+      end
     end
 
     private

@@ -4,15 +4,11 @@ module Surrounded
   private
 
   def method_missing(meth, *args, &block)
-    if context.respond_to?(meth)
-      context.send(meth, *args, &block)
-    else
-      super
-    end
+    context.role?(meth, self) || super
   end
 
   def respond_to_missing?(meth, include_private=false)
-    context.respond_to?(meth, include_private) || super
+    !!context.role?(meth, self) || super
   end
 
   def context
@@ -21,8 +17,8 @@ module Surrounded
   end
 
   class NullContext < BasicObject
-    def respond_to?(*args)
-      false
+    def role?(*args)
+      nil
     end
   end
 end
