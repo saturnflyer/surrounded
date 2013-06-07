@@ -1,5 +1,9 @@
 source 'https://rubygems.org'
 
-gem 'minitest'
+group :test do
+  gem 'minitest'
+  gem "simplecov"
+  gem 'coveralls', :require => false
+end
 
 gemspec
