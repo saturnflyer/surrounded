@@ -1,4 +1,9 @@
 require 'minitest/autorun'
-
+require 'simplecov'
 require 'coveralls'
-Coveralls.wear!
+
+if ENV['COVERALLS']
+  Coveralls.wear!
+else
+  SimpleCov.start
+end
