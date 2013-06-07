@@ -2,13 +2,9 @@ require 'test_helper'
 require 'surrounded'
 require 'surrounded/context'
 
+User = Struct.new(:name)
 class User
   include Surrounded
-  attr_accessor :name
-
-  def initialize(name)
-    @name = name
-  end
 end
 
 class SampleUseCase
