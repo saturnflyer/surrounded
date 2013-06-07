@@ -1,6 +1,10 @@
 # Surrounded
 
-Gives an object implicit access to other objects in it's environment.
+[![Code Climate](https://codeclimate.com/github/saturnflyer/surrounded.png)](https://codeclimate.com/github/saturnflyer/surrounded)
+
+## Create encapsulated environments for your objects.
+
+Keep the distraction of other features out of your way. Focus on just the business logic.
 
 ## Usage
 
