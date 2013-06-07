@@ -1,6 +1,4 @@
 require 'test_helper'
-require 'surrounded'
-require 'surrounded/context'
 
 User = Struct.new(:name)
 class User
@@ -31,7 +29,6 @@ describe "Surrounded" do
   end
 
   it "responds to messages for roles on the context" do
-
     assert jim.respond_to?(:other_user)
 
     Thread.current[:context] = []
