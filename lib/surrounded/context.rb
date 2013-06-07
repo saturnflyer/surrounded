@@ -15,7 +15,7 @@ module Surrounded
           role_module_name = Context.classify_string(role)
           klass = self.class
 
-          if klass.const_defined?(role_module_name)
+          if mod = klass.const_defined?(role_module_name) && !mod.is_a?(Class)
             object = Context.modify(object, klass.const_get(role_module_name))
           end
 
@@ -70,6 +70,7 @@ module Surrounded
     end
 
     def self.modify(obj, mod)
+      return obj if mod.is_a?(Class)
       if obj.respond_to?(:cast_as)
         obj.cast_as(mod)
       else
