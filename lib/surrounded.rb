@@ -4,11 +4,11 @@ module Surrounded
   private
 
   def method_missing(meth, *args, &block)
-    context.role?(meth, self) || super
+    context.role?(meth){} || super
   end
 
   def respond_to_missing?(meth, include_private=false)
-    !!context.role?(meth, self) || super
+    !!context.role?(meth){} || super
   end
 
   def context
