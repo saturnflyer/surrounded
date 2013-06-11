@@ -1,5 +1,16 @@
 require 'test_helper'
 
+describe "Surrounded", 'without context' do
+
+  let(:jim){ User.new("Jim") }
+
+  it "never has context roles" do
+    Thread.current[:context] = []
+    assert_nil jim.send(:context).role?('anything')
+  end
+
+end
+
 describe "Surrounded" do
   let(:jim){ User.new("Jim") }
   let(:guille){ User.new("Guille") }
@@ -16,7 +27,6 @@ describe "Surrounded" do
   it "has access to objects in the context" do
     assert_equal jim.other_user, guille
   end
-
   it "responds to messages for roles on the context" do
     assert jim.respond_to?(:other_user)
 
