@@ -5,6 +5,12 @@ module Surrounded
       base.send(:include, InstanceMethods)
     end
 
+    def triggers
+      @triggers.dup
+    end
+
+    private
+
     def setup(*setup_args)
       attr_reader(*setup_args)
       private(*setup_args)
@@ -42,28 +48,6 @@ module Surrounded
       }
     end
 
-    def triggers
-      @triggers.dup
-    end
-
-    module InstanceMethods
-      def role?(name, accessor)
-        roles.values.include?(accessor) && roles[name.to_s]
-      end
-
-      def triggers
-        self.class.triggers
-      end
-
-      private
-
-      def roles
-        @roles ||= {}
-      end
-    end
-
-    private
-
     def store_trigger(name)
       @triggers ||= Set.new
       @triggers << name
@@ -79,6 +63,23 @@ module Surrounded
         obj.cast_as(mod)
       else
         obj.extend(mod)
+      end
+    end
+
+    module InstanceMethods
+      def role?(name, &block)
+        accessor = eval('self', block.binding)
+        roles.values.include?(accessor) && roles[name.to_s]
+      end
+
+      def triggers
+        self.class.triggers
+      end
+
+      private
+
+      def roles
+        @roles ||= {}
       end
     end
   end
