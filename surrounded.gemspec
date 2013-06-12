@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["'Jim Gay'"]
   spec.email         = ["jim@saturnflyer.com"]
   spec.description   = %q{Gives an object implicit access to other objects in it's environment.}
-  spec.summary       = %q{Gives an object implicit access to other objects in it's environment.}
+  spec.summary       = %q{Create encapsulated environments for your objects.}
   spec.homepage      = "http://github.com/saturnflyer/surrounded"
   spec.license       = "MIT"
 
