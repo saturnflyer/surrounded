@@ -81,3 +81,81 @@ describe Surrounded::Context, '#role?' do
     refute context.role?(:user){} # this test is the caller
   end
 end
+
+require 'casting'
+CastingUser = Struct.new(:name)
+class CastingUser
+  include Casting::Client
+  delegate_missing_methods
+end
+
+class RoleAssignmentContext
+  extend Surrounded::Context
+
+  setup(:user, :other_user)
+
+  trigger :user_ancestors do
+    user.singleton_class.ancestors
+  end
+
+  trigger :other_user_ancestors do
+    other_user.singleton_class.ancestors
+  end
+
+  trigger :check_user_response do
+    user.respond_to?(:a_method!)
+  end
+
+  trigger :check_other_user_response do
+    user.respond_to?(:a_method!)
+  end
+
+  module User
+    def a_method!; end
+  end
+  module OtherUser
+    def a_method!; end
+  end
+end
+
+describe Surrounded::Context, 'assigning roles' do
+  let(:user){ CastingUser.new("Jim") }
+  let(:other_user){ User.new("Guille") }
+  let(:context){ RoleAssignmentContext.new(user, other_user) }
+
+  it 'tries to use casting to add roles' do
+    refute_includes(context.user_ancestors, RoleAssignmentContext::User)
+  end
+
+  it 'extends objects with role modules failing casting' do
+    assert_includes(context.other_user_ancestors, RoleAssignmentContext::OtherUser)
+  end
+
+  it 'sets role players to respond to role methods' do
+    assert context.check_user_response
+    assert context.check_other_user_response
+  end
+
+  it 'will not use classes as roles' do
+    ClassRoleAssignmentContext = Class.new do
+      extend Surrounded::Context
+
+      setup(:thing, :the_test)
+
+      trigger :check_user_response do
+        the_test.refute thing.respond_to?(:method_from_class), 'did respond to :method_from_class'
+      end
+
+      class Thing
+        def method_from_class; end
+      end
+
+    end
+
+    user = User.new('Jim')
+
+    context = ClassRoleAssignmentContext.new(user, self)
+
+    context.check_user_response
+  end
+end
