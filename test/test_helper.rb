@@ -1,5 +1,5 @@
-require 'minitest/autorun'
 require 'simplecov'
+require 'minitest/autorun'
 require 'coveralls'
 
 if ENV['COVERALLS']
