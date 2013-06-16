@@ -18,13 +18,13 @@ end
 class SomeUseCase
   extend Surrounded::Context
 
-  setup(:user, :other_user, :listener)
+  setup(:admin, :other_user, :listener)
 
   trigger :do_something do
-    user.something
+    admin.something
   end
 
-  module User
+  module Admin
     def something
       puts "Hello, #{other_user}"
       listener.redirect_to('/')
