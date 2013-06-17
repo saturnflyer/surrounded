@@ -14,6 +14,25 @@ module Surrounded
     def setup(*setup_args)
       private_attr_reader(*setup_args)
 
+      # I want this to work so I can set the arity on initialize:
+      # class_eval %Q<
+      #   def initialize(#{*setup_args})
+      #     arguments = parameters.map{|arg| eval(arg[1].to_s) }
+      #     variable_names = Array(#{*setup_args})
+      #     variable_names.zip(arguments).each do |role, object|
+
+      #       role_module_name = Context.classify_string(role)
+
+      #       if self.class.const_defined?(role_module_name)
+      #         object = Context.modify(object, self.class.const_get(role_module_name))
+      #       end
+
+      #       set_role_attr(role, object)
+
+      #     end
+      #   end
+      # >
+
       define_method(:initialize){ |*args|
         setup_args.zip(args).each{ |role, object|
 
