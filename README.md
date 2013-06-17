@@ -173,15 +173,65 @@ context.triggers #=> [:shove_it]
 
 You might find that useful for dynamically defining user interfaces.
 
+## Policies for the application of role methods
+
+There are 2 approaches to applying new behavior to your objects.
+
+By default your context will add methods to an object before a trigger is run
+and behaviors will be removed after the trigger is run.
+
+Alternatively you may set the behaviors to be added during the initialize method
+of your context.
+
+Here's how it works:
+
+```ruby
+class ActiviatingAccount
+  extend Surrounded::Context
+
+  apply_roles_on(:trigger) # this is the default
+  # apply_roles_on(:initialize) # set this to apply behavior from the start
+
+  setup(:activator, :account)
+
+  module Activator
+    def some_behavior; end
+  end
+
+  def non_trigger_method
+    activator.some_behavior # not available unless you apply roles on initialize
+  end
+
+  trigger :some_trigger_method do
+    activator.some_behavior # always available
+  end
+end
+
+_Why are those options there?_
+
+When you initialize a context and apply behavior at the same time, you'll need
+to remove that behavior. For example, if you are using Casting AND you apply roles on initialize:
+
+```ruby
+context = ActiviatingAccount.new(current_user, Account.find(123))
+context.do_something
+current_user.some_behavior # this method is still available
+current_user.uncast # you'll have to manually cleanup
+```
+
+But if you go with the default and apply behaviors on trigger, your roles will be cleaned up automatically:
+
+```ruby
+context = ActiviatingAccount.new(current_user, Account.find(123))
+context.do_something
+current_user.some_behavior # NoMethodError
+```
+
 ## Dependencies
 
 The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need.
 
 If you're using [Casting](http://github.com/saturnflyer/casting), for example, Surrounded will attempt to use that before extending an object, but it will still work without it.
-
-## To Do
-
-Casting provides a way to remove features outside of a block. For now, the code doesn't attempt to `uncast` an object. It will in the future though.
 
 ## Installation
 
