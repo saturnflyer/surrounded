@@ -12,8 +12,7 @@ module Surrounded
     private
 
     def setup(*setup_args)
-      attr_reader(*setup_args)
-      private(*setup_args)
+      private_attr_reader(*setup_args)
 
       define_method(:initialize){ |*args|
         Hash[setup_args.zip(args)].each{ |role, object|
@@ -28,6 +27,11 @@ module Surrounded
           set_role_attr(role, object)
         }
       }
+    end
+
+    def private_attr_reader(*method_names)
+      attr_reader(*method_names)
+      private(*method_names)
     end
 
     def trigger(name, *args, &block)
