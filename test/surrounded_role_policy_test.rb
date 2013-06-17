@@ -1,5 +1,4 @@
 require 'test_helper'
-require 'debugger'
 
 class RolesOnInitialize
   extend Surrounded::Context
@@ -23,7 +22,6 @@ end
 describe Surrounded::Context, 'applying roles on initialize' do
   let(:context){ RolesOnInitialize.new(Object.new, Object.new) }
   it 'has role methods available when initialized' do
-    # debugger
     assert context.check_roles_applied_on_initialize
   end
 
