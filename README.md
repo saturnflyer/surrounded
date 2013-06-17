@@ -206,6 +206,7 @@ class ActiviatingAccount
     activator.some_behavior # always available
   end
 end
+```
 
 _Why are those options there?_
 
