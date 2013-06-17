@@ -40,9 +40,9 @@ module Surrounded
       #     arguments = parameters.map{|arg| eval(arg[1].to_s) }
       #     variable_names = Array(#{*setup_args})
       #     variable_names.zip(arguments).each do |role, object|
-      #       set_role_attr(role, object)
-      #       policy.call(__method__, method(:add_role_methods))
+      #       assign_role(role, object)
       #     end
+      #     policy.call(__method__, method(:add_role_methods))
       #   end
       # >
 
