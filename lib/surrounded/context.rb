@@ -15,7 +15,7 @@ module Surrounded
       private_attr_reader(*setup_args)
 
       define_method(:initialize){ |*args|
-        Hash[setup_args.zip(args)].each{ |role, object|
+        setup_args.zip(args).each{ |role, object|
 
           role_module_name = Context.classify_string(role)
           klass = self.class
