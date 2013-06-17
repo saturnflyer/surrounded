@@ -46,7 +46,7 @@ class MyEnvironment
   attr_reader :employee, :boss
   private :employee, :boss
   def initialize(employee, boss)
-    @employee = employee.extend(Exmployee)
+    @employee = employee.extend(Employee)
     @boss = boss
   end
 
