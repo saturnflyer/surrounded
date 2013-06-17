@@ -18,10 +18,9 @@ module Surrounded
         setup_args.zip(args).each{ |role, object|
 
           role_module_name = Context.classify_string(role)
-          klass = self.class
 
-          if mod = klass.const_defined?(role_module_name) && !mod.is_a?(Class)
-            object = Context.modify(object, klass.const_get(role_module_name))
+          if self.class.const_defined?(role_module_name)
+            object = Context.modify(object, self.class.const_get(role_module_name))
           end
 
           set_role_attr(role, object)
@@ -61,12 +60,16 @@ module Surrounded
     end
 
     def self.modify(obj, mod)
-      return obj if mod.is_a?(Class)
-      if obj.respond_to?(:cast_as)
-        obj.cast_as(mod)
-      else
-        obj.extend(mod)
-      end
+      modifier = modifier_methods.find do |meth|
+                   obj.respond_to?(meth)
+                 end
+      return obj if mod.is_a?(Class) || !modifier
+
+      obj.send(modifier, mod)
+    end
+
+    def self.modifier_methods
+      [:cast_as, :extend]
     end
 
     module InstanceMethods
