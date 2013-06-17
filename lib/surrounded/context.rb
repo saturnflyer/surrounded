@@ -25,8 +25,7 @@ module Surrounded
             object = Context.modify(object, klass.const_get(role_module_name))
           end
 
-          roles[role.to_s] = object
-          instance_variable_set("@#{role}", object)
+          set_role_attr(role, object)
         }
       }
     end
@@ -77,6 +76,12 @@ module Surrounded
       end
 
       private
+
+      def set_role_attr(role, obj)
+        roles[role.to_s] = obj
+        instance_variable_set("@#{role}", obj)
+        self
+      end
 
       def roles
         @roles ||= {}
