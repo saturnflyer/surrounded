@@ -238,7 +238,9 @@ If you're using [Casting](http://github.com/saturnflyer/casting), for example, S
 
 Add this line to your application's Gemfile:
 
-    gem 'surrounded'
+```ruby
+gem 'surrounded'
+```
 
 And then execute:
 
