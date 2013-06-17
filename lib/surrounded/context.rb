@@ -1,8 +1,13 @@
 require 'set'
+require 'surrounded/context/role_policy'
 module Surrounded
   module Context
     def self.extended(base)
       base.send(:include, InstanceMethods)
+    end
+
+    def new_policy(context, assignments)
+      policy.new(context, assignments)
     end
 
     def triggers
@@ -10,6 +15,21 @@ module Surrounded
     end
 
     private
+
+    def policies
+      @policies ||= {
+        'initialize' => Surrounded::Context::InitializePolicy,
+        'trigger' => Surrounded::Context::TriggerPolicy
+      }
+    end
+
+    def apply_roles_on(which)
+      @policy = policies.fetch(which.to_s){ const_get(which) }
+    end
+
+    def policy
+      @policy ||= apply_roles_on(:trigger)
+    end
 
     def setup(*setup_args)
       private_attr_reader(*setup_args)
@@ -20,30 +40,17 @@ module Surrounded
       #     arguments = parameters.map{|arg| eval(arg[1].to_s) }
       #     variable_names = Array(#{*setup_args})
       #     variable_names.zip(arguments).each do |role, object|
-
-      #       role_module_name = Context.classify_string(role)
-
-      #       if self.class.const_defined?(role_module_name)
-      #         object = Context.modify(object, self.class.const_get(role_module_name))
-      #       end
-
       #       set_role_attr(role, object)
-
+      #       policy.call(__method__, method(:add_role_methods))
       #     end
       #   end
       # >
 
       define_method(:initialize){ |*args|
         setup_args.zip(args).each{ |role, object|
-
-          role_module_name = Context.classify_string(role)
-
-          if self.class.const_defined?(role_module_name)
-            object = Context.modify(object, self.class.const_get(role_module_name))
-          end
-
-          set_role_attr(role, object)
+          assign_role(role, object)
         }
+        policy.call(__method__, method(:add_role_methods))
       }
     end
 
@@ -62,8 +69,12 @@ module Surrounded
       define_method(name, *args){
         begin
           (Thread.current[:context] ||= []).unshift(self)
+          policy.call(__method__, method(:add_role_methods))
+
           self.send("trigger_#{name}", *args)
+
         ensure
+          policy.call(__method__, method(:remove_role_methods))
           (Thread.current[:context] ||= []).shift
         end
       }
@@ -72,23 +83,6 @@ module Surrounded
     def store_trigger(name)
       @triggers ||= Set.new
       @triggers << name
-    end
-
-    def self.classify_string(string)
-      string.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }
-    end
-
-    def self.modify(obj, mod)
-      modifier = modifier_methods.find do |meth|
-                   obj.respond_to?(meth)
-                 end
-      return obj if mod.is_a?(Class) || !modifier
-
-      obj.send(modifier, mod)
-    end
-
-    def self.modifier_methods
-      [:cast_as, :extend]
     end
 
     module InstanceMethods
@@ -103,7 +97,30 @@ module Surrounded
 
       private
 
-      def set_role_attr(role, obj)
+      def policy
+        @policy ||= self.class.new_policy(self, roles)
+      end
+
+      def add_role_methods(obj, mod)
+        modifier = modifier_methods.find do |meth|
+                     obj.respond_to?(meth)
+                   end
+        return obj if mod.is_a?(Class) || !modifier
+
+        obj.send(modifier, mod)
+        obj
+      end
+
+      def remove_role_methods(obj, mod)
+        obj.uncast if obj.respond_to?(:uncast)
+        obj
+      end
+
+      def modifier_methods
+        [:cast_as, :extend]
+      end
+
+      def assign_role(role, obj)
         roles[role.to_s] = obj
         instance_variable_set("@#{role}", obj)
         self
