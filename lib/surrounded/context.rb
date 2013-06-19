@@ -1,4 +1,5 @@
 require 'set'
+require 'surrounded/context/role_map'
 require 'surrounded/context/role_policy'
 module Surrounded
   module Context
@@ -88,7 +89,9 @@ module Surrounded
     module InstanceMethods
       def role?(name, &block)
         accessor = eval('self', block.binding)
-        roles.values.include?(accessor) && roles[name.to_s]
+        role_map.role_player?(accessor) && role_map.assigned_player(name)
+      rescue Surrounded::Context::InvalidRole
+        false
       end
 
       def triggers
@@ -97,8 +100,12 @@ module Surrounded
 
       private
 
+      def role_map
+        @role_map ||= RoleMap.new
+      end
+
       def policy
-        @policy ||= self.class.new_policy(self, roles)
+        @policy ||= self.class.new_policy(self, role_map)
       end
 
       def add_role_methods(obj, mod)
@@ -121,13 +128,10 @@ module Surrounded
       end
 
       def assign_role(role, obj)
-        roles[role.to_s] = obj
+        role_behavior_name = role.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }
+        role_map << [role, role_behavior_name, obj]
         instance_variable_set("@#{role}", obj)
         self
-      end
-
-      def roles
-        @roles ||= {}
       end
     end
   end

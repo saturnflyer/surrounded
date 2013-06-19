@@ -5,11 +5,11 @@ module Surrounded
 
       class NotImplementedError < StandardError; end
 
-      attr_reader :context, :assignments
-      private :context, :assignments
+      attr_reader :context, :map
+      private :context, :map
 
-      def initialize(context, assignments)
-        @context, @assignments = context, assignments
+      def initialize(context, map)
+        @context, @map = context, map
       end
 
       def call(context_method_name, applicator)
@@ -17,19 +17,12 @@ module Surrounded
       end
 
       def apply_policy(applicator)
-        assignments.each do |name, object|
-          role_module_name = role_constant_name(name)
-
-          if context.class.const_defined?(role_module_name)
-            assignments[name] = applicator.call(object, context.class.const_get(role_module_name))
+        map.each do |role, mod_name, _|
+          if context.class.const_defined?(mod_name)
+            applicator.call(map.assigned_player(role), context.class.const_get(mod_name))
           end
         end
       end
-
-      def role_constant_name(string)
-        string.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }
-      end
-
     end
 
     class InitializePolicy < RolePolicy
