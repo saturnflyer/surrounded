@@ -128,10 +128,13 @@ module Surrounded
       end
 
       def assign_role(role, obj)
-        role_behavior_name = role.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }
-        role_map << [role, role_behavior_name, obj]
+        role_map << [role, role_behavior(role), obj]
         instance_variable_set("@#{role}", obj)
         self
+      end
+
+      def role_behavior(role)
+        role.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }
       end
     end
   end
