@@ -20,7 +20,7 @@ class RolesOnInitialize
 end
 
 describe Surrounded::Context, 'applying roles on initialize' do
-  let(:context){ RolesOnInitialize.new(Object.new, Object.new) }
+  let(:context){ RolesOnInitialize.new(User.new('Jim'), User.new('Guille')) }
   it 'has role methods available when initialized' do
     assert context.check_roles_applied_on_initialize
   end
@@ -50,7 +50,7 @@ class RolesOnTrigger
 end
 
 describe Surrounded::Context, 'applying roles on initialize' do
-  let(:context){ RolesOnTrigger.new(Object.new, Object.new) }
+  let(:context){ RolesOnTrigger.new(User.new('Jim'), User.new('Guille')) }
   it 'has NO role methods available when initialized' do
     refute context.check_roles_applied_on_initialize
   end

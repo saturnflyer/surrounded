@@ -20,7 +20,8 @@ describe "Surrounded" do
   }
 
   before do
-    Thread.current[:context] = [context]
+    jim.store_context(context)
+    guille.store_context(context)
   end
 
   it "has access to objects in the context" do
@@ -29,7 +30,7 @@ describe "Surrounded" do
   it "responds to messages for roles on the context" do
     assert jim.respond_to?(:other_user)
 
-    Thread.current[:context] = []
+    jim.remove_context(context)
 
     refute jim.respond_to?(:other_user)
   end

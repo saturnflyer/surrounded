@@ -9,9 +9,12 @@ end
 require 'surrounded'
 require 'surrounded/context'
 
-User = Struct.new(:name)
 class User
   include Surrounded
+  def initialize(name)
+    @name = name
+  end
+  attr_reader :name
 end
 
 class TestContext

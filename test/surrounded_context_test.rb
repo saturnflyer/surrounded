@@ -83,8 +83,7 @@ describe Surrounded::Context, '#role?' do
 end
 
 require 'casting'
-CastingUser = Struct.new(:name)
-class CastingUser
+class CastingUser < User
   include Casting::Client
   delegate_missing_methods
 end
@@ -126,6 +125,7 @@ describe Surrounded::Context, '.setup' do
 end
 
 describe Surrounded::Context, 'assigning roles' do
+  include Surrounded
   let(:user){ CastingUser.new("Jim") }
   let(:other_user){ User.new("Guille") }
   let(:context){ RoleAssignmentContext.new(user, other_user) }

@@ -74,14 +74,14 @@ module Surrounded
 
       define_method(name, *args){
         begin
-          Thread.current[:context].unshift(self)
+          store_context
           policy.call(__method__, method(:add_role_interface))
 
           self.send("trigger_#{name}", *args)
 
         ensure
           policy.call(__method__, method(:remove_role_interface))
-          Thread.current[:context].shift
+          remove_context
         end
       }
     end
@@ -149,6 +149,20 @@ module Surrounded
 
       def role_behavior(role)
         role.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }
+      end
+
+      def store_context
+        role_map.each do |role,_,_|
+          player = instance_variable_get("@#{role}")
+          player.store_context(self)
+        end
+      end
+
+      def remove_context
+        role_map.each do |role,_,_|
+          player = instance_variable_get("@#{role}")
+          player.remove_context(self)
+        end
       end
     end
   end
