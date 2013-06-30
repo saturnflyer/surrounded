@@ -5,6 +5,7 @@ module Surrounded
   module Context
     def self.extended(base)
       base.send(:include, InstanceMethods)
+      base.singleton_class.send(:alias_method, :setup, :initialize)
     end
 
     def new_policy(context, assignments)
@@ -32,7 +33,7 @@ module Surrounded
       @policy ||= apply_roles_on(:trigger)
     end
 
-    def setup(*setup_args)
+    def initialize(*setup_args)
       private_attr_reader(*setup_args)
 
       # I want this to work so I can set the arity on initialize:

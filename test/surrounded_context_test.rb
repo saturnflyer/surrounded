@@ -92,7 +92,7 @@ end
 class RoleAssignmentContext
   extend Surrounded::Context
 
-  setup(:user, :other_user)
+  initialize(:user, :other_user)
 
   trigger :user_ancestors do
     user.singleton_class.ancestors
@@ -147,7 +147,7 @@ describe Surrounded::Context, 'assigning roles' do
     ClassRoleAssignmentContext = Class.new do
       extend Surrounded::Context
 
-      setup(:thing, :the_test)
+      initialize(:thing, :the_test)
 
       trigger :check_user_response do
         the_test.refute thing.respond_to?(:method_from_class), 'did respond to :method_from_class'

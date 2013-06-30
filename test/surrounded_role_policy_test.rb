@@ -4,7 +4,7 @@ class RolesOnInitialize
   extend Surrounded::Context
 
   apply_roles_on(:initialize)
-  setup(:admin, :user)
+  initialize(:admin, :user)
 
   trigger :check_roles_already_applied_during_trigger do
     admin.respond_to?(:admin_method)
@@ -34,7 +34,7 @@ class RolesOnTrigger
   extend Surrounded::Context
 
   apply_roles_on(:trigger)
-  setup(:admin, :user)
+  initialize(:admin, :user)
 
   trigger :check_roles_already_applied_during_trigger do
     admin.respond_to?(:admin_method)
