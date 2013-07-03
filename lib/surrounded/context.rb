@@ -70,14 +70,14 @@ module Surrounded
 
       define_method(name, *args){
         begin
-          (Thread.current[:context] ||= []).unshift(self)
+          Thread.current[:context].unshift(self)
           policy.call(__method__, method(:add_role_methods))
 
           self.send("trigger_#{name}", *args)
 
         ensure
           policy.call(__method__, method(:remove_role_methods))
-          (Thread.current[:context] ||= []).shift
+          Thread.current[:context].shift
         end
       }
     end
