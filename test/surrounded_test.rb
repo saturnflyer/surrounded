@@ -5,7 +5,6 @@ describe "Surrounded", 'without context' do
   let(:jim){ User.new("Jim") }
 
   it "never has context roles" do
-    Thread.current[:context] = []
     assert_nil jim.send(:context).role?('anything')
   end
 

@@ -12,8 +12,7 @@ module Surrounded
   end
 
   def context
-    Thread.current[:context] ||= []
-    Thread.current[:context].first || NullContext.new
+    Array(Thread.current[:context]).first || NullContext.new
   end
 
   class NullContext < BasicObject
