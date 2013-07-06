@@ -44,7 +44,7 @@ module Surrounded
       #     variable_names.zip(arguments).each do |role, object|
       #       assign_role(role, object)
       #     end
-      #     policy.call(__method__, method(:add_role_methods))
+      #     policy.call(__method__, method(:add_role_interface))
       #   end
       # >
 
@@ -56,7 +56,7 @@ module Surrounded
         role_object_array.each{ |role, object|
           assign_role(role, object)
         }
-        policy.call(__method__, method(:add_role_methods))
+        policy.call(__method__, method(:add_role_interface))
       }
     end
 
@@ -75,12 +75,12 @@ module Surrounded
       define_method(name, *args){
         begin
           Thread.current[:context].unshift(self)
-          policy.call(__method__, method(:add_role_methods))
+          policy.call(__method__, method(:add_role_interface))
 
           self.send("trigger_#{name}", *args)
 
         ensure
-          policy.call(__method__, method(:remove_role_methods))
+          policy.call(__method__, method(:remove_role_interface))
           Thread.current[:context].shift
         end
       }
@@ -119,23 +119,23 @@ module Surrounded
         @policy ||= self.class.new_policy(self, role_map)
       end
 
-      def add_role_methods(obj, mod)
+      def add_role_interface(obj, mod)
         modifier = modifier_methods.find do |meth|
                      obj.respond_to?(meth)
-                   end
+                   end || :extend
         return obj if mod.is_a?(Class) || !modifier
 
         obj.send(modifier, mod)
         obj
       end
 
-      def remove_role_methods(obj, mod)
+      def remove_role_interface(obj, mod)
         obj.uncast if obj.respond_to?(:uncast)
         obj
       end
 
       def modifier_methods
-        [:cast_as, :extend]
+        [:cast_as]
       end
 
       def assign_role(role, obj)
