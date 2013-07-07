@@ -42,3 +42,32 @@ describe "Surrounded" do
     }
   end
 end
+
+describe "Surrounded", "added to an existing object" do
+  it "allows the object to store its context" do
+    object = Object.new
+    assert_raises(NoMethodError){
+      object.store_context(self)
+    }
+    object.extend(Surrounded)
+    assert object.store_context(self)
+    assert object.remove_context
+  end
+end
+
+module SpecialSurrounding
+  include Surrounded
+end
+
+describe "Surrounded", "added to an object through another module" do
+  it "allows the object to store its context" do
+    object = Array.new
+    assert_raises(NoMethodError){
+      object.store_context(self)
+    }
+    object.extend(SpecialSurrounding)
+    assert object.store_context(self)
+    assert object.remove_context
+    assert object.send(:context)
+  end
+end

@@ -5,12 +5,21 @@ module Surrounded
     klass.class_eval {
       extend Surrounded::Contextual
     }
+    unless klass.is_a?(Class)
+      def klass.extended(object)
+        Surrounded.create_surroundings(object)
+      end
+    end
+  end
+
+  def self.extended(object)
+    Surrounded.create_surroundings(object)
   end
 
   module Contextual
     def new(*args)
       instance = super
-      instance.instance_variable_set(:@__surroundings__, [])
+      Surrounded.create_surroundings(instance)
       instance
     end
   end
@@ -25,6 +34,10 @@ module Surrounded
 
   private
 
+  def self.create_surroundings(obj)
+    obj.instance_variable_set(:@__surroundings__, [])
+  end
+
   def method_missing(meth, *args, &block)
     context.role?(meth){} || super
   end
@@ -38,7 +51,7 @@ module Surrounded
   end
 
   def surroundings
-    @__surroundings__ ||= []
+    @__surroundings__
   end
 
   class NullContext < BasicObject
