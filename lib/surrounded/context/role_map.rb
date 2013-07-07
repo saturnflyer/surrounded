@@ -3,6 +3,10 @@ require 'surrounded/context_errors'
 module Surrounded
   module Context
     class RoleMap < Triad
+      def role?(role)
+        keys.include?(role)
+      end
+
       def role_player?(object)
         !values(object).empty?
       rescue ::Triad::ValueNotPresent
