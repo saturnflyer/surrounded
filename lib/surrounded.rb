@@ -38,20 +38,20 @@ module Surrounded
     obj.instance_variable_set(:@__surroundings__, [])
   end
 
-  def method_missing(meth, *args, &block)
-    context.role?(meth){} || super
-  end
-
-  def respond_to_missing?(meth, include_private=false)
-    !!context.role?(meth){} || super
+  def surroundings
+    @__surroundings__
   end
 
   def context
     surroundings.first || NullContext.new
   end
 
-  def surroundings
-    @__surroundings__
+  def method_missing(meth, *args, &block)
+    context.role?(meth){} || super
+  end
+
+  def respond_to_missing?(meth, include_private=false)
+    !!context.role?(meth){} || super
   end
 
   class NullContext < BasicObject
