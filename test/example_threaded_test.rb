@@ -18,9 +18,9 @@ class ThreadedContext
   trigger :meet do
     result = []
     result << leader.greet
-    result << members.threaded_map do |member|
+    result << members.concurrent_map do |member|
       result << member.greet
-    end.each(&:join)
+    end
     result.flatten.join(' ')
   end
 
@@ -39,12 +39,12 @@ class ThreadedContext
   module Members
     include Surrounded
 
-    def threaded_map
+    def concurrent_map
       map do |member|
         Thread.new do
           yield member
         end
-      end
+      end.each(&:join)
     end
   end
 end
