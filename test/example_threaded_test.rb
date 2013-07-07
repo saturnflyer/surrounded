@@ -1,13 +1,5 @@
 require 'test_helper'
 
-class Person
-  include Surrounded
-  attr_reader :name
-  def initialize(name)
-    @name = name
-  end
-end
-
 class ThreadedContext
   extend Surrounded::Context
 
@@ -58,11 +50,11 @@ class ThreadedContext
 end
 
 describe ThreadedContext do
-  let(:jim){ Person.new('Jim') }
-  let(:amy){ Person.new('Amy') }
-  let(:guille){ Person.new('Guille') }
-  let(:jason){ Person.new('Jason') }
-  let(:dave){ Person.new('Dave') }
+  let(:jim){ User.new('Jim') }
+  let(:amy){ User.new('Amy') }
+  let(:guille){ User.new('Guille') }
+  let(:jason){ User.new('Jason') }
+  let(:dave){ User.new('Dave') }
 
   let(:greeter){ jim }
   let(:members){ [amy, guille, jason, dave] }
