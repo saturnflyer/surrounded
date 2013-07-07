@@ -91,12 +91,9 @@ module Surrounded
 
     module InstanceMethods
       def role?(name, &block)
-        if role_map.role?(name)
-          accessor = eval('self', block.binding)
-          role_map.role_player?(accessor) && role_map.assigned_player(name)
-        else
-          false
-        end
+        return false unless role_map.role?(name)
+        accessor = eval('self', block.binding)
+        role_map.role_player?(accessor) && role_map.assigned_player(name)
       rescue Surrounded::Context::InvalidRole
         false
       end
