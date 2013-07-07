@@ -1,5 +1,4 @@
 require 'test_helper'
-require 'debugger'
 
 class Person
   include Surrounded
@@ -13,9 +12,11 @@ class ThreadedContext
   extend Surrounded::Context
 
   def initialize(leader, members)
-    map_roles([[:leader, leader], [:members, members]])
+    map_roles([[:leader, leader],[:members, members]])
     @leader, @members = leader, members
+    add_role_interface(members, Members)
     members.each do |member|
+      member.store_context(self)
       role = :"member_#{member.object_id}"
       role_map << [role, 'Member', member]
     end
@@ -44,6 +45,8 @@ class ThreadedContext
   end
 
   module Members
+    include Surrounded
+
     def threaded_map
       map do |member|
         Thread.new do
@@ -66,6 +69,7 @@ describe ThreadedContext do
 
   it 'works in multi-threaded environments' do
     meeting = ThreadedContext.new(jim, members)
+
     result = meeting.meet
 
     assert_includes result, 'Hello everyone. I am Jim'

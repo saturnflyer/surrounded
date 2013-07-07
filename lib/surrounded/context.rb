@@ -107,7 +107,16 @@ module Surrounded
         self.class.triggers
       end
 
+      def role_players
+        @role_players.dup
+      end
+
       private
+
+      def store_role_player(player)
+        @role_players ||= Set.new
+        @role_players << player
+      end
 
       def role_map
         @role_map ||= RoleMap.new
@@ -115,6 +124,7 @@ module Surrounded
 
       def map_roles(role_object_array)
         role_object_array.each do |role, object|
+          store_role_player(object)
           role_map << [role, role_behavior(role), object]
         end
       end
@@ -143,6 +153,7 @@ module Surrounded
       end
 
       def assign_role(role, obj)
+        store_role_player(obj)
         instance_variable_set("@#{role}", obj)
         self
       end
@@ -152,16 +163,14 @@ module Surrounded
       end
 
       def store_context
-        role_map.each do |role,_,_|
-          player = instance_variable_get("@#{role}")
+        @role_players.each do |player|
           player.store_context(self)
         end
       end
 
       def remove_context
-        role_map.each do |role,_,_|
-          player = instance_variable_get("@#{role}")
-          player.remove_context(self)
+        @role_players.each do |player|
+          player.remove_context
         end
       end
     end

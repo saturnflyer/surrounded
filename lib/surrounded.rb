@@ -2,7 +2,7 @@ require "surrounded/version"
 
 module Surrounded
   def self.included(klass)
-    klass.class_eval{
+    klass.class_eval {
       extend Surrounded::Contextual
     }
   end
@@ -19,7 +19,7 @@ module Surrounded
     surroundings.unshift(ctxt)
   end
 
-  def remove_context(ctxt)
+  def remove_context
     surroundings.shift
   end
 
@@ -34,11 +34,11 @@ module Surrounded
   end
 
   def context
-    Array(surroundings).first || NullContext.new
+    surroundings.first || NullContext.new
   end
 
   def surroundings
-    @__surroundings__
+    @__surroundings__ ||= []
   end
 
   class NullContext < BasicObject

@@ -27,10 +27,11 @@ describe "Surrounded" do
   it "has access to objects in the context" do
     assert_equal jim.other_user, guille
   end
+
   it "responds to messages for roles on the context" do
     assert jim.respond_to?(:other_user)
 
-    jim.remove_context(context)
+    jim.remove_context
 
     refute jim.respond_to?(:other_user)
   end
