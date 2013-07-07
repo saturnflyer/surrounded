@@ -105,15 +105,14 @@ module Surrounded
         self.class.triggers
       end
 
-      def role_players
-        @role_players.dup
-      end
-
       private
 
+      def modified_players
+        @modified_players ||= Set.new
+      end
+
       def store_role_player(player)
-        @role_players ||= Set.new
-        @role_players << player
+        modified_players << player
       end
 
       def role_map
@@ -139,6 +138,7 @@ module Surrounded
         return obj if mod.is_a?(Class) || !modifier
 
         obj.send(modifier, mod)
+        store_role_player(obj)
         obj
       end
 
@@ -156,13 +156,13 @@ module Surrounded
       end
 
       def store_context
-        @role_players.each do |player|
+        modified_players.each do |player|
           player.store_context(self)
         end
       end
 
       def remove_context
-        @role_players.each do |player|
+        modified_players.each do |player|
           player.remove_context
         end
       end
