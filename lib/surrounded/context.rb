@@ -49,13 +49,11 @@ module Surrounded
       # >
 
       define_method(:initialize){ |*args|
+
         role_object_array = setup_args.zip(args)
 
         map_roles(role_object_array)
 
-        role_object_array.each{ |role, object|
-          assign_role(role, object)
-        }
         policy.call(__method__, method(:add_role_interface))
       }
     end
@@ -125,6 +123,7 @@ module Surrounded
       def map_roles(role_object_array)
         role_object_array.each do |role, object|
           store_role_player(object)
+          instance_variable_set("@#{role}", object)
           role_map << [role, role_behavior(role), object]
         end
       end
@@ -150,12 +149,6 @@ module Surrounded
 
       def modifier_methods
         [:cast_as]
-      end
-
-      def assign_role(role, obj)
-        store_role_player(obj)
-        instance_variable_set("@#{role}", obj)
-        self
       end
 
       def role_behavior(role)
