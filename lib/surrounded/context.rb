@@ -114,7 +114,6 @@ module Surrounded
 
       def map_roles(role_object_array)
         role_object_array.each do |role, object|
-          store_role_player(object)
           instance_variable_set("@#{role}", object)
           role_map << [role, role_behavior_name(role), object]
         end
