@@ -118,7 +118,7 @@ module Surrounded
         role_object_array.each do |role, object|
           store_role_player(object)
           instance_variable_set("@#{role}", object)
-          role_map << [role, role_behavior(role), object]
+          role_map << [role, role_behavior_name(role), object]
         end
       end
 
@@ -146,8 +146,8 @@ module Surrounded
         [:cast_as]
       end
 
-      def role_behavior(role)
-        role.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }
+      def role_behavior_name(role)
+        role.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }.sub(/_\d+/,'')
       end
 
       def store_context

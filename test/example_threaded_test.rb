@@ -4,13 +4,17 @@ class ThreadedContext
   extend Surrounded::Context
 
   def initialize(leader, members)
-    map_roles([[:leader, leader],[:members, members]])
+    role_names = [:leader, :members]
+    role_players = [leader, members]
 
-    add_role_interface(members, Members)
-    members.each do |member|
-      member.store_context(self)
-      role = :"member_#{member.object_id}"
-      role_map << [role, 'Member', member]
+    role_names.concat(members.map{|member| :"member_#{member.object_id}" })
+    role_players.concat(members)
+
+    map_roles(role_names.zip(role_players))
+    role_map.each do |_,mod,object|
+      if self.class.const_defined?(mod)
+        object.extend(self.class.const_get(mod))
+      end
     end
   end
   private_attr_reader :leader, :members
