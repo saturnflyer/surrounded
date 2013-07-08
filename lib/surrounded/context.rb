@@ -8,8 +8,8 @@ module Surrounded
       base.singleton_class.send(:alias_method, :setup, :initialize)
     end
 
-    def new_policy(context, assignments)
-      policy.new(context, assignments)
+    def new_policy(context, assignments, add_method, remove_method)
+      policy.new(context, assignments, add_method, remove_method)
     end
 
     def triggers
