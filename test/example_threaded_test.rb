@@ -11,11 +11,7 @@ class ThreadedContext
     role_players.concat(members)
 
     map_roles(role_names.zip(role_players))
-    role_map.each do |_,mod,object|
-      if self.class.const_defined?(mod)
-        object.extend(self.class.const_get(mod))
-      end
-    end
+
   end
   private_attr_reader :leader, :members
 
