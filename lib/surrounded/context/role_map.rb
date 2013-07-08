@@ -15,8 +15,6 @@ module Surrounded
 
       def assigned_player(role)
         values(role).first
-      rescue ::Triad::KeyNotPresent
-        raise Surrounded::Context::InvalidRole.new
       end
     end
   end

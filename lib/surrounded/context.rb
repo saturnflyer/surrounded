@@ -94,8 +94,6 @@ module Surrounded
         return false unless role_map.role?(name)
         accessor = eval('self', block.binding)
         role_map.role_player?(accessor) && role_map.assigned_player(name)
-      rescue Surrounded::Context::InvalidRole
-        false
       end
 
       def triggers
