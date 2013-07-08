@@ -72,14 +72,12 @@ module Surrounded
 
       define_method(name, *args){
         begin
-          store_context
           policy.apply_roles(__method__)
 
           self.send("trigger_#{name}", *args)
 
         ensure
           policy.remove_roles(__method__)
-          remove_context
         end
       }
     end
