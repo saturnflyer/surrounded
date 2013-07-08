@@ -54,7 +54,7 @@ module Surrounded
 
         map_roles(role_object_array)
 
-        policy.call(__method__, method(:add_role_interface))
+        policy.apply_roles(__method__)
       }
     end
 
@@ -73,12 +73,12 @@ module Surrounded
       define_method(name, *args){
         begin
           store_context
-          policy.call(__method__, method(:add_role_interface))
+          policy.apply_roles(__method__)
 
           self.send("trigger_#{name}", *args)
 
         ensure
-          policy.call(__method__, method(:remove_role_interface))
+          policy.remove_roles(__method__)
           remove_context
         end
       }
@@ -123,7 +123,7 @@ module Surrounded
       end
 
       def policy
-        @policy ||= self.class.new_policy(self, role_map)
+        @policy ||= self.class.new_policy(self, role_map, method(:add_role_interface), method(:remove_role_interface))
       end
 
       def add_role_interface(obj, mod)

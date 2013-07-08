@@ -5,16 +5,22 @@ module Surrounded
 
       class NotImplementedError < StandardError; end
 
-      attr_reader :context, :map
-      private :context, :map
+      attr_reader :context, :map, :role_adder, :role_remover
+      private :context, :map, :role_adder, :role_remover
 
-      def initialize(context, map)
-        @context, @map = context, map
+      def initialize(context, map, role_adder, role_remover)
+        @context, @map, @role_adder, @role_remover = context, map, role_adder, role_remover
       end
 
-      def call(context_method_name, applicator)
-        apply_policy(applicator) if applicable?(context_method_name)
+      def apply_roles(context_method_name)
+        apply_policy(role_adder) if applicable?(context_method_name)
       end
+
+      def remove_roles(context_method_name)
+        apply_policy(role_remover) if applicable?(context_method_name)
+      end
+
+      private
 
       def apply_policy(applicator)
         map.each do |role, mod_name, _|
