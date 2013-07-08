@@ -5,7 +5,7 @@ class ThreadedContext
 
   def initialize(leader, members)
     map_roles([[:leader, leader],[:members, members]])
-    @leader, @members = leader, members
+
     add_role_interface(members, Members)
     members.each do |member|
       member.store_context(self)
