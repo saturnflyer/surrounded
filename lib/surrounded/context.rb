@@ -44,7 +44,7 @@ module Surrounded
       #     variable_names.zip(arguments).each do |role, object|
       #       assign_role(role, object)
       #     end
-      #     policy.call(__method__, method(:add_role_interface))
+      #     policy.call(__method__, method(:add_interface))
       #   end
       # >
 
@@ -123,43 +123,81 @@ module Surrounded
       end
 
       def policy
-        @policy ||= self.class.new_policy(self, role_map, method(:add_role_interface), method(:remove_role_interface))
+        @policy ||= self.class.new_policy(self, role_map, method(:add_interface), method(:remove_interface))
       end
 
-      def add_role_interface(obj, mod)
-        modifier = modifier_methods.find do |meth|
-                     obj.respond_to?(meth)
-                   end || :extend
-        return obj if mod.is_a?(Class) || !modifier
+      def add_interface(obj, behavior)
+        applicator = behavior.is_a?(Class) ? method(:add_class_interface) : method(:add_module_interface)
 
-        obj.send(modifier, mod)
-        store_role_player(obj)
+        role_player = applicator.call(obj, behavior)
+        store_role_player(role_player)
+
+        role_player.store_context(self)
+        role_player
+      end
+
+      def add_module_interface(obj, mod)
+        adder_name = module_extension_methods.find do |meth|
+                       obj.respond_to?(meth)
+                     end
+        modifier = adder_name && obj.method(adder_name)
+
+        return obj if !modifier
+        modifier.call(mod)
         obj
       end
 
-      def remove_role_interface(obj, mod)
-        obj.uncast if obj.respond_to?(:uncast)
+      def add_class_interface(obj, klass)
         obj
       end
 
-      def modifier_methods
-        [:cast_as]
+      def remove_interface(obj, behavior)
+        applicator = behavior.is_a?(Class) ? method(:remove_class_interface) : method(:remove_module_interface)
+
+        role_player = applicator.call(obj, behavior)
+
+        role_player.remove_context
+        role_player
+      end
+
+      def remove_module_interface(obj, mod)
+        remover_name = module_removal_methods.find do |meth|
+                       obj.respond_to?(meth)
+                     end
+        remover = remover_name && obj.method(remover_name)
+
+        return obj if !remover
+        remover.call
+        obj
+      end
+
+      def remove_class_interface(obj, klass)
+        remover = class_removal_methods.find do |meth|
+                    obj.respond_to?(meth) && obj.method(meth)
+                  end
+        return obj if !remover
+        remover.call
+        obj
+      end
+
+      def module_extension_methods
+        [:cast_as, :extend]
+      end
+
+      def class_extension_methods
+        [:new]
+      end
+
+      def module_removal_methods
+        [:uncast]
+      end
+
+      def class_removal_methods
+        [:__getobj__]
       end
 
       def role_behavior_name(role)
         role.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }.sub(/_\d+/,'')
-      end
-
-      def store_context
-        modified_players.each do |player|
-          player.store_context(self)
-        end
-      end
-
-      def remove_context
-        modified_players.each do |player|
-          player.remove_context
-        end
       end
     end
   end
