@@ -94,9 +94,13 @@ module Surrounded
 
       def map_roles(role_object_array)
         role_object_array.each do |role, object|
-          instance_variable_set("@#{role}", object)
-          role_map << [role, role_behavior_name(role), object]
+          map_role(role, role_behavior_name(role), object)
         end
+      end
+
+      def map_role(role, mod_name, object)
+        instance_variable_set("@#{role}", object)
+        role_map.update(role, mod_name, object)
       end
 
       def policy
