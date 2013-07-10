@@ -107,10 +107,10 @@ module Surrounded
         @policy ||= self.class.policy
       end
 
-      def add_interface(obj, behavior)
+      def add_interface(role, behavior, object)
         applicator = behavior.is_a?(Class) ? method(:add_class_interface) : method(:add_module_interface)
 
-        role_player = applicator.call(obj, behavior)
+        role_player = applicator.call(object, behavior)
 
         role_player.store_context(self)
         role_player
@@ -131,10 +131,10 @@ module Surrounded
         obj
       end
 
-      def remove_interface(obj, behavior)
+      def remove_interface(role, behavior, object)
         applicator = behavior.is_a?(Class) ? method(:remove_class_interface) : method(:remove_module_interface)
 
-        role_player = applicator.call(obj, behavior)
+        role_player = applicator.call(object, behavior)
 
         role_player.remove_context
         role_player
@@ -163,7 +163,7 @@ module Surrounded
       def apply_roles
         role_map.each do |role, mod_name, object|
           if self.class.const_defined?(mod_name)
-            add_interface(object, self.class.const_get(mod_name))
+            add_interface(role, self.class.const_get(mod_name), object)
           end
         end
       end
@@ -171,7 +171,7 @@ module Surrounded
       def remove_roles
         role_map.each do |role, mod_name, object|
           if self.class.const_defined?(mod_name)
-            remove_interface(object, self.class.const_get(mod_name))
+            remove_interface(role, self.class.const_get(mod_name), object)
           end
         end
       end
