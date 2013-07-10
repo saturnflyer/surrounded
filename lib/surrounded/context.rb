@@ -151,17 +151,17 @@ module Surrounded
       end
 
       def apply_roles
-        role_map.each do |role, mod_name, object|
-          if self.class.const_defined?(mod_name)
-            add_interface(role, self.class.const_get(mod_name), object)
-          end
-        end
+        traverse_map method(:add_interface)
       end
 
       def remove_roles
+        traverse_map method(:remove_interface)
+      end
+
+      def traverse_map(applicator)
         role_map.each do |role, mod_name, object|
           if self.class.const_defined?(mod_name)
-            remove_interface(role, self.class.const_get(mod_name), object)
+            applicator.call(role, self.class.const_get(mod_name), object)
           end
         end
       end
