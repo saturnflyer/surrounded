@@ -1,7 +1,6 @@
 require 'test_helper'
 
 # If you want to use wrappers, here's how you could
-require 'delegate'
 class WrapperContext
   extend Surrounded::Context
 
