@@ -126,28 +126,15 @@ module Surrounded
       end
 
       def remove_interface(role, behavior, object)
-        applicator = behavior.is_a?(Class) ? method(:remove_class_interface) : method(:remove_module_interface)
+        remover_name = (module_removal_methods + unwrap_methods).find{|meth| object.respond_to?(meth) }
+        return object if !remover_name
 
-        role_player = applicator.call(object, behavior)
+        object.remove_context
+        role_player = object.method(remover_name).call
+
         map_role(role, role_module_basename(behavior), role_player)
-        role_player.remove_context
+
         role_player
-      end
-
-      def remove_module_interface(obj, mod)
-        remover_name = module_removal_methods.find{|meth| obj.respond_to?(meth) }
-        return obj if !remover_name
-
-        obj.method(remover_name).call
-        obj
-      end
-
-      def remove_class_interface(obj, klass)
-        remover_name = unwrap_methods.find{|meth| obj.respond_to?(meth) }
-        return obj if !remover_name
-
-        obj.method(remover_name).call
-        obj
       end
 
       def apply_roles
