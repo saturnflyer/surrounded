@@ -108,9 +108,9 @@ class MyEnvironment
   # other stuff from above is still here...
 
   def shove_it
-    Thread.current[:context] = self
+    employee.store_context(self)
     employee.quit
-    Thread.current[:context] = nil
+    employee.remove_context
   end
 
   module Employee
@@ -142,7 +142,7 @@ _OK. I think I understand. So I can change business logic just by changing the p
 
 Damn right.
 
-But you don't want to continually set those `Thread` variables, do you?
+But you don't want to continually set those context details, do you?
 
 _No. That's annoying._
 
@@ -159,7 +159,7 @@ class MyEnvironment
 end
 ```
 
-By using this `trigger` keyword, our block is the code we care about, but internally the method is written to set the `Thread` variables.
+By using this `trigger` keyword, our block is the code we care about, but internally the method is written to set the `@__surroundings__` collection.
 
 _Hmm. I don't like having to do that._
 
