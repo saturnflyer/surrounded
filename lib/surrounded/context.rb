@@ -1,6 +1,5 @@
 require 'set'
 require 'surrounded/context/role_map'
-require 'surrounded/context/role_policy'
 module Surrounded
   module Context
     def self.extended(base)
@@ -8,29 +7,18 @@ module Surrounded
       base.singleton_class.send(:alias_method, :setup, :initialize)
     end
 
-    def new_policy(context, assignments, add_method, remove_method)
-      policy.new(context, assignments, add_method, remove_method)
-    end
-
     def triggers
       @triggers.dup
     end
 
+    def policy
+      @policy ||= :trigger
+    end
+
     private
 
-    def policies
-      @policies ||= {
-        'initialize' => Surrounded::Context::InitializePolicy,
-        'trigger' => Surrounded::Context::TriggerPolicy
-      }
-    end
-
     def apply_roles_on(which)
-      @policy = policies.fetch(which.to_s){ const_get(which) }
-    end
-
-    def policy
-      @policy ||= apply_roles_on(:trigger)
+      @policy = which
     end
 
     def initialize(*setup_args)
@@ -54,7 +42,7 @@ module Surrounded
 
         map_roles(role_object_array)
 
-        policy.apply_roles(__method__)
+        apply_roles if policy == :initialize
       }
     end
 
@@ -72,12 +60,12 @@ module Surrounded
 
       define_method(name, *args){
         begin
-          policy.apply_roles(__method__)
+          apply_roles if policy == :trigger
 
           self.send("trigger_#{name}", *args)
 
         ensure
-          policy.remove_roles(__method__)
+          remove_roles if policy == :trigger
         end
       }
     end
@@ -120,7 +108,7 @@ module Surrounded
       end
 
       def policy
-        @policy ||= self.class.new_policy(self, role_map, method(:add_interface), method(:remove_interface))
+        @policy ||= self.class.policy
       end
 
       def add_interface(obj, behavior)
@@ -175,6 +163,22 @@ module Surrounded
         return obj if !remover
         remover.call
         obj
+      end
+
+      def apply_roles
+        role_map.each do |role, mod_name, object|
+          if self.class.const_defined?(mod_name)
+            add_interface(object, self.class.const_get(mod_name))
+          end
+        end
+      end
+
+      def remove_roles
+        role_map.each do |role, mod_name, object|
+          if self.class.const_defined?(mod_name)
+            remove_interface(object, self.class.const_get(mod_name))
+          end
+        end
       end
 
       def module_extension_methods
