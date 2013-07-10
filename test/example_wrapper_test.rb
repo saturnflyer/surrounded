@@ -5,7 +5,7 @@ class WrapperContext
   extend Surrounded::Context
 
   apply_roles_on(:trigger)
-  setup(:admin, :task)
+  initialize(:admin, :task)
 
   wrap :admin do
     def some_admin_method

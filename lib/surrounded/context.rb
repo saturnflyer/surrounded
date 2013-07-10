@@ -31,20 +31,13 @@ module Surrounded
     def initialize(*setup_args)
       private_attr_reader(*setup_args)
 
-      # I want this to work so I can set the arity on initialize:
-      # class_eval %Q<
-      #   def initialize(#{*setup_args})
-      #     arguments = parameters.map{|arg| eval(arg[1].to_s) }
-      #     map_roles(setup_args.zip(arguments))
-      #     apply_roles if policy == :initialize
-      #   end
-      # >
-
-      define_method(:initialize){ |*args|
-        map_roles(setup_args.zip(args))
-
-        apply_roles if policy == :initialize
-      }
+      class_eval "
+        def initialize(#{setup_args.join(',')})
+          arguments = method(__method__).parameters.map{|arg| eval(arg[1].to_s) }
+          map_roles(#{setup_args}.zip(arguments))
+          apply_roles if policy == :initialize
+        end
+      "
     end
 
     def private_attr_reader(*method_names)

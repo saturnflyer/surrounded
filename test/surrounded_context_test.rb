@@ -119,7 +119,6 @@ end
 
 describe Surrounded::Context, '.setup' do
   it 'defines an initialize method accepting the same arguments' do
-    skip "not yet implemented. may not be possible"
     assert_equal 2, RoleAssignmentContext.instance_method(:initialize).arity
   end
 end
