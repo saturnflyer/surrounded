@@ -88,14 +88,6 @@ module Surrounded
 
       private
 
-      def modified_players
-        @modified_players ||= Set.new
-      end
-
-      def store_role_player(player)
-        modified_players << player
-      end
-
       def role_map
         @role_map ||= RoleMap.new
       end
@@ -115,7 +107,6 @@ module Surrounded
         applicator = behavior.is_a?(Class) ? method(:add_class_interface) : method(:add_module_interface)
 
         role_player = applicator.call(obj, behavior)
-        store_role_player(role_player)
 
         role_player.store_context(self)
         role_player
