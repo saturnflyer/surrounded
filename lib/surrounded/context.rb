@@ -111,24 +111,18 @@ module Surrounded
       end
 
       def add_module_interface(obj, mod)
-        adder_name = module_extension_methods.find do |meth|
-                       obj.respond_to?(meth)
-                     end
-        modifier = adder_name && obj.method(adder_name)
+        adder_name = module_extension_methods.find{|meth| obj.respond_to?(meth) }
+        return obj if !adder_name
 
-        return obj if !modifier
-        modifier.call(mod)
+        obj.method(adder_name).call(mod)
         obj
       end
 
       def add_class_interface(obj, klass)
-        wrapper_name = wrap_methods.find do |meth|
-                         klass.respond_to?(meth)
-                       end
-        modifier = wrapper_name && klass.method(wrapper_name)
+        wrapper_name = wrap_methods.find{|meth| klass.respond_to?(meth) }
+        return obj if !wrapper_name
 
-        return obj if !modifier
-        modifier.call(obj)
+        klass.method(wrapper_name).call(obj)
       end
 
       def remove_interface(role, behavior, object)
@@ -141,23 +135,18 @@ module Surrounded
       end
 
       def remove_module_interface(obj, mod)
-        remover_name = module_removal_methods.find do |meth|
-                       obj.respond_to?(meth)
-                     end
-        remover = remover_name && obj.method(remover_name)
+        remover_name = module_removal_methods.find{|meth| obj.respond_to?(meth) }
+        return obj if !remover_name
 
-        return obj if !remover
-        remover.call
+        obj.method(remover_name).call
         obj
       end
 
       def remove_class_interface(obj, klass)
-        remover_name = unwrap_methods.find do |meth|
-                    obj.respond_to?(meth)
-                  end
-        remover = remover_name && obj.method(remover_name)
-        return obj if !remover
-        remover.call
+        remover_name = unwrap_methods.find{|meth| obj.respond_to?(meth) }
+        return obj if !remover_name
+
+        obj.method(remover_name).call
         obj
       end
 
