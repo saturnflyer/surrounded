@@ -17,6 +17,13 @@ module Surrounded
 
     private
 
+    def wrap(name, &block)
+      require 'delegate'
+      wrapper_name = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
+      klass = const_set(wrapper_name, Class.new(SimpleDelegator, &block))
+      klass.send(:include, Surrounded)
+    end
+
     def apply_roles_on(which)
       @policy = which
     end

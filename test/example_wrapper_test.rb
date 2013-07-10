@@ -8,8 +8,7 @@ class WrapperContext
   apply_roles_on(:trigger)
   setup(:admin, :task)
 
-  class Admin < SimpleDelegator
-    include Surrounded
+  wrap :admin do
     def some_admin_method
       'hello from the admin wrapper!'
     end
