@@ -54,7 +54,7 @@ module Surrounded
     !!context.role?(meth){} || super
   end
 
-  class NullContext < BasicObject
+  class NullContext
     def role?(*args)
       nil
     end
