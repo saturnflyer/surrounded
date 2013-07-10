@@ -28,19 +28,13 @@ module Surrounded
       # class_eval %Q<
       #   def initialize(#{*setup_args})
       #     arguments = parameters.map{|arg| eval(arg[1].to_s) }
-      #     variable_names = Array(#{*setup_args})
-      #     variable_names.zip(arguments).each do |role, object|
-      #       assign_role(role, object)
-      #     end
-      #     policy.call(__method__, method(:add_interface))
+      #     map_roles(setup_args.zip(arguments))
+      #     apply_roles if policy == :initialize
       #   end
       # >
 
       define_method(:initialize){ |*args|
-
-        role_object_array = setup_args.zip(args)
-
-        map_roles(role_object_array)
+        map_roles(setup_args.zip(args))
 
         apply_roles if policy == :initialize
       }
