@@ -143,17 +143,19 @@ describe Surrounded::Context, 'assigning roles' do
     assert context.check_other_user_response
   end
 
-  it 'will not use classes as roles' do
+  it 'will use classes as roles' do
     ClassRoleAssignmentContext = Class.new do
       extend Surrounded::Context
 
       initialize(:thing, :the_test)
 
       trigger :check_user_response do
-        the_test.refute thing.respond_to?(:method_from_class), 'did respond to :method_from_class'
+        the_test.assert_respond_to thing, :method_from_class
       end
 
       class Thing
+        include Surrounded
+        def initialize(obj); end
         def method_from_class; end
       end
 

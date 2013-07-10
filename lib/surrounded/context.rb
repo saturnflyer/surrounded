@@ -111,7 +111,7 @@ module Surrounded
         applicator = behavior.is_a?(Class) ? method(:add_class_interface) : method(:add_module_interface)
 
         role_player = applicator.call(object, behavior)
-
+        map_role(role, role_module_basename(behavior), role_player)
         role_player.store_context(self)
         role_player
       end
@@ -128,14 +128,20 @@ module Surrounded
       end
 
       def add_class_interface(obj, klass)
-        obj
+        wrapper_name = wrap_methods.find do |meth|
+                         klass.respond_to?(meth)
+                       end
+        modifier = wrapper_name && klass.method(wrapper_name)
+
+        return obj if !modifier
+        modifier.call(obj)
       end
 
       def remove_interface(role, behavior, object)
         applicator = behavior.is_a?(Class) ? method(:remove_class_interface) : method(:remove_module_interface)
 
         role_player = applicator.call(object, behavior)
-
+        map_role(role, role_module_basename(behavior), role_player)
         role_player.remove_context
         role_player
       end
@@ -152,9 +158,10 @@ module Surrounded
       end
 
       def remove_class_interface(obj, klass)
-        remover = class_removal_methods.find do |meth|
-                    obj.respond_to?(meth) && obj.method(meth)
+        remover_name = unwrap_methods.find do |meth|
+                    obj.respond_to?(meth)
                   end
+        remover = remover_name && obj.method(remover_name)
         return obj if !remover
         remover.call
         obj
@@ -180,7 +187,7 @@ module Surrounded
         [:cast_as, :extend]
       end
 
-      def class_extension_methods
+      def wrap_methods
         [:new]
       end
 
@@ -188,12 +195,16 @@ module Surrounded
         [:uncast]
       end
 
-      def class_removal_methods
+      def unwrap_methods
         [:__getobj__]
       end
 
       def role_behavior_name(role)
         role.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }.sub(/_\d+/,'')
+      end
+
+      def role_module_basename(mod)
+        mod.to_s.split('::').last
       end
     end
   end
