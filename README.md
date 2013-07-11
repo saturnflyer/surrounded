@@ -71,7 +71,7 @@ If you're going to be doing this a lot, it's painful. Here's what `Surrounded` d
 class MyEnvironment
   extend Surrounded::Context
 
-  setup(:employee, :boss)
+  initialize(:employee, :boss)
 
   module Employee
     # extra behavior here...
@@ -97,7 +97,7 @@ With that, all instances of `User` have implicit access to their surroundings.
 
 _Yeah... How?_
 
-Via `method_missing` those `User` instances can access a `context` object it stores in a collection. I didn't mention how the context is set, however.
+Via `method_missing` those `User` instances can access a `context` object it stores in a `@__surroundings__` collection. I didn't mention how the context is set, however.
 
 Your environment will have methods of it's own that will trigger actions on the objects inside, but we need those trigger methods to set the environment instance as the current context so that the objects it contains can access them.
 
@@ -192,7 +192,7 @@ class ActiviatingAccount
   apply_roles_on(:trigger) # this is the default
   # apply_roles_on(:initialize) # set this to apply behavior from the start
 
-  setup(:activator, :account)
+  initialize(:activator, :account)
 
   module Activator
     def some_behavior; end
@@ -227,6 +227,34 @@ context = ActiviatingAccount.new(current_user, Account.find(123))
 context.do_something
 current_user.some_behavior # NoMethodError
 ```
+
+## How's the performance?
+
+I haven't really tested yet, but there are several ways you can add behavior to your objects.
+
+There are a few defaults built in.
+
+1. If you define modules for the added behavior, the code will run `object.extend(RoleInterface)`
+2. If you are using [casting](http://github.com/saturnflyer/casting), the code will run `object.cast_as(RoleInterface)`
+3. If you would rather use wrappers you can define classes and the code will run `RoleInterface.new(object)` and assumes that the `new` method takes 1 argument. You'll need to remember to `include Surrounded` in your classes, however.
+4. If you want to use wrappers but would rather not muck about with including modules and whatnot, you can define them like this:
+
+```
+class SomeContext
+  extend Surrounded::Context
+
+  initialize(:admin, :user)
+
+  wrap :admin do
+    # special methods defined here
+  end
+```
+
+The `wrap` method will create a class of the given name (`Admin` in this case) and will inherit from `SimpleDelegator` from the Ruby standard library _and_ will `include Surrounded`.
+
+_Which should I use?_
+
+Start with the default and see how it goes, then try another approach and measure the changes.
 
 ## Dependencies
 
