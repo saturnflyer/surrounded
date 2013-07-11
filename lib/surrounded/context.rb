@@ -24,6 +24,18 @@ module Surrounded
       klass.send(:include, Surrounded)
     end
 
+    def proxy(name, &block)
+      class_basename = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
+      proxy_name = class_basename + 'Proxy'
+
+      behavior = const_set(proxy_name, Module.new(&block))
+
+      require 'surrounded/context/negotiator'
+      define_method(name) do
+        instance_variable_set("@#{name}", Negotiator.new(role_map.assigned_player(name), behavior))
+      end
+    end
+
     def apply_roles_on(which)
       @policy = which
     end
