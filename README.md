@@ -97,7 +97,7 @@ With that, all instances of `User` have implicit access to their surroundings.
 
 _Yeah... How?_
 
-Via `method_missing` those `User` instances can access a `context` object stored in `Thread.current`. I didn't mention how the context is set, however.
+Via `method_missing` those `User` instances can access a `context` object it stores in a collection. I didn't mention how the context is set, however.
 
 Your environment will have methods of it's own that will trigger actions on the objects inside, but we need those trigger methods to set the environment instance as the current context so that the objects it contains can access them.
 
