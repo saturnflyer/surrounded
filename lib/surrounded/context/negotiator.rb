@@ -18,10 +18,8 @@ module Surrounded
         if @behavior.instance_methods.include?(meth)
           the_method = @behavior.instance_method(meth)
           the_method.bind(@object).call(*args, &block)
-        elsif @object.respond_to?(meth)
-          @object.send(meth, *args, &block)
         else
-          super
+          @object.send(meth, *args, &block)
         end
       end
     end
