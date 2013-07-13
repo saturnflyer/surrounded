@@ -9,7 +9,7 @@ module Surrounded
 
     def new(*)
       instance = super
-      instance.instance_variable_set('@__apply_role_policy', :trigger)
+      instance.instance_variable_set('@__apply_role_policy', __apply_role_policy)
       instance
     end
 
