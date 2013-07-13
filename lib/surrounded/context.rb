@@ -7,12 +7,14 @@ module Surrounded
       base.singleton_class.send(:alias_method, :setup, :initialize)
     end
 
-    def triggers
-      @triggers.dup
+    def new(*)
+      instance = super
+      instance.instance_variable_set('@__apply_role_policy', :trigger)
+      instance
     end
 
-    def policy
-      @policy ||= :trigger
+    def triggers
+      @triggers.dup
     end
 
     private
@@ -37,7 +39,11 @@ module Surrounded
     end
 
     def apply_roles_on(which)
-      @policy = which
+      @__apply_role_policy = which
+    end
+
+    def __apply_role_policy
+      @__apply_role_policy ||= :trigger
     end
 
     def initialize(*setup_args)
@@ -45,9 +51,10 @@ module Surrounded
 
       class_eval "
         def initialize(#{setup_args.join(',')})
+          @__apply_role_policy = :#{__apply_role_policy}
           arguments = method(__method__).parameters.map{|arg| eval(arg[1].to_s) }
           map_roles(#{setup_args}.zip(arguments))
-          apply_roles if policy == :initialize
+          apply_roles if __apply_role_policy == :initialize
         end
       "
     end
@@ -66,12 +73,12 @@ module Surrounded
 
       define_method(name, *args){
         begin
-          apply_roles if policy == :trigger
+          apply_roles if __apply_role_policy == :trigger
 
           self.send("trigger_#{name}", *args)
 
         ensure
-          remove_roles if policy == :trigger
+          remove_roles if __apply_role_policy == :trigger
         end
       }
     end
@@ -109,8 +116,8 @@ module Surrounded
         role_map.update(role, mod_name, object)
       end
 
-      def policy
-        @policy ||= self.class.policy
+      def __apply_role_policy
+        @__apply_role_policy
       end
 
       def add_interface(role, behavior, object)
