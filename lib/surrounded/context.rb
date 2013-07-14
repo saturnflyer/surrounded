@@ -1,5 +1,7 @@
 require 'set'
 require 'surrounded/context/role_map'
+require 'redcard'
+
 module Surrounded
   module Context
     def self.extended(base)
@@ -26,15 +28,17 @@ module Surrounded
       klass.send(:include, Surrounded)
     end
 
-    def proxy(name, &block)
-      class_basename = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
-      proxy_name = class_basename + 'Proxy'
+    if RedCard.check '2.0'
+      def proxy(name, &block)
+        class_basename = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
+        proxy_name = class_basename + 'Proxy'
 
-      behavior = const_set(proxy_name, Module.new(&block))
+        behavior = const_set(proxy_name, Module.new(&block))
 
-      require 'surrounded/context/negotiator'
-      define_method(name) do
-        instance_variable_set("@#{name}", Negotiator.new(role_map.assigned_player(name), behavior))
+        require 'surrounded/context/negotiator'
+        define_method(name) do
+          instance_variable_set("@#{name}", Negotiator.new(role_map.assigned_player(name), behavior))
+        end
       end
     end
 

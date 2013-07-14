@@ -1,5 +1,7 @@
 require 'test_helper'
 
+if RedCard.check '2.0'
+
 # If you want to use wrappers, here's how you could
 class ProxyContext
   extend Surrounded::Context
@@ -49,3 +51,5 @@ describe ProxyContext do
     assert_match 'ProxyUser name="Jim"', err.message
   end
 end
+
+end # RedCard.check '2.0'

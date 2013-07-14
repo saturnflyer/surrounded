@@ -1,14 +1,15 @@
 module Surrounded
   module Context
     class Negotiator
-      behavior = "method_missing|respond_to?"
       identity = "__send__|object_id"
 
       instance_methods.each do |meth|
-        unless meth.to_s =~ /initialize|#{behavior}|#{identity}/
+        unless meth.to_s =~ /#{identity}/
           undef_method meth
         end
       end
+
+      private
 
       def initialize(object, behavior)
         @object, @behavior = object, behavior
