@@ -252,6 +252,10 @@ class SomeContext
 
 The `wrap` method will create a class of the given name (`Admin` in this case) and will inherit from `SimpleDelegator` from the Ruby standard library _and_ will `include Surrounded`.
 
+Lastly, there's a 5th option if you're using Ruby 2.x: `interface`.
+
+The `interface` method acts similarly to the `wrap` method in that it returns an object that is not actually the object you want. But an `interface` is different in that it will apply methods from a module instead of using methods defined in a SimpleDelegator subclass. How is that important? Well you are free to use things like instance variables in your methods because they will be executed in the context of the object. This is unlike methods in a SimpleDelegator where the wrapper maintains its own instance variables.
+
 _Which should I use?_
 
 Start with the default and see how it goes, then try another approach and measure the changes.
