@@ -29,11 +29,11 @@ module Surrounded
     end
 
     if RedCard.check '2.0'
-      def proxy(name, &block)
+      def interface(name, &block)
         class_basename = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
-        proxy_name = class_basename + 'Proxy'
+        interface_name = class_basename + 'Interface'
 
-        behavior = const_set(proxy_name, Module.new(&block))
+        behavior = const_set(interface_name, Module.new(&block))
 
         require 'surrounded/context/negotiator'
         define_method(name) do

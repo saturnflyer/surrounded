@@ -9,9 +9,9 @@ class ProxyContext
   apply_roles_on(:trigger)
   initialize(:admin, :task)
 
-  proxy :admin do
+  interface :admin do
     def some_admin_method
-      "hello from #{name}, the admin proxy!"
+      "hello from #{name}, the admin interface!"
     end
   end
 
@@ -38,7 +38,7 @@ describe ProxyContext do
     ProxyContext.new(user, Object.new)
   }
   it 'proxys methods between objects and its interface' do
-    assert_equal 'hello from Jim, the admin proxy!', context.do_something
+    assert_equal 'hello from Jim, the admin interface!', context.do_something
   end
 
   it 'forwards methods that the object responds to' do
