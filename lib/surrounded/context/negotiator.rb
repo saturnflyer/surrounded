@@ -11,13 +11,13 @@ module Surrounded
 
       private
 
-      def initialize(object, behavior)
-        @object, @behavior = object, behavior
+      def initialize(object, behaviors)
+        @object, @behaviors = object, behaviors
       end
 
       def method_missing(meth, *args, &block)
-        if @behavior.instance_methods.include?(meth)
-          the_method = @behavior.instance_method(meth)
+        if @behaviors.instance_methods.include?(meth)
+          the_method = @behaviors.instance_method(meth)
           the_method.bind(@object).call(*args, &block)
         else
           @object.send(meth, *args, &block)

@@ -9,6 +9,14 @@ module Surrounded
       base.singleton_class.send(:alias_method, :setup, :initialize)
     end
 
+    def self.default_role_type
+      @default_role_type ||= :module
+    end
+
+    def self.default_role_type=(type)
+      @default_role_type = type
+    end
+
     def new(*)
       instance = super
       instance.instance_variable_set('@__apply_role_policy', __apply_role_policy)
@@ -21,10 +29,37 @@ module Surrounded
 
     private
 
+    def private_const_set(name, const)
+      const = const_set(name, const)
+      private_constant name
+      const
+    end
+
+    def default_role_type
+      @default_role_type ||= Surrounded::Context.default_role_type
+    end
+
+    def default_role_type=(type)
+      @default_role_type = type
+    end
+
+    def role(name, type=nil, &block)
+      role_type = type || default_role_type
+      case role_type
+      when :wrap, :wrapper then wrap(name, &block)
+      when :interface then interface(name, &block)
+      when :module then
+        mod_name = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
+        private_const_set(mod_name, Module.new(&block))
+      else
+        raise InvalidRoleType.new
+      end
+    end
+
     def wrap(name, &block)
       require 'delegate'
       wrapper_name = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
-      klass = const_set(wrapper_name, Class.new(SimpleDelegator, &block))
+      klass = private_const_set(wrapper_name, Class.new(SimpleDelegator, &block))
       klass.send(:include, Surrounded)
     end
 
@@ -33,7 +68,7 @@ module Surrounded
         class_basename = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
         interface_name = class_basename + 'Interface'
 
-        behavior = const_set(interface_name, Module.new(&block))
+        behavior = private_const_set(interface_name, Module.new(&block))
 
         require 'surrounded/context/negotiator'
         define_method(name) do
@@ -92,6 +127,12 @@ module Surrounded
       @triggers << name
     end
 
+    def role_const(name)
+      if const_defined?(name)
+        const_get(name)
+      end
+    end
+
     module InstanceMethods
       def role?(name, &block)
         return false unless role_map.role?(name)
@@ -128,7 +169,7 @@ module Surrounded
         applicator = behavior.is_a?(Class) ? method(:add_class_interface) : method(:add_module_interface)
 
         role_player = applicator.call(object, behavior)
-        map_role(role, role_module_basename(behavior), role_player)
+        map_role(role, role_module_basename(behavior), role_player) if behavior
         role_player.store_context(self)
         role_player
       end
@@ -155,7 +196,7 @@ module Surrounded
         object.remove_context
         role_player = object.method(remover_name).call
 
-        map_role(role, role_module_basename(behavior), role_player)
+        map_role(role, role_module_basename(behavior), role_player) if behavior
 
         role_player
       end
@@ -170,8 +211,8 @@ module Surrounded
 
       def traverse_map(applicator)
         role_map.each do |role, mod_name, object|
-          if self.class.const_defined?(mod_name)
-            applicator.call(role, self.class.const_get(mod_name), object)
+          if role_const_defined?(mod_name)
+            applicator.call(role, role_const(mod_name), object)
           end
         end
       end
@@ -198,6 +239,14 @@ module Surrounded
 
       def role_module_basename(mod)
         mod.to_s.split('::').last
+      end
+
+      def role_const(name)
+        self.class.send(:role_const, name)
+      end
+
+      def role_const_defined?(name)
+        self.class.const_defined?(name)
       end
     end
   end
