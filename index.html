@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Surrounded by saturnflyer</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Surrounded</h1>
+          <h2>Gives an object implicit access to other objects in it's environment.</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/saturnflyer/surrounded/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/saturnflyer/surrounded/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/saturnflyer/surrounded" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a name="surrounded" class="anchor" href="#surrounded"><span class="octicon octicon-link"></span></a>Surrounded</h1>
+
+<p><a href="https://travis-ci.org/saturnflyer/surrounded"><img src="https://travis-ci.org/saturnflyer/surrounded.png?branch=master" alt="Build Status"></a>
+<a href="https://codeclimate.com/github/saturnflyer/surrounded"><img src="https://codeclimate.com/github/saturnflyer/surrounded.png" alt="Code Climate"></a>
+<a href="https://coveralls.io/r/saturnflyer/surrounded"><img src="https://coveralls.io/repos/saturnflyer/surrounded/badge.png" alt="Coverage Status"></a>
+<a href="http://badge.fury.io/rb/surrounded"><img src="https://badge.fury.io/rb/surrounded.png" alt="Gem Version"></a></p>
+
+<h2>
+<a name="create-encapsulated-environments-for-your-objects" class="anchor" href="#create-encapsulated-environments-for-your-objects"><span class="octicon octicon-link"></span></a>Create encapsulated environments for your objects.</h2>
+
+<p>Keep the distraction of other features out of your way. Write use cases and focus on just the business logic</p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Add <code>Surrounded</code> to your objects to give them awareness of other objects.</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">User</span>
+  <span class="kp">include</span> <span class="no">Surrounded</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>Now your user instances will be able to get objects in their environment.</p>
+
+<p><em>What environment!? I don't get it.</em></p>
+
+<p>I didn't explain that yet.</p>
+
+<p>You can make an object which contains other objects. It acts as an environment
+and objects inside should have knowledge of the other objects in the environment.
+Take a breath, because there's a lot going on.</p>
+
+<p>First, you extend a class with the appropriate module to turn it into an object environment:</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
+  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>Typical initialization of this environment has a lot of code. For example:</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
+  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+
+  <span class="kp">attr_reader</span> <span class="ss">:employee</span><span class="p">,</span> <span class="ss">:boss</span>
+  <span class="kp">private</span> <span class="ss">:employee</span><span class="p">,</span> <span class="ss">:boss</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">employee</span><span class="p">,</span> <span class="n">boss</span><span class="p">)</span>
+    <span class="vi">@employee</span> <span class="o">=</span> <span class="n">employee</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="no">Employee</span><span class="p">)</span>
+    <span class="vi">@boss</span> <span class="o">=</span> <span class="n">boss</span>
+  <span class="k">end</span>
+
+  <span class="k">module</span> <span class="nn">Employee</span>
+    <span class="c1"># extra behavior here...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<p><em>WTF was all that!?</em></p>
+
+<p>Relax. I'll explain.</p>
+
+<p>When you create an instance of <code>MyEnvironment</code> it has certain objects inside.
+Here we see that it has an <code>employee</code> and a <code>boss</code>. Inside the methods of the environment it's simpler and easier to write <code>employee</code> instead of <code>@employee</code> so we make them <code>attr_reader</code>s. But we don't need these methods to be externally accessible so we set them to private.</p>
+
+<p>Next, we want to add environment-specific behavior to the <code>employee</code> so we extend the object with the module <code>Employee</code>.</p>
+
+<p>If you're going to be doing this a lot, it's painful. Here's what <code>Surrounded</code> does for you:</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
+  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+
+  <span class="kp">initialize</span><span class="p">(</span><span class="ss">:employee</span><span class="p">,</span> <span class="ss">:boss</span><span class="p">)</span>
+
+  <span class="k">module</span> <span class="nn">Employee</span>
+    <span class="c1"># extra behavior here...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>There! All that boilerplate code is cleaned up.</p>
+
+<p>Notice that there's no <code>Boss</code> module. If a module of that name does not exist, the object passed into initialize simply won't gain any new behavior.</p>
+
+<p><em>OK. I think I get it, but what about the objects? How are they aware of their environment? Isn't that what this is supposed to do?</em></p>
+
+<p>Yup. Ruby doesn't have a notion of a local environment, so we lean on <code>method_missing</code> to do the work for us.</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">User</span>
+  <span class="kp">include</span> <span class="no">Surrounded</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>With that, all instances of <code>User</code> have implicit access to their surroundings.</p>
+
+<p><em>Yeah... How?</em></p>
+
+<p>Via <code>method_missing</code> those <code>User</code> instances can access a <code>context</code> object it stores in a <code>@__surroundings__</code> collection. I didn't mention how the context is set, however.</p>
+
+<p>Your environment will have methods of it's own that will trigger actions on the objects inside, but we need those trigger methods to set the environment instance as the current context so that the objects it contains can access them.</p>
+
+<p>Here's an example of what we want:</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
+  <span class="c1"># other stuff from above is still here...</span>
+
+  <span class="k">def</span> <span class="nf">shove_it</span>
+    <span class="n">employee</span><span class="o">.</span><span class="n">store_context</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+    <span class="n">employee</span><span class="o">.</span><span class="n">quit</span>
+    <span class="n">employee</span><span class="o">.</span><span class="n">remove_context</span>
+  <span class="k">end</span>
+
+  <span class="k">module</span> <span class="nn">Employee</span>
+    <span class="k">def</span> <span class="nf">quit</span>
+      <span class="n">say</span><span class="p">(</span><span class="s2">"I'm sick of this place, </span><span class="si">#{</span><span class="n">boss</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">!"</span><span class="p">)</span>
+      <span class="n">stomp</span>
+      <span class="n">throw_papers</span>
+      <span class="n">say</span><span class="p">(</span><span class="s2">"I quit!"</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>What's happening in there is that when the <code>shove_it</code> method is called, the current environment object is stored as the context.</p>
+
+<p>The behavior defined in the <code>Employee</code> module assumes that it may access other objects in it's local environment. The <code>boss</code> object, for example, is never explicitly passed in as an argument.</p>
+
+<p><em>WTF!? That's insane!</em></p>
+
+<p>I thought so too, at first. But continually passing references assumes there's no relationship between objects in that method. What <code>Surrounded</code> does for us is to make the relationship between objects and gives them the ability to access each other.</p>
+
+<p>This simple example may seem trivial, but the more contextual code you have the more cumbersome passing references becomes. By moving knowledge to the local environment, you're free to make changes to the procedures without the need to alter method signatures with new refrences or the removal of unused ones.</p>
+
+<p>By using <code>Surrounded::Context</code> you are declaring a relationship between the objects inside.</p>
+
+<p>Because all the behavior is defined internally and only relevant internally, those relationships don't exist outside of the environment.</p>
+
+<p><em>OK. I think I understand. So I can change business logic just by changing the procedures and the objects. I don't need to adjust arguments for a new requirement. That's kind of cool!</em></p>
+
+<p>Damn right.</p>
+
+<p>But you don't want to continually set those context details, do you?</p>
+
+<p><em>No. That's annoying.</em></p>
+
+<p>Yeah. Instead, it would be easier to have this library do the work for us.
+Here's what you can do:</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
+  <span class="c1"># the other code from above...</span>
+
+  <span class="n">trigger</span> <span class="ss">:shove_it</span> <span class="k">do</span>
+    <span class="n">employee</span><span class="o">.</span><span class="n">quit</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>By using this <code>trigger</code> keyword, our block is the code we care about, but internally the method is written to set the <code>@__surroundings__</code> collection.</p>
+
+<p><em>Hmm. I don't like having to do that.</em></p>
+
+<p>Me either. I'd rather just use <code>def</code> but getting automatic code for setting the context is really convenient.
+It also allows us to store the triggers so that you can, for example, provide details outside of the environment about what triggers exist.</p>
+
+<div class="highlight"><pre><span class="n">context</span> <span class="o">=</span> <span class="no">MyEnvironment</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="n">the_boss</span><span class="p">)</span>
+<span class="n">context</span><span class="o">.</span><span class="n">triggers</span> <span class="c1">#=&gt; [:shove_it]</span>
+</pre></div>
+
+<p>You might find that useful for dynamically defining user interfaces.</p>
+
+<h2>
+<a name="policies-for-the-application-of-role-methods" class="anchor" href="#policies-for-the-application-of-role-methods"><span class="octicon octicon-link"></span></a>Policies for the application of role methods</h2>
+
+<p>There are 2 approaches to applying new behavior to your objects.</p>
+
+<p>By default your context will add methods to an object before a trigger is run
+and behaviors will be removed after the trigger is run.</p>
+
+<p>Alternatively you may set the behaviors to be added during the initialize method
+of your context.</p>
+
+<p>Here's how it works:</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">ActiviatingAccount</span>
+  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+
+  <span class="n">apply_roles_on</span><span class="p">(</span><span class="ss">:trigger</span><span class="p">)</span> <span class="c1"># this is the default</span>
+  <span class="c1"># apply_roles_on(:initialize) # set this to apply behavior from the start</span>
+
+  <span class="kp">initialize</span><span class="p">(</span><span class="ss">:activator</span><span class="p">,</span> <span class="ss">:account</span><span class="p">)</span>
+
+  <span class="k">module</span> <span class="nn">Activator</span>
+    <span class="k">def</span> <span class="nf">some_behavior</span><span class="p">;</span> <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">non_trigger_method</span>
+    <span class="n">activator</span><span class="o">.</span><span class="n">some_behavior</span> <span class="c1"># not available unless you apply roles on initialize</span>
+  <span class="k">end</span>
+
+  <span class="n">trigger</span> <span class="ss">:some_trigger_method</span> <span class="k">do</span>
+    <span class="n">activator</span><span class="o">.</span><span class="n">some_behavior</span> <span class="c1"># always available</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<p><em>Why are those options there?</em></p>
+
+<p>When you initialize a context and apply behavior at the same time, you'll need
+to remove that behavior. For example, if you are using Casting AND you apply roles on initialize:</p>
+
+<div class="highlight"><pre><span class="n">context</span> <span class="o">=</span> <span class="no">ActiviatingAccount</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="no">Account</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="mi">123</span><span class="p">))</span>
+<span class="n">context</span><span class="o">.</span><span class="n">do_something</span>
+<span class="n">current_user</span><span class="o">.</span><span class="n">some_behavior</span> <span class="c1"># this method is still available</span>
+<span class="n">current_user</span><span class="o">.</span><span class="n">uncast</span> <span class="c1"># you'll have to manually cleanup</span>
+</pre></div>
+
+<p>But if you go with the default and apply behaviors on trigger, your roles will be cleaned up automatically:</p>
+
+<div class="highlight"><pre><span class="n">context</span> <span class="o">=</span> <span class="no">ActiviatingAccount</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="no">Account</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="mi">123</span><span class="p">))</span>
+<span class="n">context</span><span class="o">.</span><span class="n">do_something</span>
+<span class="n">current_user</span><span class="o">.</span><span class="n">some_behavior</span> <span class="c1"># NoMethodError</span>
+</pre></div>
+
+<h2>
+<a name="hows-the-performance" class="anchor" href="#hows-the-performance"><span class="octicon octicon-link"></span></a>How's the performance?</h2>
+
+<p>I haven't really tested yet, but there are several ways you can add behavior to your objects.</p>
+
+<p>There are a few defaults built in.</p>
+
+<ol>
+<li>If you define modules for the added behavior, the code will run <code>object.extend(RoleInterface)</code>
+</li>
+<li>If you are using <a href="http://github.com/saturnflyer/casting">casting</a>, the code will run <code>object.cast_as(RoleInterface)</code>
+</li>
+<li>If you would rather use wrappers you can define classes and the code will run <code>RoleInterface.new(object)</code> and assumes that the <code>new</code> method takes 1 argument. You'll need to remember to <code>include Surrounded</code> in your classes, however.</li>
+<li>If you want to use wrappers but would rather not muck about with including modules and whatnot, you can define them like this:</li>
+</ol><pre><code>class SomeContext
+  extend Surrounded::Context
+
+  initialize(:admin, :user)
+
+  wrap :admin do
+    # special methods defined here
+  end
+</code></pre>
+
+<p>The <code>wrap</code> method will create a class of the given name (<code>Admin</code> in this case) and will inherit from <code>SimpleDelegator</code> from the Ruby standard library <em>and</em> will <code>include Surrounded</code>.</p>
+
+<p>Lastly, there's a 5th option if you're using Ruby 2.x: <code>interface</code>.</p>
+
+<p>The <code>interface</code> method acts similarly to the <code>wrap</code> method in that it returns an object that is not actually the object you want. But an <code>interface</code> is different in that it will apply methods from a module instead of using methods defined in a SimpleDelegator subclass. How is that important? Well you are free to use things like instance variables in your methods because they will be executed in the context of the object. This is unlike methods in a SimpleDelegator where the wrapper maintains its own instance variables.</p>
+
+<p><em>Which should I use?</em></p>
+
+<p>Start with the default and see how it goes, then try another approach and measure the changes.</p>
+
+<h2>
+<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+
+<p>The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need.</p>
+
+<p>If you're using <a href="http://github.com/saturnflyer/casting">Casting</a>, for example, Surrounded will attempt to use that before extending an object, but it will still work without it.</p>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Add this line to your application's Gemfile:</p>
+
+<div class="highlight"><pre><span class="n">gem</span> <span class="s1">'surrounded'</span>
+</pre></div>
+
+<p>And then execute:</p>
+
+<pre><code>$ bundle
+</code></pre>
+
+<p>Or install it yourself as:</p>
+
+<pre><code>$ gem install surrounded
+</code></pre>
+
+<h2>
+<a name="contributing" class="anchor" href="#contributing"><span class="octicon octicon-link"></span></a>Contributing</h2>
+
+<ol>
+<li>Fork it</li>
+<li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li>
+<li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li>
+<li>Push to the branch (<code>git push origin my-new-feature</code>)</li>
+<li>Create new Pull Request</li>
+</ol>
+        </section>
+
+        <footer>
+          Surrounded is maintained by <a href="https://github.com/saturnflyer">saturnflyer</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+
+      </div>
+    </div>
+  </body>
+</html>
