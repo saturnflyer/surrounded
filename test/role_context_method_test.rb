@@ -45,46 +45,47 @@ describe Surrounded::Context, '.role' do
       assert_match /private constant/, error.message
     end
   end
+  if RedCard.check '2.0'
+    class InterfaceContext
+      extend Surrounded::Context
 
-  class InterfaceContext
-    extend Surrounded::Context
+      initialize(:admin, :other)
 
-    initialize(:admin, :other)
+      role :admin, :interface do
+        def hello
+          'hello from admin'
+        end
+      end
 
-    role :admin, :interface do
-      def hello
-        'hello from admin'
+      trigger :admin_hello do
+        admin.hello
       end
     end
 
-    trigger :admin_hello do
-      admin.hello
-    end
-  end
-
-  class Hello
-    def hello
-      'hello'
-    end
-  end
-
-  describe 'interfaces' do
-    let(:context){
-      InterfaceContext.new(Hello.new, Hello.new)
-    }
-    it 'sets interface objects to use interface methods before singleton methods' do
-      assert_equal 'hello from admin', context.admin_hello
+    class Hello
+      def hello
+        'hello'
+      end
     end
 
-    it 'marks the inteface constant private' do
-      error = assert_raises(NameError){
-        InterfaceContext::AdminInterface
+    describe 'interfaces' do
+      let(:context){
+        InterfaceContext.new(Hello.new, Hello.new)
       }
-      assert_match /private constant/, error.message
-    end
+      it 'sets interface objects to use interface methods before singleton methods' do
+        assert_equal 'hello from admin', context.admin_hello
+      end
 
-    it 'creates a private accessor method' do
-      assert_respond_to(context, :admin)
+      it 'marks the inteface constant private' do
+        error = assert_raises(NameError){
+          InterfaceContext::AdminInterface
+        }
+        assert_match /private constant/, error.message
+      end
+
+      it 'creates a private accessor method' do
+        assert_respond_to(context, :admin)
+      end
     end
   end
 
