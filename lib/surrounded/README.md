@@ -3,7 +3,7 @@
 Most of what you care about is defining the behavior of objects. How they interact is important.
 The purpose of this library is to clear away the details of getting things setup.
 
-You should read the [main README](../README.md) to get the gist of what's going on, if you haven't.
+You should read the [main README](../../README.md) to get the gist of what's going on, if you haven't.
 
 When you get started, you'll probably be specifying things exactly how you want them. But you can easily make changes.
 
