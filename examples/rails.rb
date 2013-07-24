@@ -34,6 +34,10 @@ end
 
 class SomethingController < ApplicationController
   def create
-    SomeUseCase.new(current_user, User.last, self).do_something
+    surround(current_user, User.last).do_something
+  end
+
+  def surround(admin, other)
+    SomeUseCase.new(admin, other, self)
   end
 end
