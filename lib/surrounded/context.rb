@@ -17,9 +17,11 @@ module Surrounded
       @default_role_type = type
     end
 
-    def new(*)
-      instance = super
-      instance.instance_variable_set('@__apply_role_policy', __apply_role_policy)
+    def new(*args, &block)
+      instance = allocate
+      instance.send(:preinitialize)
+      instance.send(:initialize, *args, &block)
+      instance.send(:postinitialize)
       instance
     end
 
@@ -90,10 +92,10 @@ module Surrounded
 
       class_eval "
         def initialize(#{setup_args.join(',')})
-          @__apply_role_policy = :#{__apply_role_policy}
+          preinitialize
           arguments = method(__method__).parameters.map{|arg| eval(arg[1].to_s) }
           map_roles(#{setup_args}.zip(arguments))
-          apply_roles if __apply_role_policy == :initialize
+          postinitialize
         end
       "
     end
@@ -145,6 +147,14 @@ module Surrounded
       end
 
       private
+
+      def preinitialize
+        @__apply_role_policy = self.class.send(:__apply_role_policy)
+      end
+
+      def postinitialize
+        apply_roles if __apply_role_policy == :initialize
+      end
 
       def role_map
         @role_map ||= RoleMap.new
