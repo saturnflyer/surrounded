@@ -19,7 +19,7 @@ describe Surrounded::Context, '.role' do
       error = assert_raises(NameError){
         RoleContextTester::Admin
       }
-      assert_match /private constant/, error.message
+      assert_match(/private constant/, error.message)
     end
   end
 
@@ -41,7 +41,7 @@ describe Surrounded::Context, '.role' do
       error = assert_raises(NameError){
         WrapperRoleContext::Admin
       }
-      assert_match /private constant/, error.message
+      assert_match(/private constant/, error.message)
     end
   end
   if test_rebinding_methods?
@@ -79,7 +79,7 @@ describe Surrounded::Context, '.role' do
         error = assert_raises(NameError){
           InterfaceContext::AdminInterface
         }
-        assert_match /private constant/, error.message
+        assert_match(/private constant/, error.message)
       end
 
       it 'creates a private accessor method' do
