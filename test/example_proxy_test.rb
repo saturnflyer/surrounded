@@ -1,6 +1,6 @@
 require 'test_helper'
 
-if module_method_rebinding?
+if test_rebinding_methods?
 
 # If you want to use wrappers, here's how you could
 class ProxyContext

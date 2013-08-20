@@ -1,11 +1,13 @@
 require 'set'
 require 'surrounded/context/role_map'
 
+# Some features are only available in versions of Ruby
+# where this method is true
 def module_method_rebinding?
-  @__module_method_rebinding__ ||= begin
-    sample_method = Enumerable.instance_method(:to_a)
-    sample_method.bind(Object.new)
-    true
+  return @__module_method_rebinding__ if defined?(@__module_method_rebinding__)
+  sample_method = Enumerable.instance_method(:to_a)
+  @__module_method_rebinding__ = begin
+    !!sample_method.bind(Object.new)
   rescue TypeError
     false
   end

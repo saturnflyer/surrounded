@@ -44,7 +44,7 @@ describe Surrounded::Context, '.role' do
       assert_match /private constant/, error.message
     end
   end
-  if module_method_rebinding?
+  if test_rebinding_methods?
     class InterfaceContext
       extend Surrounded::Context
 
