@@ -1,6 +1,5 @@
 require 'test_helper'
 
-
 describe Surrounded::Context, '.role' do
   class RoleContextTester
     extend Surrounded::Context
@@ -45,7 +44,7 @@ describe Surrounded::Context, '.role' do
       assert_match /private constant/, error.message
     end
   end
-  if RedCard.check '2.0'
+  if module_method_rebinding?
     class InterfaceContext
       extend Surrounded::Context
 

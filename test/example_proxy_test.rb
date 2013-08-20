@@ -1,6 +1,6 @@
 require 'test_helper'
 
-if RedCard.check '2.0'
+if module_method_rebinding?
 
 # If you want to use wrappers, here's how you could
 class ProxyContext
@@ -52,4 +52,4 @@ describe ProxyContext do
   end
 end
 
-end # RedCard.check '2.0'
+end

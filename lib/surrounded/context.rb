@@ -1,6 +1,15 @@
 require 'set'
 require 'surrounded/context/role_map'
-require 'redcard'
+
+def module_method_rebinding?
+  @__module_method_rebinding__ ||= begin
+    sample_method = Enumerable.instance_method(:to_a)
+    sample_method.bind(Object.new)
+    true
+  rescue TypeError
+    false
+  end
+end
 
 module Surrounded
   module Context
@@ -65,7 +74,7 @@ module Surrounded
       klass.send(:include, Surrounded)
     end
 
-    if RedCard.check '2.0'
+    if module_method_rebinding?
       def interface(name, &block)
         class_basename = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
         interface_name = class_basename + 'Interface'
