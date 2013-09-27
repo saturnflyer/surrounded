@@ -149,7 +149,7 @@ This way you can swap between implementations:
   end
 
   # this uses SimpleDelegator and Surrounded
-  role :source do
+  role :source, :wrap do
     def transfer
       self.balance -= amount
       destination.balance += amount
