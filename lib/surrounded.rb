@@ -1,4 +1,5 @@
 require "surrounded/version"
+require "surrounded/context"
 
 module Surrounded
   def self.included(klass)
