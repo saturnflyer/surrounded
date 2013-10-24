@@ -90,6 +90,7 @@ end
 
 class RoleAssignmentContext
   extend Surrounded::Context
+  set_methods_as_triggers
 
   initialize(:user, :other_user)
 
@@ -106,6 +107,10 @@ class RoleAssignmentContext
   end
 
   trigger :check_other_user_response do
+    user.respond_to?(:a_method!)
+  end
+  
+  def regular_method_trigger
     user.respond_to?(:a_method!)
   end
 
@@ -164,6 +169,10 @@ describe Surrounded::Context, 'assigning roles' do
 
     context = ClassRoleAssignmentContext.new(user, self)
 
-    context.check_user_response
+    assert context.check_user_response
+  end
+  
+  it 'allows usage of regular methods for triggers' do
+    assert context.regular_method_trigger
   end
 end

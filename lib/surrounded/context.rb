@@ -16,16 +16,31 @@ end
 module Surrounded
   module Context
     def self.extended(base)
-      base.send(:include, InstanceMethods)
+      base.class_eval {
+        @triggers = Set.new
+        @methods_as_triggers = Surrounded::Context.methods_as_triggers
+        include InstanceMethods
+      }
       base.singleton_class.send(:alias_method, :setup, :initialize)
     end
 
     def self.default_role_type
       @default_role_type ||= :module
     end
-
-    def self.default_role_type=(type)
-      @default_role_type = type
+    
+    class << self
+      attr_writer :default_role_type, :methods_as_triggers
+    end
+    
+    attr_reader :methods_as_triggers
+    
+    def self.methods_as_triggers
+      return @methods_as_triggers if defined?(@methods_as_triggers)
+      @methods_as_triggers = false
+    end
+    
+    def set_methods_as_triggers
+      @methods_as_triggers = true
     end
 
     def new(*args, &block)
@@ -119,24 +134,14 @@ module Surrounded
     def trigger(name, *args, &block)
       store_trigger(name)
 
-      define_method(:"trigger_#{name}", *args, &block)
+      define_method(:"__trigger_#{name}", *args, &block)
 
-      private :"trigger_#{name}"
+      private :"__trigger_#{name}"
 
-      define_method(name, *args){
-        begin
-          apply_roles if __apply_role_policy == :trigger
-
-          self.send("trigger_#{name}", *args)
-
-        ensure
-          remove_roles if __apply_role_policy == :trigger
-        end
-      }
+      redo_method(name, args)
     end
 
     def store_trigger(name)
-      @triggers ||= Set.new
       @triggers << name
     end
 
@@ -144,6 +149,35 @@ module Surrounded
       if const_defined?(name)
         const_get(name)
       end
+    end
+    
+    def redo_method(name, args)
+      class_eval %{
+        def #{name}(#{args.join(', ')})
+          begin
+            apply_roles if __apply_role_policy == :trigger
+
+            self.send("__trigger_#{name}", #{args.join(', ')})
+
+          ensure
+            remove_roles if __apply_role_policy == :trigger
+          end
+        end
+      }
+    end
+      
+    def method_added(name)
+      if methods_as_triggers
+        unless name.to_s.match(/^__trigger|initialize/) || (@triggers && triggers.include?(name))
+          store_trigger(name)
+          args = self.instance_method(name).parameters.map{|p| p.last }
+          alias_method :"__trigger_#{name}", :"#{name}"
+          private :"__trigger_#{name}"
+          remove_method :"#{name}"
+          redo_method(name, args)
+        end
+      end
+      super
     end
 
     module InstanceMethods
