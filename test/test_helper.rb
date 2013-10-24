@@ -20,7 +20,7 @@ end
 class TestContext
   extend Surrounded::Context
 
-  setup(:user, :other_user)
+  initialize(:user, :other_user)
 
   trigger :access_other_object do
     user.other_user.name
