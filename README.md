@@ -40,7 +40,7 @@ end
 
 This code allows the MyEnvironment class to create instances where it will have an `employee` and a `boss` role internally. These are set to `attr_reader`s and are made private.
 
-The `employee` is extended with behaviors defined in the `Employee` module, and in this case there's not extra stuff for the `boss` so it doesn't get extended with anything.
+The `employee` is extended with behaviors defined in the `Employee` module, and in this case there's no extra stuff for the `boss` so it doesn't get extended with anything.
 
 Most of the time you'll follow a pattern like this. Some objects will get extra behavior and some won't. The modules that you use to provide the behavior will match the names you use for the roles to which you assign objects.
 
@@ -48,9 +48,9 @@ By adding `Surrounded::Context` you can shortcut all this work.
 
 ```ruby
 class MyEnvironment
-	extend Surrounded::Context
-	
-	initialize(:employee, :boss)
+  extend Surrounded::Context
+  
+  initialize(:employee, :boss)
 
   module Employee
     # extra behavior here...
@@ -68,9 +68,9 @@ Well, it just so happens that you can. This code will work just fine:
 
 ```ruby
 class MyEnvironment
-	extend Surrounded::Context
-	
-	initialize(:employee, :boss)
+  extend Surrounded::Context
+  
+  initialize(:employee, :boss)
 
   class Employee < SimpleDelegator
     # extra behavior here...
@@ -84,9 +84,9 @@ But the syntax can be even simpler than that if you want.
 
 ```ruby
 class MyEnvironment
-	extend Surrounded::Context
-	
-	initialize(:employee, :boss)
+  extend Surrounded::Context
+  
+  initialize(:employee, :boss)
 
   role :employee do
     # extra behavior here...
@@ -98,9 +98,9 @@ By default, this code will create a module for you named `Employee`. If you want
 
 ```ruby
 class MyEnvironment
-	extend Surrounded::Context
-	
-	initialize(:employee, :boss)
+  extend Surrounded::Context
+  
+  initialize(:employee, :boss)
 
   wrap :employee do
     # extra behavior here...
@@ -112,15 +112,17 @@ But if you're making changes and you decide to move from a module to a wrapper o
 
 ```ruby
 class MyEnvironment
-	extend Surrounded::Context
-	
-	initialize(:employee, :boss)
+  extend Surrounded::Context
+  
+  initialize(:employee, :boss)
 
   role :employee, :wrapper do
     # extra behavior here...
   end
 end
 ```
+
+The default available types are `:module`, `:wrap` or `:wrapper`, and `:interface`. We'll get to `interface` below.
 
 These are minor little changes which highlight how simple it is to use Surrounded.
 
@@ -146,7 +148,7 @@ Now your `User` instances will be able to get objects in their environment.
 
 Via `method_missing` those `User` instances can access a `context` object it stores in an internal collection. 
 
-Inside of the `MyEnvironment` context we saw above, the `employee` and `boss` objects will be instances of `User` for this example.
+Inside of the `MyEnvironment` context we saw above, the `employee` and `boss` objects are instances of `User` for this example.
 
 Because the `User` class includes `Surrounded`, the instances of that class will be able to access other objects in the same context implicitly.
 
@@ -208,7 +210,7 @@ end
 
 Now that the `employee` has a reference to the context, it won't blow up when it hits `boss` inside that `quit` method.
 
-But we were able to clear up a lot of that repetitive work with the `initialize` method, so this is how we do it here:
+We saw how we were able to clear up a lot of that repetitive work with the `initialize` method, so this is how we do it here:
 
 
 ```ruby
@@ -245,12 +247,11 @@ I'd rather not use this DSL, however. I want to just write regular methods.
 
 We can do that too. You'll need to opt in to this by specifying `set_methods_as_triggers` for the context class.
 
-
 ```ruby
 class MyEnvironment
   # other stuff from above is still here...
-	
-	set_methods_as_triggers
+  
+  set_methods_as_triggers
 
   def shove_it
     employee.quit
@@ -387,7 +388,7 @@ And then execute:
 Or install it yourself as:
 
     $ gem install surrounded
-		
+    
 ## Installation for Rails
 
 See [surrounded-rails](https://github.com/saturnflyer/surrounded-rails)
