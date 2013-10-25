@@ -1,47 +1,29 @@
 # Surrounded
+## Bring your own complexity
 
 [![Build Status](https://travis-ci.org/saturnflyer/surrounded.png?branch=master)](https://travis-ci.org/saturnflyer/surrounded)
 [![Code Climate](https://codeclimate.com/github/saturnflyer/surrounded.png)](https://codeclimate.com/github/saturnflyer/surrounded)
 [![Coverage Status](https://coveralls.io/repos/saturnflyer/surrounded/badge.png)](https://coveralls.io/r/saturnflyer/surrounded)
 [![Gem Version](https://badge.fury.io/rb/surrounded.png)](http://badge.fury.io/rb/surrounded)
 
-## Create encapsulated environments for your objects.
+# Surrounded aims to make things simple and get out of your way.
 
-Keep the distraction of other features out of your way. Write use cases and focus on just the business logic
+Most of what you care about is defining the behavior of objects. How they interact is important.
+The purpose of this library is to clear away the details of getting things setup and allowing you to make changes to the way you handle roles.
 
-## Usage
+There are two main parts to this library. 
 
-Add `Surrounded` to your objects to give them awareness of other objects.
+1. `Surrounded` gives objects an implicit awareness of other objects in their environments.
+2. `Surrounded::Context` helps you create objects which encapsulate other objects. These *are* the environments.
 
-```ruby
-class User
-  include Surrounded
-end
-```
+First, take a look at creating contexts. This is where you'll spend most of your time.
 
-Now your user instances will be able to get objects in their environment.
+## Easily create encapsulated environments for your objects.
 
-_What environment!? I don't get it._
-
-I didn't explain that yet.
-
-You can make an object which contains other objects. It acts as an environment
-and objects inside should have knowledge of the other objects in the environment.
-Take a breath, because there's a lot going on.
-
-First, you extend a class with the appropriate module to turn it into an object environment:
+Typical initialization of an environment, or a Context in DCI, has a lot of code. For example:
 
 ```ruby
 class MyEnvironment
-  extend Surrounded::Context
-end
-```
-
-Typical initialization of this environment has a lot of code. For example:
-
-```ruby
-class MyEnvironment
-  extend Surrounded::Context
 
   attr_reader :employee, :boss
   private :employee, :boss
@@ -56,22 +38,19 @@ class MyEnvironment
 end
 ```
 
-_WTF was all that!?_
+This code allows the MyEnvironment class to create instances where it will have an `employee` and a `boss` role internally. These are set to `attr_reader`s and are made private.
 
-Relax. I'll explain.
+The `employee` is extended with behaviors defined in the `Employee` module, and in this case there's not extra stuff for the `boss` so it doesn't get extended with anything.
 
-When you create an instance of `MyEnvironment` it has certain objects inside.
-Here we see that it has an `employee` and a `boss`. Inside the methods of the environment it's simpler and easier to write `employee` instead of `@employee` so we make them `attr_reader`s. But we don't need these methods to be externally accessible so we set them to private.
+Most of the time you'll follow a pattern like this. Some objects will get extra behavior and some won't. The modules that you use to provide the behavior will match the names you use for the roles to which you assign objects.
 
-Next, we want to add environment-specific behavior to the `employee` so we extend the object with the module `Employee`.
-
-If you're going to be doing this a lot, it's painful. Here's what `Surrounded` does for you:
+By adding `Surrounded::Context` you can shortcut all this work.
 
 ```ruby
 class MyEnvironment
-  extend Surrounded::Context
-
-  initialize(:employee, :boss)
+	extend Surrounded::Context
+	
+	initialize(:employee, :boss)
 
   module Employee
     # extra behavior here...
@@ -79,13 +58,83 @@ class MyEnvironment
 end
 ```
 
-There! All that boilerplate code is cleaned up.
+Surrounded gives you an `initialize` class method which does all the setup work for you.
 
-Notice that there's no `Boss` module. If a module of that name does not exist, the object passed into initialize simply won't gain any new behavior.
+## Managing Roles
 
-_OK. I think I get it, but what about the objects? How are they aware of their environment? Isn't that what this is supposed to do?_
+_I don't want to use modules. Can't I use something like SimpleDelegator?_
 
-Yup. Ruby doesn't have a notion of a local environment, so we lean on `method_missing` to do the work for us.
+Well, it just so happens that you can. This code will work just fine:
+
+```ruby
+class MyEnvironment
+	extend Surrounded::Context
+	
+	initialize(:employee, :boss)
+
+  class Employee < SimpleDelegator
+    # extra behavior here...
+  end
+end
+```
+
+Instead of extending the `employee` object, Surrounded will run `Employee.new(employee)` to create the wrapper for you. You'll need to include the `Surrounded` module in your wrapper, but we'll get to that.
+
+But the syntax can be even simpler than that if you want.
+
+```ruby
+class MyEnvironment
+	extend Surrounded::Context
+	
+	initialize(:employee, :boss)
+
+  role :employee do
+    # extra behavior here...
+  end
+end
+```
+
+By default, this code will create a module for you named `Employee`. If you want to use a wrapper, you can do this:
+
+```ruby
+class MyEnvironment
+	extend Surrounded::Context
+	
+	initialize(:employee, :boss)
+
+  wrap :employee do
+    # extra behavior here...
+  end
+end
+```
+
+But if you're making changes and you decide to move from a module to a wrapper or from a wrapper to a module, you'll need to change that method call. Instead, you could just tell it which type of role to use:
+
+```ruby
+class MyEnvironment
+	extend Surrounded::Context
+	
+	initialize(:employee, :boss)
+
+  role :employee, :wrapper do
+    # extra behavior here...
+  end
+end
+```
+
+These are minor little changes which highlight how simple it is to use Surrounded.
+
+_Well... I want to use [Casting](https://github.com/saturnflyer/casting) so I get the benefit of modules without extending objects. Can I do that?_
+
+Yup. Use of Casting is built-in. If the objects you provide to your context respond to `cast_as` then Surrounded will use that.
+
+_Ok. So is that it?_
+
+There's a lot more. Let's look at the individual objects and what they need for this to be valuable...
+
+## Objects' access to their environments
+
+Add `Surrounded` to your objects to give them awareness of other objects.
 
 ```ruby
 class User
@@ -93,13 +142,46 @@ class User
 end
 ```
 
-With that, all instances of `User` have implicit access to their surroundings.
+Now your `User` instances will be able to get objects in their environment.
 
-_Yeah... How?_
+Via `method_missing` those `User` instances can access a `context` object it stores in an internal collection. 
 
-Via `method_missing` those `User` instances can access a `context` object it stores in a `@__surroundings__` collection. I didn't mention how the context is set, however.
+Inside of the `MyEnvironment` context we saw above, the `employee` and `boss` objects will be instances of `User` for this example.
 
-Your environment will have methods of it's own that will trigger actions on the objects inside, but we need those trigger methods to set the environment instance as the current context so that the objects it contains can access them.
+Because the `User` class includes `Surrounded`, the instances of that class will be able to access other objects in the same context implicitly.
+
+Let's make our context look like this:
+
+```ruby
+class MyEnvironment
+  # other stuff from above is still here...
+
+  def shove_it
+    employee.quit
+  end
+
+  role :employee do
+    def quit
+      say("I'm sick of this place, #{boss.name}!")
+      stomp
+      throw_papers
+      say("I quit!")
+    end
+  end
+end
+```
+
+What's happening in there is that when the `shove_it` method is called on the instance of `MyEnvironment`, the `employee` has the ability to refer to `boss` because it is in the same context, e.g. the same environment.
+
+The behavior defined in the `Employee` module assumes that it may access other objects in it's local environment. The `boss` object, for example, is never explicitly passed in as an argument.
+
+What `Surrounded` does for us is to make the relationship between objects and gives them the ability to access each other. Adding new or different roles to the context now only requires that we add them to the context and nothing else. No explicit references must be passed to each individual method. The objects are aware of the other objects around them and can refer to them by their role name.
+
+I didn't mention how the context is set, however.
+
+## Tying objects together
+
+Your environment will have methods of it's own that will trigger actions on the objects inside, but we need those trigger methods to set the accessible context for each instance.
 
 Here's an example of what we want:
 
@@ -113,7 +195,7 @@ class MyEnvironment
     employee.remove_context
   end
 
-  module Employee
+  role :employee do
     def quit
       say("I'm sick of this place, #{boss.name}!")
       stomp
@@ -124,47 +206,33 @@ class MyEnvironment
 end
 ```
 
-What's happening in there is that when the `shove_it` method is called, the current environment object is stored as the context.
+Now that the `employee` has a reference to the context, it won't blow up when it hits `boss` inside that `quit` method.
 
-The behavior defined in the `Employee` module assumes that it may access other objects in it's local environment. The `boss` object, for example, is never explicitly passed in as an argument.
+But we were able to clear up a lot of that repetitive work with the `initialize` method, so this is how we do it here:
 
-_WTF!? That's insane!_
-
-I thought so too, at first. But continually passing references assumes there's no relationship between objects in that method. What `Surrounded` does for us is to make the relationship between objects and gives them the ability to access each other.
-
-This simple example may seem trivial, but the more contextual code you have the more cumbersome passing references becomes. By moving knowledge to the local environment, you're free to make changes to the procedures without the need to alter method signatures with new refrences or the removal of unused ones.
-
-By using `Surrounded::Context` you are declaring a relationship between the objects inside.
-
-Because all the behavior is defined internally and only relevant internally, those relationships don't exist outside of the environment.
-
-_OK. I think I understand. So I can change business logic just by changing the procedures and the objects. I don't need to adjust arguments for a new requirement. That's kind of cool!_
-
-Damn right.
-
-But you don't want to continually set those context details, do you?
-
-_No. That's annoying._
-
-Yeah. Instead, it would be easier to have this library do the work for us.
-Here's what you can do:
 
 ```ruby
 class MyEnvironment
-  # the other code from above...
+  # other stuff from above is still here...
 
   trigger :shove_it do
     employee.quit
   end
+
+  role :employee do
+    def quit
+      say("I'm sick of this place, #{boss.name}!")
+      stomp
+      throw_papers
+      say("I quit!")
+    end
+  end
 end
 ```
 
-By using this `trigger` keyword, our block is the code we care about, but internally the method is written to set the `@__surroundings__` collection.
+By using this `trigger` keyword, our block is the code we care about, but internally the method is created to first set all the objects' current contexts.
 
-_Hmm. I don't like having to do that._
-
-Me either. I'd rather just use `def` but getting automatic code for setting the context is really convenient.
-It also allows us to store the triggers so that you can, for example, provide details outside of the environment about what triggers exist.
+The context will also store the triggers so that you can, for example, provide details outside of the environment about what triggers exist.
 
 ```ruby
 context = MyEnvironment.new(current_user, the_boss)
@@ -172,6 +240,44 @@ context.triggers #=> [:shove_it]
 ```
 
 You might find that useful for dynamically defining user interfaces.
+
+I'd rather not use this DSL, however. I want to just write regular methods. 
+
+We can do that too. You'll need to opt in to this by specifying `set_methods_as_triggers` for the context class.
+
+
+```ruby
+class MyEnvironment
+  # other stuff from above is still here...
+	
+	set_methods_as_triggers
+
+  def shove_it
+    employee.quit
+  end
+
+  role :employee do
+    def quit
+      say("I'm sick of this place, #{boss.name}!")
+      stomp
+      throw_papers
+      say("I quit!")
+    end
+  end
+end
+```
+
+This will allow you to write methods like you normally would. They are aliased internally with a prefix and the method name that you use is rewritten to add and remove the context for the objects in this context. The public API of your class remains the same, but the extra feature of wrapping your method is handled for you.
+
+This will treat all methods the same way, so be aware of that.
+
+## Where roles exist
+
+By using `Surrounded::Context` you are declaring a relationship between the objects inside playing your defined roles.
+
+Because all the behavior is defined internally and only relevant internally, those relationships don't exist outside of the environment.
+
+Surrounded makes all of your role modules and classes private constants. It's not a good idea to try to reuse behavior defined for one context in another area.
 
 ## Policies for the application of role methods
 
@@ -194,7 +300,7 @@ class ActiviatingAccount
 
   initialize(:activator, :account)
 
-  module Activator
+  role :activator do
     def some_behavior; end
   end
 
@@ -281,6 +387,10 @@ And then execute:
 Or install it yourself as:
 
     $ gem install surrounded
+		
+## Installation for Rails
+
+See [surrounded-rails](https://github.com/saturnflyer/surrounded-rails)
 
 ## Contributing
 
