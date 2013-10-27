@@ -9,7 +9,7 @@
 # Surrounded aims to make things simple and get out of your way.
 
 Most of what you care about is defining the behavior of objects. How they interact is important.
-The purpose of this library is to clear away the details of getting things setup and allowing you to make changes to the way you handle roles.
+The purpose of this library is to clear away the details of getting things setup and to allow you to make changes to the way you handle roles.
 
 There are two main parts to this library. 
 
@@ -122,13 +122,13 @@ class MyEnvironment
 end
 ```
 
-The default available types are `:module`, `:wrap` or `:wrapper`, and `:interface`. We'll get to `interface` below.
+The default available types are `:module`, `:wrap` or `:wrapper`, and `:interface`. We'll get to `interface` below. The `:wrap` and `:wrapper` types are the same and they'll both create classes which inherit from SimpleDelegator _and_ include Surrounded for you.
 
 These are minor little changes which highlight how simple it is to use Surrounded.
 
 _Well... I want to use [Casting](https://github.com/saturnflyer/casting) so I get the benefit of modules without extending objects. Can I do that?_
 
-Yup. Use of Casting is built-in. If the objects you provide to your context respond to `cast_as` then Surrounded will use that.
+Yup. The ability to use Casting is built-in. If the objects you provide to your context respond to `cast_as` then Surrounded will use that.
 
 _Ok. So is that it?_
 
@@ -144,7 +144,7 @@ class User
 end
 ```
 
-Now your `User` instances will be able to get objects in their environment.
+Now the `User` instances will be able to implicitly access objects in their environment.
 
 Via `method_missing` those `User` instances can access a `context` object it stores in an internal collection. 
 
@@ -183,7 +183,7 @@ I didn't mention how the context is set, however.
 
 ## Tying objects together
 
-Your environment will have methods of it's own that will trigger actions on the objects inside, but we need those trigger methods to set the accessible context for each instance.
+Your context will have methods of it's own which will trigger actions on the objects inside, but we need those trigger methods to set the accessible context for each of the contained objects.
 
 Here's an example of what we want:
 
@@ -211,7 +211,6 @@ end
 Now that the `employee` has a reference to the context, it won't blow up when it hits `boss` inside that `quit` method.
 
 We saw how we were able to clear up a lot of that repetitive work with the `initialize` method, so this is how we do it here:
-
 
 ```ruby
 class MyEnvironment
@@ -243,7 +242,7 @@ context.triggers #=> [:shove_it]
 
 You might find that useful for dynamically defining user interfaces.
 
-I'd rather not use this DSL, however. I want to just write regular methods. 
+Sometimes I'd rather not use this DSL, however. I want to just write regular methods. 
 
 We can do that too. You'll need to opt in to this by specifying `set_methods_as_triggers` for the context class.
 
@@ -270,7 +269,7 @@ end
 
 This will allow you to write methods like you normally would. They are aliased internally with a prefix and the method name that you use is rewritten to add and remove the context for the objects in this context. The public API of your class remains the same, but the extra feature of wrapping your method is handled for you.
 
-This will treat all methods the same way, so be aware of that.
+This will treat all instance methods defined on your context the same way, so be aware of that.
 
 ## Where roles exist
 
@@ -279,6 +278,81 @@ By using `Surrounded::Context` you are declaring a relationship between the obje
 Because all the behavior is defined internally and only relevant internally, those relationships don't exist outside of the environment.
 
 Surrounded makes all of your role modules and classes private constants. It's not a good idea to try to reuse behavior defined for one context in another area.
+
+## The role DSL
+
+Using the `role` method to define modules and classes takes care of the setup for you. This way you can swap between implementations:
+
+```ruby
+
+  # this uses modules
+  role :source do
+    def transfer
+      self.balance -= amount
+      destination.balance += amount
+      self
+    end
+  end
+
+  # this uses SimpleDelegator and Surrounded
+  role :source, :wrap do
+    def transfer
+      self.balance -= amount
+      destination.balance += amount
+      __getobj__
+    end
+  end
+
+  # this uses a special interface object which pulls
+  # methods from a module and applies them to your object.
+  role :source, :interface do
+    def transfer
+      self.balance -= amount
+      destination.balance += amount
+      self
+    end
+  end
+```
+
+The `:interface` option is a special object which has all of its methods removed (excepting `__send__` and `object_id`) so that other methods will be pulled from the ones that you define, or from the object it attempts to proxy.
+
+Notice that the `:interface` allows you to return `self` whereas the `:wrap` acts more like a wrapper and forces you to deal with that shortcoming by using it's wrapped-object-accessor method: `__getobj__`.
+
+If you'd like to choose one and use it all the time, you can set the default:
+
+```ruby
+class MoneyTransfer
+  extend Surrounded::Context
+
+  self.default_role_type = :interface # also :wrap, :wrapper, or :module
+
+  role :source do
+    def transfer
+      self.balance -= amount
+      destination.balance += amount
+      self
+    end
+  end
+end
+```
+
+Or, if you like, you can choose the default for your entire project:
+
+```ruby
+Surrounded::Context.default_role_type = :interface
+
+class MoneyTransfer
+  extend Surrounded::Context
+
+  role :source do
+    def transfer
+      self.balance -= amount
+      destination.balance += amount
+      self
+    end
+  end
+end
+```
 
 ## Policies for the application of role methods
 
@@ -335,41 +409,65 @@ context.do_something
 current_user.some_behavior # NoMethodError
 ```
 
-## How's the performance?
+## Overview in code
 
-I haven't really tested yet, but there are several ways you can add behavior to your objects.
+Here's a view of the possibilities in code.
 
-There are a few defaults built in.
+```ruby
+# set default role type for *all* contexts in your program
+Surrounded::Context.default_role_type = :module # also :wrap, :wrapper, or :interface
 
-1. If you define modules for the added behavior, the code will run `object.extend(RoleInterface)`
-2. If you are using [casting](http://github.com/saturnflyer/casting), the code will run `object.cast_as(RoleInterface)`
-3. If you would rather use wrappers you can define classes and the code will run `RoleInterface.new(object)` and assumes that the `new` method takes 1 argument. You'll need to remember to `include Surrounded` in your classes, however.
-4. If you want to use wrappers but would rather not muck about with including modules and whatnot, you can define them like this:
-
-```
-class SomeContext
+class ActiviatingAccount
   extend Surrounded::Context
 
-  initialize(:admin, :user)
+  apply_roles_on(:trigger) # this is the default
+  # apply_roles_on(:initialize) # set this to apply behavior from the start
+  
+  set_methods_as_triggers # allows you to skip the 'trigger' dsl
+  
+  # set the default role type only for this class
+  self.default_role_type = :module # also :wrap, :wrapper, or :interface
 
-  wrap :admin do
-    # special methods defined here
+  initialize(:activator, :account)
+
+  role :activator do # module by default
+    def some_behavior; end
   end
+
+  #  role :activator, :module do
+  #    def some_behavior; end
+  #  end
+  #
+  #  role :activator, :wrap do
+  #    def some_behavior; end
+  #  end
+  #
+  #  role :activator, :interface do
+  #    def some_behavior; end
+  #  end
+  #
+  # use your own classes if you don't want SimpleDelegator
+  # class MySpecialClass
+  #   include Surrounded # you must remember this
+  #   def initialize(...);
+  #     # ... your code here
+  #   end
+  # end
+
+  # works as a trigger (assigning the current context) only if set_methods_as_triggers is set
+  def regular_method
+    activator.some_behavior # behavior not available unless you apply roles on initialize
+  end
+
+  trigger :some_trigger_method do
+    activator.some_behavior # behavior always available
+  end
+end
 ```
-
-The `wrap` method will create a class of the given name (`Admin` in this case) and will inherit from `SimpleDelegator` from the Ruby standard library _and_ will `include Surrounded`.
-
-Lastly, there's a 5th option if you're using Ruby 2.x: `interface`.
-
-The `interface` method acts similarly to the `wrap` method in that it returns an object that is not actually the object you want. But an `interface` is different in that it will apply methods from a module instead of using methods defined in a SimpleDelegator subclass. How is that important? Well you are free to use things like instance variables in your methods because they will be executed in the context of the object. This is unlike methods in a SimpleDelegator where the wrapper maintains its own instance variables.
-
-_Which should I use?_
-
-Start with the default and see how it goes, then try another approach and measure the changes.
 
 ## Dependencies
 
-The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need.
+The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need. The [Triad](http://github.com/saturnflyer/triad) project was written specifically to manage the mapping of roles and objects to the modules which contain the behaviors.
 
 If you're using [Casting](http://github.com/saturnflyer/casting), for example, Surrounded will attempt to use that before extending an object, but it will still work without it.
 
