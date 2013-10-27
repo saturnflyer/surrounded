@@ -71,25 +71,13 @@ module Surrounded
       @default_role_type = type
     end
 
-    def role(name, type=nil, &block)
-      role_type = type || default_role_type
-      case role_type
-      when :wrap, :wrapper then wrap(name, &block)
-      when :interface then interface(name, &block)
-      when :module then
-        mod_name = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
-        private_const_set(mod_name, Module.new(&block))
-      else
-        raise InvalidRoleType.new
-      end
-    end
-
     def wrap(name, &block)
       require 'delegate'
       wrapper_name = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
       klass = private_const_set(wrapper_name, Class.new(SimpleDelegator, &block))
       klass.send(:include, Surrounded)
     end
+    alias_method :wrapper, :wrap
 
     if module_method_rebinding?
       def interface(name, &block)
@@ -104,7 +92,20 @@ module Surrounded
         end
       end
     end
-
+    
+    def role(name, type=nil, &block)
+      role_type = type || default_role_type
+      if role_type == :module
+        mod_name = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
+        private_const_set(mod_name, Module.new(&block))
+      else
+        meth = method(role_type)
+        meth.call(name, &block)
+      end
+    rescue NameError => e
+      raise e.extend(InvalidRoleType)
+    end
+    
     def apply_roles_on(which)
       @__apply_role_policy = which
     end
