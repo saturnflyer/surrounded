@@ -1,4 +1,4 @@
-# ![Surrounded](http://saturnflyer.github.io/surrounded/images/surrounded.png, "Surrounded")
+# ![Surrounded](http://saturnflyer.github.io/surrounded/images/surrounded.png "Surrounded")
 ## Bring your own complexity
 
 [![Build Status](https://travis-ci.org/saturnflyer/surrounded.png?branch=master)](https://travis-ci.org/saturnflyer/surrounded)
