@@ -10,7 +10,7 @@ describe Surrounded::Context, '.role' do
 
   describe 'modules' do
     it 'creates a module' do
-      role = RoleContextTester.const_get('Admin')
+      role = RoleContextTester.const_get(:Admin)
       refute_instance_of Class, role
       assert_kind_of Module, role
     end
@@ -19,7 +19,7 @@ describe Surrounded::Context, '.role' do
       error = assert_raises(NameError){
         RoleContextTester::Admin
       }
-      assert_match(/private constant/, error.message)
+      assert_match(/private constant/i, error.message)
     end
   end
 
@@ -41,7 +41,7 @@ describe Surrounded::Context, '.role' do
       error = assert_raises(NameError){
         WrapperRoleContext::Admin
       }
-      assert_match(/private constant/, error.message)
+      assert_match(/private constant/i, error.message)
     end
   end
   if test_rebinding_methods?
@@ -79,7 +79,7 @@ describe Surrounded::Context, '.role' do
         error = assert_raises(NameError){
           InterfaceContext::AdminInterface
         }
-        assert_match(/private constant/, error.message)
+        assert_match(/private constant/i, error.message)
       end
 
       it 'creates a private accessor method' do

@@ -27,18 +27,18 @@ module Surrounded
     def self.default_role_type
       @default_role_type ||= :module
     end
-    
+
     class << self
       attr_writer :default_role_type, :methods_as_triggers
     end
-    
+
     attr_reader :methods_as_triggers
-    
+
     def self.methods_as_triggers
       return @methods_as_triggers if defined?(@methods_as_triggers)
       @methods_as_triggers = false
     end
-    
+
     def set_methods_as_triggers
       @methods_as_triggers = true
     end
@@ -59,7 +59,7 @@ module Surrounded
 
     def private_const_set(name, const)
       const = const_set(name, const)
-      private_constant name
+      private_constant name.to_sym
       const
     end
 
@@ -92,7 +92,7 @@ module Surrounded
         end
       end
     end
-    
+
     def role(name, type=nil, &block)
       role_type = type || default_role_type
       if role_type == :module
@@ -105,7 +105,7 @@ module Surrounded
     rescue NameError => e
       raise e.extend(InvalidRoleType)
     end
-    
+
     def apply_roles_on(which)
       @__apply_role_policy = which
     end
@@ -151,7 +151,7 @@ module Surrounded
         const_get(name)
       end
     end
-    
+
     def redo_method(name, args)
       class_eval %{
         def #{name}(#{args.join(', ')})
@@ -166,7 +166,7 @@ module Surrounded
         end
       }
     end
-      
+
     def method_added(name)
       if methods_as_triggers
         unless name.to_s.match(/^__trigger|initialize/) || (@triggers && triggers.include?(name))
