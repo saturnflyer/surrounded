@@ -22,7 +22,7 @@ end
 class SomeUseCase
   extend Surrounded::Context
 
-  setup(:admin, :other_user, :listener)
+  initialize(:admin, :other_user, :listener)
 
   trigger :do_something do
     admin.something
