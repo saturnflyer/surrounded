@@ -373,7 +373,14 @@ class ActivatingAccount
   apply_roles_on(:trigger) # this is the default
   # apply_roles_on(:initialize) # set this to apply behavior from the start
 
+  # shortcut initialization code
   initialize(:activator, :account)
+  # or handle it yourself
+  def initialize(activator, account)
+    # this must be done to handle the mapping of roles to objects
+    # pass an array of arrays with role name symbol and the object for that role
+    map_roles([[:activator, activator],[:account, account]])
+  end
 
   role :activator do
     def some_behavior; end
