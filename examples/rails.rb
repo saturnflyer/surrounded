@@ -2,9 +2,13 @@
 
 # First, be guarded against changes in third-party libraries
 module Awareness
-  include Surrounded
-  include Casting::Client
-  delegate_missing_methods
+  def self.included(base)
+    base.class_eval {
+      include Surrounded
+      include Casting::Client
+      delegate_missing_methods
+    }
+  end
 end
 
 class User
