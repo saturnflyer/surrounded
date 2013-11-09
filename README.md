@@ -367,7 +367,7 @@ of your context.
 Here's how it works:
 
 ```ruby
-class ActiviatingAccount
+class ActivatingAccount
   extend Surrounded::Context
 
   apply_roles_on(:trigger) # this is the default
