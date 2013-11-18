@@ -105,6 +105,7 @@ module Surrounded
     rescue NameError => e
       raise e.extend(InvalidRoleType)
     end
+    alias_method :role_methods, :role
 
     def apply_roles_on(which)
       @__apply_role_policy = which

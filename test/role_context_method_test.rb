@@ -4,7 +4,7 @@ describe Surrounded::Context, '.role' do
   class RoleContextTester
     extend Surrounded::Context
 
-    role :admin do
+    role_methods :admin do
     end
   end
 
