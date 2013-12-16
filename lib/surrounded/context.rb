@@ -148,8 +148,8 @@ module Surrounded
       end
     end
 
-    def store_trigger(name)
-      @triggers << name
+    def store_trigger(*names)
+      @triggers.merge(names)
     end
 
     def role_const(name)
