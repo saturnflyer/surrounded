@@ -133,14 +133,14 @@ module Surrounded
       private(*method_names)
     end
 
-    def trigger(name, *args, &block)
-      store_trigger(name)
+    def trigger(names, &block)
+      store_trigger(names)
 
-      define_method(:"__trigger_#{name}", *args, &block)
+      define_method(:"__trigger_#{names}", &block)
 
-      private :"__trigger_#{name}"
+      private :"__trigger_#{names}"
 
-      redo_method(name, args)
+      redo_method(names)
     end
 
     def store_trigger(name)
@@ -153,13 +153,13 @@ module Surrounded
       end
     end
 
-    def redo_method(name, args)
+    def redo_method(name)
       class_eval %{
-        def #{name}(#{args.join(', ')})
+        def #{name}
           begin
             apply_roles if __apply_role_policy == :trigger
 
-            self.send("__trigger_#{name}", #{args.join(', ')})
+            self.send("__trigger_#{name}")
 
           ensure
             remove_roles if __apply_role_policy == :trigger
@@ -176,7 +176,7 @@ module Surrounded
           alias_method :"__trigger_#{name}", :"#{name}"
           private :"__trigger_#{name}"
           remove_method :"#{name}"
-          redo_method(name, args)
+          redo_method(name)
         end
       end
       super
