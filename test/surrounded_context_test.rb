@@ -90,21 +90,21 @@ end
 
 class RoleAssignmentContext
   extend Surrounded::Context
-  set_methods_as_triggers
 
   initialize(:user, :other_user)
 
-  trigger :user_ancestors do
+  def user_ancestors
     user.singleton_class.ancestors
   end
 
-  trigger :other_user_ancestors do
+  def other_user_ancestors
     other_user.singleton_class.ancestors
   end
 
-  trigger :check_user_response do
+  trigger def check_user_response
     user.respond_to?(:a_method!)
   end
+  trigger :check_user_response # should not raise error
 
   trigger :check_other_user_response do
     user.respond_to?(:a_method!)
@@ -113,6 +113,8 @@ class RoleAssignmentContext
   def regular_method_trigger
     user.respond_to?(:a_method!)
   end
+  
+  trigger :user_ancestors, :other_user_ancestors, :regular_method_trigger
 
   module User
     def a_method!; end

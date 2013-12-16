@@ -244,15 +244,19 @@ You might find that useful for dynamically defining user interfaces.
 
 Sometimes I'd rather not use this DSL, however. I want to just write regular methods. 
 
-We can do that too. You'll need to opt in to this by specifying `set_methods_as_triggers` for the context class.
+We can do that too. You'll need to opt in to this by specifying `trigger :your_method_name` for the methods you want to use.
 
 ```ruby
 class MyEnvironment
   # other stuff from above is still here...
-  
-  set_methods_as_triggers
 
   def shove_it
+    employee.quit
+  end
+  trigger :shove_it
+  
+  # or in Ruby 2.x
+  trigger def shove_it
     employee.quit
   end
 
@@ -269,7 +273,7 @@ end
 
 This will allow you to write methods like you normally would. They are aliased internally with a prefix and the method name that you use is rewritten to add and remove the context for the objects in this context. The public API of your class remains the same, but the extra feature of wrapping your method is handled for you.
 
-This will treat all instance methods defined on your context the same way, so be aware of that.
+This works like Ruby's `public`,`protected`, and `private` keywords in that you can send symbols of method names to it. But `trigger` does not alter the parsing of the document like those core keywords do. In other words, you can't merely type `trigger` on one line, and have methods added afterward be treated as trigger methods.
 
 ## Where roles exist
 
@@ -423,8 +427,6 @@ class ActiviatingAccount
   apply_roles_on(:trigger) # this is the default
   # apply_roles_on(:initialize) # set this to apply behavior from the start
   
-  set_methods_as_triggers # allows you to skip the 'trigger' dsl
-  
   # set the default role type only for this class
   self.default_role_type = :module # also :wrap, :wrapper, or :interface
 
@@ -470,6 +472,15 @@ class ActiviatingAccount
   trigger :some_trigger_method do
     activator.some_behavior # behavior always available
   end
+  
+  trigger def some_other_trigger
+    activator.some_behavior # behavior always available
+  end
+  
+  def regular_non_trigger
+    activator.some_behavior # behavior always available with the following line
+  end
+  trigger :regular_non_trigger # turns the method into a trigger  
 end
 ```
 

@@ -18,7 +18,6 @@ module Surrounded
     def self.extended(base)
       base.class_eval {
         @triggers = Set.new
-        @methods_as_triggers = Surrounded::Context.methods_as_triggers
         include InstanceMethods
       }
       base.singleton_class.send(:alias_method, :setup, :initialize)
@@ -29,18 +28,7 @@ module Surrounded
     end
 
     class << self
-      attr_writer :default_role_type, :methods_as_triggers
-    end
-
-    attr_reader :methods_as_triggers
-
-    def self.methods_as_triggers
-      return @methods_as_triggers if defined?(@methods_as_triggers)
-      @methods_as_triggers = false
-    end
-
-    def set_methods_as_triggers
-      @methods_as_triggers = true
+      attr_writer :default_role_type
     end
 
     def new(*args, &block)
@@ -134,15 +122,23 @@ module Surrounded
     end
 
     def trigger(*names, &block)
-      if names.size > 1
-
+      if block.nil?
+        names.each do |name|
+          unless triggers.include?(name)
+            alias_method :"__trigger_#{name}", :"#{name}"
+            private :"__trigger_#{name}"
+            remove_method :"#{name}"
+            redo_method(name)
+            store_trigger(name)
+          end
+        end
       else
         name = names.first
-        store_trigger(name)
 
         define_method(:"__trigger_#{name}", &block)
 
         private :"__trigger_#{name}"
+        store_trigger(name)
 
         redo_method(name)
       end
@@ -171,20 +167,6 @@ module Surrounded
           end
         end
       }
-    end
-
-    def method_added(name)
-      if methods_as_triggers
-        unless name.to_s.match(/^__trigger|initialize/) || (@triggers && triggers.include?(name))
-          store_trigger(name)
-          args = self.instance_method(name).parameters.map{|p| p.last }
-          alias_method :"__trigger_#{name}", :"#{name}"
-          private :"__trigger_#{name}"
-          remove_method :"#{name}"
-          redo_method(name)
-        end
-      end
-      super
     end
 
     module InstanceMethods
