@@ -177,4 +177,8 @@ describe Surrounded::Context, 'assigning roles' do
   it 'allows usage of regular methods for triggers' do
     assert context.regular_method_trigger
   end
+  
+  it 'ignores nil trigger names' do
+    assert context.class.send(:trigger)
+  end
 end

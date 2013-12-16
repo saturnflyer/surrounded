@@ -124,7 +124,7 @@ module Surrounded
     def trigger(*names, &block)
       if block.nil?
         names.each do |name|
-          unless triggers.include?(name)
+          unless triggers.include?(name) || name.nil?
             alias_method :"__trigger_#{name}", :"#{name}"
             private :"__trigger_#{name}"
             remove_method :"#{name}"
