@@ -133,14 +133,19 @@ module Surrounded
       private(*method_names)
     end
 
-    def trigger(names, &block)
-      store_trigger(names)
+    def trigger(*names, &block)
+      if names.size > 1
 
-      define_method(:"__trigger_#{names}", &block)
+      else
+        name = names.first
+        store_trigger(name)
 
-      private :"__trigger_#{names}"
+        define_method(:"__trigger_#{name}", &block)
 
-      redo_method(names)
+        private :"__trigger_#{name}"
+
+        redo_method(name)
+      end
     end
 
     def store_trigger(name)
