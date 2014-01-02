@@ -1,6 +1,4 @@
 language: ruby
-gemfile:
-  - gemfiles/Gemfile.travis
 rvm:
   - 1.9.3
   - 2.0.0
