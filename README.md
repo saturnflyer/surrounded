@@ -438,6 +438,15 @@ class ActiviatingAccount
     # pass an array of arrays with role name symbol and the object for that role
     map_roles([[:activator, activator],[:account, account]])
   end
+  
+  # if you want to stick with the `initialize` shortcut you can define these methods
+  # for special initialization behavior.
+  def preinitialize
+    # to happen before any role mapping
+  end
+  def postinitialize
+    # to happen after any role mapping
+  end
 
   role :activator do # module by default
     def some_behavior; end
@@ -464,9 +473,12 @@ class ActiviatingAccount
   #   end
   # end
 
-  # works as a trigger (assigning the current context) only if set_methods_as_triggers is set
+  # if you use a regular method and want to use context-specific behavior, 
+  # you must handle storing the context yourself:
   def regular_method
+    apply_roles # handles the adding of all the roles and behaviors
     activator.some_behavior # behavior not available unless you apply roles on initialize
+    remove_roles # handles the removal of all roles and behaviors
   end
 
   trigger :some_trigger_method do
