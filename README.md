@@ -466,7 +466,7 @@ class ActiviatingAccount
   #
   # use your own classes if you don't want SimpleDelegator
   # class SomeSpecialRole
-  #   include Surrounded # you must remember this
+  #   include Surrounded # <-- you must remember this in your own classes
   #   # Surrounded assumes SomeSpecialRole.new(some_special_role)
   #   def initialize(...);
   #     # ... your code here
