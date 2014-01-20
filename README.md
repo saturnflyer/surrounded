@@ -275,6 +275,40 @@ This will allow you to write methods like you normally would. They are aliased i
 
 This works like Ruby's `public`,`protected`, and `private` keywords in that you can send symbols of method names to it. But `trigger` does not alter the parsing of the document like those core keywords do. In other words, you can't merely type `trigger` on one line, and have methods added afterward be treated as trigger methods.
 
+## Access Control for Triggers
+
+If you decide to build a user interface from the available triggers, you'll find you need to know what triggers are available.
+
+Fortunately, you can make it easy.
+
+By running `protect_triggers` you'll be able to define when triggers may or may not be run. You can still run them, but they'll raise an error. Here's an example.
+
+```ruby
+class MyEnvironment
+  extend Surrounded::Context
+  protect_triggers
+  
+  def shove_it
+    employee.quit
+  end
+  trigger :shove_it
+  
+  disallow :shove_it do
+    employee.bank_balance < 100
+  end
+end
+```
+
+Then, when the employee role's `bank_balance` is less than `100`, the available triggers won't include `:shove_it`.
+
+You can compare the instance of the context by listing `all_triggers` and `triggers` to see what could be possible and what's currently possible.
+
+Alternatively, if you just want to define your own methods without the DSL using `disallow`, you can just follow the pattern of `disallow_#{method_name}?` when creating your own protection.
+
+In fact, that's exactly what happens with the `disallow` keyword. After using it here, we'd have a `disallow_shove_it?` method defined.
+
+If you call the disallowed trigger directly, you'll raise a `Surrounded::Context::AccessError` exception and the code in your trigger will not be run.
+
 ## Where roles exist
 
 By using `Surrounded::Context` you are declaring a relationship between the objects inside playing your defined roles.
@@ -492,7 +526,18 @@ class ActiviatingAccount
   def regular_non_trigger
     activator.some_behavior # behavior always available with the following line
   end
-  trigger :regular_non_trigger # turns the method into a trigger  
+  trigger :regular_non_trigger # turns the method into a trigger
+  
+  # create restrictions on what triggers may be used
+  protect_triggers # <-- this is required if you want to protect your triggers this way.
+  disallow :some_trigger_method do
+    # whatever conditional code for the instance of the context
+  end
+  
+  # or define your own method without the `disallow` keyword
+  def disallow_some_trigger_method?
+    # whatever conditional code for the instance of the context
+  end
 end
 ```
 
