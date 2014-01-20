@@ -452,7 +452,7 @@ class ActiviatingAccount
     def some_behavior; end
   end
 
-  #  role :activator, :module do
+  #  role_methods :activator, :module do # alternatively use role_methods if you choose
   #    def some_behavior; end
   #  end
   #
