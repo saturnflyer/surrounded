@@ -1,5 +1,6 @@
 require 'set'
 require 'surrounded/context/role_map'
+require 'surrounded/access_control'
 
 # Some features are only available in versions of Ruby
 # where this method is true
@@ -29,6 +30,10 @@ module Surrounded
 
     class << self
       attr_writer :default_role_type
+    end
+    
+    def protect_triggers
+      self.extend(::Surrounded::AccessControl)
     end
 
     def new(*args, &block)
