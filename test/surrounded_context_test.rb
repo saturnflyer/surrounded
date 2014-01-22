@@ -132,16 +132,16 @@ end
 
 describe Surrounded::Context, 'assigning roles' do
   include Surrounded
-  let(:user){ CastingUser.new("Jim") }
-  let(:other_user){ User.new("Guille") }
+  let(:user){ User.new("Jim") }
+  let(:other_user){ CastingUser.new("Guille") }
   let(:context){ RoleAssignmentContext.new(user, other_user) }
 
   it 'tries to use casting to add roles' do
-    refute_includes(context.user_ancestors, RoleAssignmentContext::User)
+    refute_includes(context.other_user_ancestors, RoleAssignmentContext::OtherUser)
   end
 
   it 'extends objects with role modules failing casting' do
-    assert_includes(context.other_user_ancestors, RoleAssignmentContext::OtherUser)
+    assert_includes(context.user_ancestors, RoleAssignmentContext::User)
   end
 
   it 'sets role players to respond to role methods' do

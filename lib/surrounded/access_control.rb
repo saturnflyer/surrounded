@@ -2,6 +2,7 @@ module Surrounded
   module AccessControl
     def self.extended(base)
       base.send(:include, AccessMethods)
+      base.const_set(:'AccessError', Class.new(StandardError))
     end
     
     private
@@ -20,7 +21,7 @@ module Surrounded
             
             method_restrictor = "disallow_#{name}?"
             if self.respond_to?(method_restrictor, true) && self.send(method_restrictor)
-              raise ::Surrounded::Context::AccessError.new("access to `#{name}' is not allowed")
+              raise ::Surrounded::Context::AccessError.new("access to #{self.name}##{name} is not allowed")
             end
             
             self.send("__trigger_#{name}")

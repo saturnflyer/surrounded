@@ -32,9 +32,9 @@ describe Surrounded::Context, 'access control' do
   end
   
   it 'raises errors when trigger method not allowed' do
-    error = assert_raises(Surrounded::Context::AccessError){
+    error = assert_raises(::Surrounded::Context::AccessError){
       context.if_ready
     }
-    assert_match(/access to `if_ready' is not allowed/i, error.message)
+    assert_match(/access to FilteredContext#if_ready is not allowed/i, error.message)
   end
 end
