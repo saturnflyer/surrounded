@@ -9,7 +9,7 @@ module Surrounded
     
     def disallow(*names, &block)
       names.map do |name|
-        define_method("disallow_#{name}?", &block)
+        define_access_method(name, &block)
       end
     end
     
@@ -33,6 +33,20 @@ module Surrounded
       }
     end
     
+    def define_access_method(name, &block)
+      class_eval {
+        meth = AccessMethods.instance_method(:with_roles)
+        define_method "disallow_#{name}?" do
+          begin
+            apply_roles if __apply_role_policy == :trigger
+            instance_exec(&block)
+          ensure
+            remove_roles if __apply_role_policy == :trigger
+          end
+        end
+      }
+    end
+    
     module AccessMethods
       def all_triggers
         self.class.triggers
@@ -43,6 +57,15 @@ module Surrounded
           method_restrictor = "disallow_#{name}?"
           !self.respond_to?(method_restrictor, true) || !self.send(method_restrictor)
         }.to_set
+      end
+      
+      def with_roles(policy = :trigger)
+        begin
+          apply_roles if __apply_role_policy == policy
+          yield
+        ensure
+          remove_roles if __apply_role_policy == policy
+        end
       end
     end
   end

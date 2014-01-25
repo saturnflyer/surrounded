@@ -14,6 +14,20 @@ class FilteredContext
   disallow :if_ready do
     user.name != 'Amy'
   end
+  
+  trigger :check_disallow_behavior do
+    # used for disallow check
+  end
+  
+  disallow :check_disallow_behavior do
+    user.special
+  end
+  
+  role :user do
+    def special
+      'special user method'
+    end
+  end
 end
 
 describe Surrounded::Context, 'access control' do
@@ -36,5 +50,9 @@ describe Surrounded::Context, 'access control' do
       context.if_ready
     }
     assert_match(/access to FilteredContext#if_ready is not allowed/i, error.message)
+  end
+  
+  it 'applies roles in disallow blocks' do
+    assert_equal 'special user method', context.disallow_check_disallow_behavior?
   end
 end
