@@ -115,6 +115,7 @@ module Surrounded
         def initialize(#{setup_args.join(',')})
           preinitialize
           arguments = method(__method__).parameters.map{|arg| eval(arg[1].to_s) }
+          @role_map = RoleMap.new
           map_roles(#{setup_args}.zip(arguments))
           postinitialize
         end
