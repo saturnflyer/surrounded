@@ -35,7 +35,6 @@ module Surrounded
     
     def define_access_method(name, &block)
       class_eval {
-        meth = AccessMethods.instance_method(:with_roles)
         define_method "disallow_#{name}?" do
           begin
             apply_roles if __apply_role_policy == :trigger
@@ -57,15 +56,6 @@ module Surrounded
           method_restrictor = "disallow_#{name}?"
           !self.respond_to?(method_restrictor, true) || !self.send(method_restrictor)
         }.to_set
-      end
-      
-      def with_roles(policy = :trigger)
-        begin
-          apply_roles if __apply_role_policy == policy
-          yield
-        ensure
-          remove_roles if __apply_role_policy == policy
-        end
       end
     end
   end
