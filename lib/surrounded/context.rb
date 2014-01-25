@@ -33,13 +33,9 @@ module Surrounded
       attr_writer :default_role_type
     end
     
-    def protect_triggers
-      self.extend(::Surrounded::AccessControl)
-    end
-    
-    def shortcut_triggers
-      self.extend(::Surrounded::Shortcuts)
-    end
+    # Additional Features
+    def protect_triggers;  self.extend(::Surrounded::AccessControl); end
+    def shortcut_triggers; self.extend(::Surrounded::Shortcuts);     end
 
     def new(*args, &block)
       instance = allocate
