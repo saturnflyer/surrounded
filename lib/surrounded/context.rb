@@ -118,7 +118,7 @@ module Surrounded
           map_roles(#{setup_args}.zip(arguments))
           postinitialize
         end
-      "
+      ", __FILE__, __LINE__
     end
 
     def private_attr_reader(*method_names)
@@ -175,7 +175,7 @@ module Surrounded
             remove_roles if __apply_role_policy == :trigger
           end
         end
-      }
+      }, __FILE__, __LINE__
     end
 
     module InstanceMethods

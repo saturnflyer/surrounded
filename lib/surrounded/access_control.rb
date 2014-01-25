@@ -30,7 +30,7 @@ module Surrounded
             remove_roles if __apply_role_policy == :trigger
           end
         end
-      }
+      }, __FILE__, __LINE__
     end
     
     def define_access_method(name, &block)
