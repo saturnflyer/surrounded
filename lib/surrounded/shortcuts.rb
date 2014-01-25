@@ -2,12 +2,6 @@ module Surrounded
   module Shortcuts
     private
     
-    def shortcut(*names)
-      names.each do |name|
-        define_shortcut(name)
-      end
-    end
-    
     def define_shortcut(name)
       singleton_class.send(:define_method, name) do |*args|
         instance = self.new(*args)
