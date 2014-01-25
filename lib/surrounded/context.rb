@@ -22,7 +22,6 @@ module Surrounded
         @triggers = Set.new
         include InstanceMethods
       }
-      base.singleton_class.send(:alias_method, :setup, :initialize)
     end
 
     def self.default_role_type
