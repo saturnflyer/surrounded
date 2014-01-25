@@ -24,18 +24,6 @@ module Surrounded
       }
     end
 
-    def self.default_role_type
-      @default_role_type ||= :module
-    end
-
-    class << self
-      attr_writer :default_role_type
-    end
-    
-    # Additional Features
-    def protect_triggers;  self.extend(::Surrounded::AccessControl); end
-    def shortcut_triggers; self.extend(::Surrounded::Shortcuts);     end
-
     def new(*args, &block)
       instance = allocate
       instance.send(:preinitialize)
@@ -49,6 +37,18 @@ module Surrounded
     end
 
     private
+
+    def self.default_role_type
+      @default_role_type ||= :module
+    end
+
+    class << self
+      attr_writer :default_role_type
+    end
+    
+    # Additional Features
+    def protect_triggers;  self.extend(::Surrounded::AccessControl); end
+    def shortcut_triggers; self.extend(::Surrounded::Shortcuts);     end
 
     def private_const_set(name, const)
       const = const_set(name, const)
