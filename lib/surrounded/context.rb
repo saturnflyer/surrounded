@@ -1,6 +1,7 @@
 require 'set'
 require 'surrounded/context/role_map'
 require 'surrounded/access_control'
+require 'surrounded/shortcuts'
 
 # Some features are only available in versions of Ruby
 # where this method is true
@@ -34,6 +35,10 @@ module Surrounded
     
     def protect_triggers
       self.extend(::Surrounded::AccessControl)
+    end
+    
+    def shortcut_triggers
+      self.extend(::Surrounded::Shortcuts)
     end
 
     def new(*args, &block)
@@ -129,13 +134,7 @@ module Surrounded
     def trigger(*names, &block)
       if block.nil?
         names.each do |name|
-          unless triggers.include?(name) || name.nil?
-            alias_method :"__trigger_#{name}", :"#{name}"
-            private :"__trigger_#{name}"
-            remove_method :"#{name}"
-            redo_method(name)
-            store_trigger(name)
-          end
+          define_trigger_method(name, &block)
         end
       else
         name = names.first
@@ -156,6 +155,16 @@ module Surrounded
     def role_const(name)
       if const_defined?(name)
         const_get(name)
+      end
+    end
+    
+    def define_trigger_method(name, &block)
+      unless triggers.include?(name) || name.nil?
+        alias_method :"__trigger_#{name}", :"#{name}"
+        private :"__trigger_#{name}"
+        remove_method :"#{name}"
+        redo_method(name)
+        store_trigger(name)
       end
     end
 
