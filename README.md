@@ -538,6 +538,17 @@ class ActiviatingAccount
   def disallow_some_trigger_method?
     # whatever conditional code for the instance of the context
   end
+  
+  # Create shortcuts for triggers as class methods
+  # so you can do ActiviatingAccount.some_trigger_method(activator, account)
+  # This will make all triggers shortcuts.
+  shortcut_triggers
+  # Alterantively, you could implement shortcuts individually:
+  def self.some_trigger_method(activator, account)
+    instance = self.new(activator.account)
+    instance.some_trigger_method
+  end
+  
 end
 ```
 
