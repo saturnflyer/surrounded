@@ -2,15 +2,22 @@ require "surrounded/version"
 require "surrounded/context"
 
 module Surrounded
-  def store_context(ctxt)
-    surroundings.unshift(ctxt)
-  end
-
-  def remove_context
-    surroundings.shift
-  end
 
   private
+
+  def store_context(ctxt, &block)
+    accessor = eval('self', block.binding)
+    if accessor.role_player?(self)
+      surroundings.unshift(ctxt)
+    end
+  end
+
+  def remove_context(&block)
+    accessor = eval('self', block.binding)
+    if accessor.role_player?(self)
+      surroundings.shift
+    end
+  end
 
   def surroundings
     @__surroundings__ ||= []

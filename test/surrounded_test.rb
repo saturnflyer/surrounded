@@ -19,21 +19,8 @@ describe "Surrounded" do
     TestContext.new(jim, guille)
   }
 
-  before do
-    jim.store_context(context)
-    guille.store_context(context)
-  end
-
   it "has access to objects in the context" do
-    assert_equal jim.other_user, guille
-  end
-
-  it "responds to messages for roles on the context" do
-    assert jim.respond_to?(:other_user)
-
-    jim.remove_context
-
-    refute jim.respond_to?(:other_user)
+    assert context.access_other_object
   end
 
   it "prevents access to context objects for external objects" do
@@ -43,15 +30,24 @@ describe "Surrounded" do
   end
 end
 
+class UnsurroundedObject
+  attr_accessor :name
+end
+
 describe "Surrounded", "added to an existing object" do
   it "allows the object to store its context" do
-    object = Object.new
+    thing = UnsurroundedObject.new
+    thing.name = 'Jim'
+
     assert_raises(NoMethodError){
-      object.store_context(self)
+      thing.send(:store_context)
     }
-    object.extend(Surrounded)
-    assert object.store_context(self)
-    assert object.remove_context
+    thing.extend(Surrounded)
+
+    other = User.new('Guille')
+
+    context = TestContext.new(thing, other)
+    assert context.access_other_object
   end
 end
 
@@ -62,12 +58,7 @@ end
 describe "Surrounded", "added to an object through another module" do
   it "allows the object to store its context" do
     object = Array.new
-    assert_raises(NoMethodError){
-      object.store_context(self)
-    }
     object.extend(SpecialSurrounding)
-    assert object.store_context(self)
-    assert object.remove_context
-    assert object.send(:context)
+    assert object.respond_to?(:context, true)
   end
 end

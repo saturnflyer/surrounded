@@ -5,13 +5,15 @@ require 'surrounded/shortcuts'
 
 # Some features are only available in versions of Ruby
 # where this method is true
-def module_method_rebinding?
-  return @__module_method_rebinding__ if defined?(@__module_method_rebinding__)
-  sample_method = Enumerable.instance_method(:to_a)
-  @__module_method_rebinding__ = begin
-    !!sample_method.bind(Object.new)
-  rescue TypeError
-    false
+unless defined?(module_method_rebinding?)
+  def module_method_rebinding?
+    return @__module_method_rebinding__ if defined?(@__module_method_rebinding__)
+    sample_method = Enumerable.instance_method(:to_a)
+    @__module_method_rebinding__ = begin
+      !!sample_method.bind(Object.new)
+    rescue TypeError
+      false
+    end
   end
 end
 
@@ -186,6 +188,10 @@ module Surrounded
         role_map.role_player?(accessor) && role_map.assigned_player(name)
       end
 
+      def role_player?(obj)
+        role_map.role_player?(obj)
+      end
+
       def triggers
         self.class.triggers
       end
@@ -224,7 +230,7 @@ module Surrounded
 
         role_player = applicator.call(object, behavior)
         map_role(role, role_module_basename(behavior), role_player) if behavior
-        role_player.store_context(self)
+        role_player.send(:store_context, self){}
         role_player
       end
 
@@ -247,7 +253,7 @@ module Surrounded
         remover_name = (module_removal_methods + unwrap_methods).find{|meth| object.respond_to?(meth) }
         return object if !remover_name
 
-        object.remove_context
+        object.send(:remove_context) do; end
         role_player = object.method(remover_name).call
 
         map_role(role, role_module_basename(behavior), role_player) if behavior
