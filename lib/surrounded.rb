@@ -2,15 +2,6 @@ require "surrounded/version"
 require "surrounded/context"
 
 module Surrounded
-  def self.included(klass)
-    klass.class_eval {
-      extend Surrounded::Contextual
-    }
-  end
-
-  module Contextual
-  end
-
   def store_context(ctxt)
     surroundings.unshift(ctxt)
   end
