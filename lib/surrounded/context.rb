@@ -82,6 +82,7 @@ module Surrounded
         behavior = private_const_set(interface_name, Module.new(&block))
 
         require 'surrounded/context/negotiator'
+        undef_method(name)
         define_method(name) do
           instance_variable_set("@#{name}", Negotiator.new(role_map.assigned_player(name), behavior))
         end
