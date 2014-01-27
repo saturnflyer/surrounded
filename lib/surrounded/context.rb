@@ -17,6 +17,12 @@ unless defined?(module_method_rebinding?)
   end
 end
 
+# Extend your classes with Surrounded::Context to handle their
+# initialization and application of behaviors to the role players
+# passed into the constructor.
+#
+# The purpose of this module is to help you create context objects
+# which encapsulate the interaction and behavior of objects inside.
 module Surrounded
   module Context
     def self.extended(base)
@@ -34,12 +40,16 @@ module Surrounded
       instance
     end
 
+    # Provides a Set of all available trigger methods where
+    # behaviors will be applied to the roles before execution
+    # and removed afterward.
     def triggers
       @triggers.dup
     end
 
     private
 
+    # Set the default type of implementation for role methods for all contexts.
     def self.default_role_type
       @default_role_type ||= :module
     end
@@ -49,7 +59,11 @@ module Surrounded
     end
     
     # Additional Features
+    
+    # Provide the ability to create access control methods for your triggers.
     def protect_triggers;  self.extend(::Surrounded::AccessControl); end
+    
+    # Automatically create class methods for each trigger method.
     def shortcut_triggers; self.extend(::Surrounded::Shortcuts);     end
 
     def private_const_set(name, const)
@@ -62,10 +76,12 @@ module Surrounded
       @default_role_type ||= Surrounded::Context.default_role_type
     end
 
+    # Set the default type of implementation for role method for an individual context.
     def default_role_type=(type)
       @default_role_type = type
     end
 
+    # Create a named behavior for a role using the standard library SimpleDelegator.
     def wrap(name, &block)
       require 'delegate'
       wrapper_name = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
@@ -75,6 +91,7 @@ module Surrounded
     alias_method :wrapper, :wrap
 
     if module_method_rebinding?
+      # Create an object which will bind methods to the role player
       def interface(name, &block)
         class_basename = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
         interface_name = class_basename + 'Interface'
@@ -89,6 +106,7 @@ module Surrounded
       end
     end
 
+    # Define behaviors for your role players
     def role(name, type=nil, &block)
       role_type = type || default_role_type
       if role_type == :module
@@ -111,6 +129,8 @@ module Surrounded
       @__apply_role_policy ||= :trigger
     end
 
+    # Shorthand for creating an instance level initialize method which
+    # handles the mapping of the given arguments to their named role.
     def initialize(*setup_args)
       private_attr_reader(*setup_args)
 
@@ -130,6 +150,22 @@ module Surrounded
       private(*method_names)
     end
 
+    # Creates a context instance method which will apply behaviors to role players
+    # before execution and remove the behaviors after execution.
+    #
+    # Alternatively you may define your own methods then declare them as triggers
+    # afterward.
+    # 
+    # Example:
+    #   trigger :some_event do
+    #     # code here
+    #   end
+    #
+    #   def some_event
+    #     # code here
+    #   end
+    #   trigger :some_event
+    #
     def trigger(*names, &block)
       if block.nil?
         names.each do |name|
@@ -183,12 +219,16 @@ module Surrounded
     end
 
     module InstanceMethods
+      # Check whether a given name is a role inside the context.
+      # The provided block is used to evaluate whether or not the caller
+      # is allowed to inquire about the roles.
       def role?(name, &block)
         return false unless role_map.role?(name)
         accessor = block.binding.eval('self')
         role_map.role_player?(accessor) && role_map.assigned_player(name)
       end
 
+      # Check if a given object is a role player in the context.
       def role_player?(obj)
         role_map.role_player?(obj)
       end
@@ -278,18 +318,22 @@ module Surrounded
         end
       end
 
+      # List of possible methods to use to add behavior to an object from a module.
       def module_extension_methods
         [:cast_as, :extend]
       end
 
+      # List of possible methods to use to add behavior to an object from a wrapper.
       def wrap_methods
         [:new]
       end
 
+      # List of possible methods to use to remove behavior from an object with a module.
       def module_removal_methods
         [:uncast]
       end
 
+      # List of possible methods to use to remove behavior from an object with a wrapper.
       def unwrap_methods
         [:__getobj__]
       end

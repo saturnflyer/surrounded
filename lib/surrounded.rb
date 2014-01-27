@@ -1,6 +1,12 @@
 require "surrounded/version"
 require "surrounded/context"
 
+# This module should be added to objects which will enter
+# into context objects. 
+#
+# Its main purpose is to keep a reference to the context
+# and to implement method_missing to handle the relationship
+# to other objects in the context.
 module Surrounded
 
   private
