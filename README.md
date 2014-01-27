@@ -545,7 +545,7 @@ class ActiviatingAccount
   shortcut_triggers
   # Alterantively, you could implement shortcuts individually:
   def self.some_trigger_method(activator, account)
-    instance = self.new(activator.account)
+    instance = self.new(activator, account)
     instance.some_trigger_method
   end
   
