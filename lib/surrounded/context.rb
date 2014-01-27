@@ -185,7 +185,7 @@ module Surrounded
     module InstanceMethods
       def role?(name, &block)
         return false unless role_map.role?(name)
-        accessor = eval('self', block.binding)
+        accessor = block.binding.eval('self')
         role_map.role_player?(accessor) && role_map.assigned_player(name)
       end
 
