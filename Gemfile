@@ -5,11 +5,11 @@ group :test do
   gem "simplecov"
   gem 'coveralls', :require => false
   gem 'casting'
+  gem 'rubinius-coverage', :platform => :rbx
 end
 
 platforms :rbx do
   gem 'rubysl', '~> 2.0'
-  gem 'rubinius-coverage'
 end
 
 gemspec
