@@ -2,7 +2,6 @@ module Surrounded
   module AccessControl
     def self.extended(base)
       base.send(:include, AccessMethods)
-      base.const_set(:'AccessError', Class.new(StandardError))
     end
     
     private
