@@ -58,19 +58,11 @@ module Surrounded
       attr_writer :default_role_type
     end
     
-    # Additional Features
-    
     # Provide the ability to create access control methods for your triggers.
     def protect_triggers;  self.extend(::Surrounded::AccessControl); end
     
     # Automatically create class methods for each trigger method.
     def shortcut_triggers; self.extend(::Surrounded::Shortcuts);     end
-
-    def private_const_set(name, const)
-      const = const_set(name, const)
-      private_constant name.to_sym
-      const
-    end
 
     def default_role_type
       @default_role_type ||= Surrounded::Context.default_role_type
@@ -79,6 +71,32 @@ module Surrounded
     # Set the default type of implementation for role method for an individual context.
     def default_role_type=(type)
       @default_role_type = type
+    end
+
+    # Set the time to apply roles to objects. Either :trigger or :initialize. 
+    # Defaults to :trigger
+    def apply_roles_on(which)
+      @__apply_role_policy = which
+    end
+
+    def __apply_role_policy
+      @__apply_role_policy ||= :trigger
+    end
+
+    # Shorthand for creating an instance level initialize method which
+    # handles the mapping of the given arguments to their named role.
+    def initialize(*setup_args)
+      private_attr_reader(*setup_args)
+
+      class_eval "
+        def initialize(#{setup_args.join(',')})
+          preinitialize
+          arguments = method(__method__).parameters.map{|arg| eval(arg[1].to_s) }
+          @role_map = RoleMap.new
+          map_roles(#{setup_args}.zip(arguments))
+          postinitialize
+        end
+      ", __FILE__, __LINE__
     end
 
     # Create a named behavior for a role using the standard library SimpleDelegator.
@@ -121,35 +139,6 @@ module Surrounded
     end
     alias_method :role_methods, :role
 
-    def apply_roles_on(which)
-      @__apply_role_policy = which
-    end
-
-    def __apply_role_policy
-      @__apply_role_policy ||= :trigger
-    end
-
-    # Shorthand for creating an instance level initialize method which
-    # handles the mapping of the given arguments to their named role.
-    def initialize(*setup_args)
-      private_attr_reader(*setup_args)
-
-      class_eval "
-        def initialize(#{setup_args.join(',')})
-          preinitialize
-          arguments = method(__method__).parameters.map{|arg| eval(arg[1].to_s) }
-          @role_map = RoleMap.new
-          map_roles(#{setup_args}.zip(arguments))
-          postinitialize
-        end
-      ", __FILE__, __LINE__
-    end
-
-    def private_attr_reader(*method_names)
-      attr_reader(*method_names)
-      private(*method_names)
-    end
-
     # Creates a context instance method which will apply behaviors to role players
     # before execution and remove the behaviors after execution.
     #
@@ -186,12 +175,6 @@ module Surrounded
     def store_trigger(*names)
       @triggers.merge(names)
     end
-
-    def role_const(name)
-      if const_defined?(name)
-        const_get(name)
-      end
-    end
     
     def define_trigger_method(name, &block)
       unless triggers.include?(name) || name.nil?
@@ -216,6 +199,30 @@ module Surrounded
           end
         end
       }, __FILE__, __LINE__
+    end
+    
+    # === Utility shortcuts
+    
+    # Set a named constant and make it private
+    def private_const_set(name, const)
+      unless self.const_defined?(name, false)
+        const = const_set(name, const)
+        private_constant name.to_sym
+      end
+      const
+    end
+
+    # Create attr_reader for the named methods and make them private
+    def private_attr_reader(*method_names)
+      attr_reader(*method_names)
+      private(*method_names)
+    end
+
+    # Conditional const_get for a named role behavior
+    def role_const(name)
+      if const_defined?(name)
+        const_get(name)
+      end
     end
 
     module InstanceMethods
