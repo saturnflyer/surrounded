@@ -472,15 +472,6 @@ class ActiviatingAccount
     # pass an array of arrays with role name symbol and the object for that role
     map_roles([[:activator, activator],[:account, account]])
   end
-  
-  # if you want to stick with the `initialize` shortcut you can define these methods
-  # for special initialization behavior.
-  def preinitialize
-    # to happen before any role mapping
-  end
-  def postinitialize
-    # to happen after any role mapping
-  end
 
   role :activator do # module by default
     def some_behavior; end
