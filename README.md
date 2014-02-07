@@ -472,6 +472,9 @@ class ActiviatingAccount
     # pass an array of arrays with role name symbol and the object for that role
     map_roles([[:activator, activator],[:account, account]])
   end
+  # these also must be done if you create your own initialize method.
+  # this is a shortcut for using attr_reader and private
+  private_attr_reader :activator, :account
 
   role :activator do # module by default
     def some_behavior; end
