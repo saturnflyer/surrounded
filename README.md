@@ -14,7 +14,7 @@ The purpose of this library is to clear away the details of getting things setup
 There are two main parts to this library. 
 
 1. `Surrounded` gives objects an implicit awareness of other objects in their environments.
-2. `Surrounded::Context` helps you create objects which encapsulate other objects. These *are* the environments.
+2. `Surrounded::Context` helps you create objects which encapsulate other objects **and** their behavior. These *are* the environments.
 
 First, take a look at creating contexts. This is where you'll spend most of your time.
 
