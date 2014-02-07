@@ -307,7 +307,7 @@ Alternatively, if you just want to define your own methods without the DSL using
 
 In fact, that's exactly what happens with the `disallow` keyword. After using it here, we'd have a `disallow_shove_it?` method defined.
 
-If you call the disallowed trigger directly, you'll raise a `Surrounded::Context::AccessError` exception and the code in your trigger will not be run.
+If you call the disallowed trigger directly, you'll raise a `MyEnvironment::AccessError` exception and the code in your trigger will not be run. You may rescue from that or you may rescue from `Surrounded::Context::AccessError` although you should prefer to use the error name from your own class.
 
 ## Where roles exist
 
