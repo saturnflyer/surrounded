@@ -45,10 +45,19 @@ describe Surrounded::Context, 'access control' do
     refute context.triggers.include?(:if_ready)
   end
   
-  it 'raises errors when trigger method not allowed' do
-    error = assert_raises(::Surrounded::Context::AccessError){
+  it 'raises error specific to the context class when trigger method not allowed' do
+    error = assert_raises(::FilteredContext::AccessError){
       context.if_ready
     }
+    assert_match(/access to FilteredContext#if_ready is not allowed/i, error.message)
+  end
+  
+  it 'supports rescuing from Surrounded defined error when trigger method not allowed' do
+    begin
+      context.if_ready
+    rescue ::Surrounded::Context::AccessError => error
+      assert "rescued!"
+    end
     assert_match(/access to FilteredContext#if_ready is not allowed/i, error.message)
   end
   
