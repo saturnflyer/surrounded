@@ -26,7 +26,7 @@ module Surrounded
               raise ::#{self.to_s}::AccessError.new("access to #{self.name}##{name} is not allowed")
             end
             
-            self.send("__trigger_#{name}")
+            #{trigger_return_content(name)}
 
           ensure
             remove_roles if __apply_role_policy == :trigger

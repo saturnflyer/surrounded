@@ -2,6 +2,7 @@ require 'set'
 require 'surrounded/context/role_map'
 require 'surrounded/access_control'
 require 'surrounded/shortcuts'
+require 'surrounded/east_oriented'
 
 # Some features are only available in versions of Ruby
 # where this method is true
@@ -62,7 +63,10 @@ module Surrounded
     def protect_triggers;  self.extend(::Surrounded::AccessControl); end
     
     # Automatically create class methods for each trigger method.
-    def shortcut_triggers; self.extend(::Surrounded::Shortcuts);     end
+    def shortcut_triggers; self.extend(::Surrounded::Shortcuts); end
+    
+    # Automatically return the context object from trigger methods.
+    def east_oriented_triggers; self.extend(::Surrounded::EastOriented); end
 
     def default_role_type
       @default_role_type ||= Surrounded::Context.default_role_type
@@ -192,13 +196,17 @@ module Surrounded
           begin
             apply_roles if __apply_role_policy == :trigger
 
-            self.send("__trigger_#{name}")
+            #{trigger_return_content(name)}
 
           ensure
             remove_roles if __apply_role_policy == :trigger
           end
         end
       }, __FILE__, __LINE__
+    end
+    
+    def trigger_return_content(name)
+      %{self.send("__trigger_#{name}")}
     end
     
     # === Utility shortcuts

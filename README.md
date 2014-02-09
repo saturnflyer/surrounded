@@ -309,6 +309,23 @@ In fact, that's exactly what happens with the `disallow` keyword. After using it
 
 If you call the disallowed trigger directly, you'll raise a `MyEnvironment::AccessError` exception and the code in your trigger will not be run. You may rescue from that or you may rescue from `Surrounded::Context::AccessError` although you should prefer to use the error name from your own class.
 
+## Restricting return values
+
+_Tell, Don't Ask_ style programming can better be enforced by following East-oriented Code principles. This means that the returns values from methods on your objects should not provide information about their internal state. Instead of returning values, you can enforce that triggers return the context object. This forces you to place context responsiblities inside the context and prevents leaking the details and responsiblities outside of the system.
+
+Here's how you enforce it:
+
+```ruby
+class MyEnvironment
+  extend Surrounded::Context
+  east_oriented_triggers
+end
+```
+
+That's it.
+
+With that change, any trigger you define will execute the block you provide and return `self`, being the instance of the context.
+
 ## Where roles exist
 
 By using `Surrounded::Context` you are declaring a relationship between the objects inside playing your defined roles.
@@ -542,6 +559,10 @@ class ActiviatingAccount
     instance = self.new(activator, account)
     instance.some_trigger_method
   end
+  
+  # Set triggers to always return the context object
+  # so you can enforce East-oriented style or Tell, Don't Ask
+  east_oriented_triggers
   
 end
 ```
