@@ -379,7 +379,13 @@ module Surrounded
           name.singularize
         else
           # good enough for now but should be updated with better rules
-          name.to_s.sub(/s\z/, '')
+          name.to_s.tap do |string|
+            if string =~ /ies\z/
+              string.sub!(/ies\z/,'y')
+            elsif string =~ /s\z/
+              string.sub!(/s\z/,'')
+            end
+          end
         end
       end
     end
