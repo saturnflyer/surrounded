@@ -11,7 +11,7 @@ class FilteredContext
     'ready'
   end
   
-  disallow :if_ready do
+  guard :if_ready do
     user.name != 'Amy'
   end
   
