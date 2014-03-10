@@ -317,10 +317,6 @@ module Surrounded
       end
 
       def remove_interface(role, behavior, object)
-        if object.respond_to?(:each)
-          remove_collection_interface(role, behavior, object)
-        end
-
         remover_name = (module_removal_methods + unwrap_methods).find{|meth| object.respond_to?(meth) }
         object.send(:remove_context) do; end
 
@@ -329,12 +325,6 @@ module Surrounded
         end
 
         return role_player || object
-      end
-
-      def remove_collection_interface(role, behavior, collection)
-        collection.each do |object|
-          remove_interface(role, singularize_name(behavior.to_s), object)
-        end
       end
 
       def apply_roles
