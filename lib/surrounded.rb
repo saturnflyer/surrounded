@@ -16,6 +16,7 @@ module Surrounded
     if accessor.role_player?(self)
       surroundings.unshift(ctxt)
     end
+    self
   end
 
   def remove_context(&block)
@@ -23,6 +24,7 @@ module Surrounded
     if accessor.role_player?(self)
       surroundings.shift
     end
+    self
   end
 
   def surroundings
