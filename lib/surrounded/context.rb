@@ -245,6 +245,7 @@ module Surrounded
         role_map.role_player?(obj)
       end
 
+      # Return a Set of all defined triggers
       def triggers
         self.class.triggers
       end

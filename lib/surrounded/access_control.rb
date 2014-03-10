@@ -42,10 +42,13 @@ module Surrounded
     end
     
     module AccessMethods
+      # Return a Set of all defined triggers regardless of any disallow blocks
       def all_triggers
         self.class.triggers
       end
     
+      # Return a Set of triggers which may be run according to any restrictions defined
+      # in disallow blocks.
       def triggers
         all_triggers.select {|name|
           method_restrictor = "disallow_#{name}?"
