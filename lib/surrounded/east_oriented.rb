@@ -4,7 +4,7 @@ module Surrounded
     # not be asked for information.
     def trigger_return_content(name)
       %{
-        self.send("__trigger_#{name}")
+        #{super}
         
         self
       }

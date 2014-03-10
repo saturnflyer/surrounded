@@ -15,24 +15,16 @@ module Surrounded
       end
     end
     
-    def define_trigger_wrap_method(name)
-      class_eval %{
-        def #{name}
-          begin
-            apply_roles if __apply_role_policy == :trigger
-            
-            method_restrictor = "disallow_#{name}?"
-            if self.respond_to?(method_restrictor, true) && self.send(method_restrictor)
-              raise ::#{self.to_s}::AccessError.new("access to #{self.name}##{name} is not allowed")
-            end
-            
-            #{trigger_return_content(name)}
+    def trigger_return_content(name)
+      %{
 
-          ensure
-            remove_roles if __apply_role_policy == :trigger
-          end
+        method_restrictor = "disallow_#{name}?"
+        if self.respond_to?(method_restrictor, true) && self.send(method_restrictor)
+          raise ::#{self.to_s}::AccessError.new("access to #{self.name}##{name} is not allowed")
         end
-      }, __FILE__, __LINE__
+
+      #{super}
+      }
     end
     
     def define_access_method(name, &block)
