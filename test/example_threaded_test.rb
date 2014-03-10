@@ -3,28 +3,22 @@ require 'test_helper'
 class ThreadedContext
   extend Surrounded::Context
 
-  def initialize(leader, members)
-    role_names = [:leader, :members]
-    role_players = [leader, members]
-
-    role_names.concat(members.map{|member| :"member_#{member.object_id}" })
-    role_players.concat(members)
-
-    map_roles(role_names.zip(role_players))
-
-  end
-  private_attr_reader :leader, :members
+  initialize :leader, :members
 
   trigger :meet do
-    result = []
-    result << leader.greet
-    result << members.concurrent_map do |member|
-      result << member.greet
-    end
-    result.flatten.join(' ')
+    leader.welcome
   end
 
   module Leader
+    def welcome
+      result = []
+      result << leader.greet
+      result << members.concurrent_map do |member|
+        result << member.greet
+      end
+      result.flatten.join(' ')
+    end
+
     def greet
       "Hello everyone. I am #{name}"
     end

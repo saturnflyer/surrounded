@@ -133,7 +133,9 @@ module Surrounded
       role_type = type || default_role_type
       if role_type == :module
         mod_name = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
-        private_const_set(mod_name, Module.new(&block))
+        mod = Module.new(&block)
+        mod.send(:include, ::Surrounded)
+        private_const_set(mod_name, mod)
       else
         meth = method(role_type)
         meth.call(name, &block)
@@ -269,6 +271,15 @@ module Surrounded
       def map_roles(role_object_array)
         role_object_array.each do |role, object|
           map_role(role, role_behavior_name(role), object)
+
+          singular_role_name = singularize_name(role)
+          singular_behavior_name = singularize_name(role_behavior_name(role))
+
+          if object.respond_to?(:each_with_index) && role_const_defined?(singular_behavior_name)
+            object.each_with_index do |item, index|
+              map_role(:"#{singular_role_name}_#{index + 1}", singular_behavior_name, item)
+            end
+          end
         end
       end
 
@@ -306,15 +317,24 @@ module Surrounded
       end
 
       def remove_interface(role, behavior, object)
+        if object.respond_to?(:each)
+          remove_collection_interface(role, behavior, object)
+        end
+
         remover_name = (module_removal_methods + unwrap_methods).find{|meth| object.respond_to?(meth) }
-        return object if !remover_name
-
         object.send(:remove_context) do; end
-        role_player = object.method(remover_name).call
 
-        map_role(role, role_module_basename(behavior), role_player) if behavior
+        if remover_name
+          role_player = object.send(remover_name)
+        end
 
-        role_player
+        return role_player || object
+      end
+
+      def remove_collection_interface(role, behavior, collection)
+        collection.each do |object|
+          remove_interface(role, singularize_name(behavior.to_s), object)
+        end
       end
 
       def apply_roles
@@ -367,6 +387,15 @@ module Surrounded
 
       def role_const_defined?(name)
         self.class.const_defined?(name)
+      end
+
+      def singularize_name(name)
+        if name.respond_to?(:singularize)
+          name.singularize
+        else
+          # good enough for now but should be updated with better rules
+          name.to_s.sub(/s\z/, '')
+        end
       end
     end
   end
