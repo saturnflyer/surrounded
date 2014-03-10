@@ -164,12 +164,12 @@ module Surrounded
     def trigger(*names, &block)
       if block.nil?
         names.each do |name|
-          define_trigger_method(name)
+          convert_method_to_trigger(name)
         end
       else
         name = names.first
         define_method(name, &block)
-        define_trigger_method(name)
+        convert_method_to_trigger(name)
       end
     end
 
@@ -177,7 +177,7 @@ module Surrounded
       @triggers.merge(names)
     end
     
-    def define_trigger_method(name, &block)
+    def convert_method_to_trigger(name)
       unless triggers.include?(name) || name.nil?
         alias_method :"__trigger_#{name}", :"#{name}"
         private :"__trigger_#{name}"
