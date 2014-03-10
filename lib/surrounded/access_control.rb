@@ -15,7 +15,7 @@ module Surrounded
       end
     end
     
-    def redo_method(name)
+    def define_trigger_wrap_method(name)
       class_eval %{
         def #{name}
           begin

@@ -182,12 +182,12 @@ module Surrounded
         alias_method :"__trigger_#{name}", :"#{name}"
         private :"__trigger_#{name}"
         remove_method :"#{name}"
-        redo_method(name)
+        define_trigger_wrap_method(name)
         store_trigger(name)
       end
     end
 
-    def redo_method(name)
+    def define_trigger_wrap_method(name)
       class_eval %{
         def #{name}
           begin
