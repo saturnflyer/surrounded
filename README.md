@@ -409,6 +409,30 @@ class MoneyTransfer
 end
 ```
 
+## Working with collections
+
+If you want to use an Array of objects (for example) as a role player in your context,
+you may do so. If you want each item in your collection to gain behavior, you merely need to
+create a role for the items.
+
+Surrounded will attempt to guess at the singular role name. For example, a role player named `members` would
+be given the behaviors from a `Members` behavior module or class. Each item in your `members` collection
+would be given behavior from a `Member` behavior module or class if you create one.
+
+```ruby
+class Organization
+  initialize :leader, :members
+  
+  role :members do
+    # special behavior for the collection
+  end
+  
+  role :member do
+    # special behavior to be applied to each member in the collection
+  end  
+end
+```
+
 ## Policies for the application of role methods
 
 There are 2 approaches to applying new behavior to your objects.
