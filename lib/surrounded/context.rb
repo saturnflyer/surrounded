@@ -164,17 +164,12 @@ module Surrounded
     def trigger(*names, &block)
       if block.nil?
         names.each do |name|
-          define_trigger_method(name, &block)
+          define_trigger_method(name)
         end
       else
         name = names.first
-
-        define_method(:"__trigger_#{name}", &block)
-
-        private :"__trigger_#{name}"
-        store_trigger(name)
-
-        redo_method(name)
+        define_method(name, &block)
+        define_trigger_method(name)
       end
     end
 
