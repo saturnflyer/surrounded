@@ -340,7 +340,7 @@ Using the `role` method to define modules and classes takes care of the setup fo
 
 ```ruby
 
-  # this uses modules
+  # this uses modules which include Surrounded
   role :source do
     def transfer
       self.balance -= amount
