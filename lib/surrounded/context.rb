@@ -197,15 +197,17 @@ module Surrounded
             self.send("map_#{role}_role", object)
           else
             map_role(role, role_behavior_name(role), object)
+            map_role_collection(role, role_behavior_name(role), object)
+          end
+        end
+      end
 
-            singular_role_name = singularize_name(role)
-            singular_behavior_name = singularize_name(role_behavior_name(role))
-
-            if object.respond_to?(:each_with_index) && role_const_defined?(singular_behavior_name)
-              object.each_with_index do |item, index|
-                map_role(:"#{singular_role_name}_#{index + 1}", singular_behavior_name, item)
-              end
-            end
+      def map_role_collection(role, mod_name, collection)
+        singular_role_name = singularize_name(role)
+        singular_behavior_name = singularize_name(role_behavior_name(role))
+        if collection.respond_to?(:each_with_index) && role_const_defined?(singular_behavior_name)
+          collection.each_with_index do |item, index|
+            map_role(:"#{singular_role_name}_#{index + 1}", singular_behavior_name, item)
           end
         end
       end
