@@ -274,14 +274,18 @@ module Surrounded
 
       def map_roles(role_object_array)
         role_object_array.each do |role, object|
-          map_role(role, role_behavior_name(role), object)
+          if self.respond_to?("map_role_#{role}")
+            self.send("map_#{role}_role", object)
+          else
+            map_role(role, role_behavior_name(role), object)
 
-          singular_role_name = singularize_name(role)
-          singular_behavior_name = singularize_name(role_behavior_name(role))
+            singular_role_name = singularize_name(role)
+            singular_behavior_name = singularize_name(role_behavior_name(role))
 
-          if object.respond_to?(:each_with_index) && role_const_defined?(singular_behavior_name)
-            object.each_with_index do |item, index|
-              map_role(:"#{singular_role_name}_#{index + 1}", singular_behavior_name, item)
+            if object.respond_to?(:each_with_index) && role_const_defined?(singular_behavior_name)
+              object.each_with_index do |item, index|
+                map_role(:"#{singular_role_name}_#{index + 1}", singular_behavior_name, item)
+              end
             end
           end
         end
@@ -289,7 +293,7 @@ module Surrounded
 
       def map_role(role, mod_name, object)
         instance_variable_set("@#{role}", object)
-        role_map.update(role, mod_name, object)
+        role_map.update(role, role_module_basename(mod_name), object)
       end
 
       def __apply_role_policy
@@ -300,7 +304,7 @@ module Surrounded
         applicator = behavior.is_a?(Class) ? method(:add_class_interface) : method(:add_module_interface)
 
         role_player = applicator.call(object, behavior)
-        map_role(role, role_module_basename(behavior), role_player) if behavior
+        map_role(role, behavior, role_player) if behavior
         role_player.send(:store_context, self){}
         role_player
       end
