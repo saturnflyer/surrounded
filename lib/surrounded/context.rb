@@ -92,7 +92,9 @@ module Surrounded
     def initialize(*setup_args)
       private_attr_reader(*setup_args)
 
-      class_eval "
+      mod = Module.new
+      line = __LINE__
+      mod.class_eval "
         def initialize(#{setup_args.join(',')})
           preinitialize
           arguments = method(__method__).parameters.map{|arg| eval(arg[1].to_s) }
@@ -100,7 +102,9 @@ module Surrounded
           map_roles(#{setup_args}.zip(arguments))
           postinitialize
         end
-      ", __FILE__, __LINE__
+      ", __FILE__, line
+      const_set("SurroundedInitializer", mod)
+      include mod
     end
 
     # Create a named behavior for a role using the standard library SimpleDelegator.
@@ -188,7 +192,9 @@ module Surrounded
     end
 
     def define_trigger_wrap_method(name)
-      class_eval %{
+      mod = Module.new
+      line = __LINE__
+      mod.class_eval %{
         def #{name}
           begin
             apply_roles if __apply_role_policy == :trigger
@@ -199,7 +205,9 @@ module Surrounded
             remove_roles if __apply_role_policy == :trigger
           end
         end
-      }, __FILE__, __LINE__
+      }, __FILE__, line
+      const_set("SurroundedTrigger#{name.to_s.upcase.sub(/\?\z/,'Query')}", mod)
+      include mod
     end
     
     def trigger_return_content(name)

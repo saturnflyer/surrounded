@@ -29,7 +29,8 @@ module Surrounded
     end
     
     def define_access_method(name, &block)
-      class_eval {
+      mod = Module.new
+      mod.class_eval {
         define_method "disallow_#{name}?" do
           begin
             apply_roles if __apply_role_policy == :trigger
@@ -39,6 +40,8 @@ module Surrounded
           end
         end
       }
+      const_set("SurroundedAccess#{name}", mod)
+      include mod
     end
     
     module AccessMethods
