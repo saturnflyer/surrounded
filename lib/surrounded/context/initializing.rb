@@ -25,7 +25,7 @@ module Surrounded
             postinitialize
           end
         ", __FILE__, line
-        const_set("SurroundedInitializer", mod)
+        const_set("ContextInitializer", mod)
         include mod
       end
     end
