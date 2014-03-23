@@ -114,7 +114,7 @@ module Surrounded
       mod = Module.new
       line = __LINE__
       mod.class_eval %{
-        def #{name}
+        def #{name}(*args, &block)
           begin
             apply_roles if __apply_role_policy == :trigger
 
@@ -129,8 +129,8 @@ module Surrounded
       include mod
     end
     
-    def trigger_return_content(name)
-      %{self.send("__trigger_#{name}")}
+    def trigger_return_content(name, *args, &block)
+      %{self.send("__trigger_#{name}", *args, &block)}
     end
     
     # === Utility shortcuts

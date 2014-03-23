@@ -25,6 +25,11 @@ class TestContext
   trigger :access_other_object do
     user.other_user.name
   end
+
+  def block_method(*args, &block)
+    block.call(*args, self)
+  end
+  trigger :block_method
 end
 
 # This is a different implementation of module_method_rebinding?

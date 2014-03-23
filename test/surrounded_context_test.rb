@@ -43,6 +43,12 @@ describe Surrounded::Context, '.trigger' do
     }
     assert_equal "Guille", context.access_other_object
   end
+
+  it 'preserves arguments and blocks' do
+    result = context.block_method('argument') do |*args, obj|
+      "Having an #{args.first} with #{obj}"
+    end
+  end
 end
 
 describe Surrounded::Context, '#role?' do

@@ -16,7 +16,7 @@ module Surrounded
     end
     alias_method :guard, :disallow
     
-    def trigger_return_content(name)
+    def trigger_return_content(name, *args, &block)
       %{
 
         method_restrictor = "disallow_#{name}?"
