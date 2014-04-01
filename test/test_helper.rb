@@ -30,6 +30,11 @@ class TestContext
     block.call(*args, self)
   end
   trigger :block_method
+
+  def regular_method_trigger
+    true
+  end
+  trigger :regular_method_trigger
 end
 
 # This is a different implementation of module_method_rebinding?

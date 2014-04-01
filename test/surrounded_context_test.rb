@@ -49,6 +49,14 @@ describe Surrounded::Context, '.trigger' do
       "Having an #{args.first} with #{obj}"
     end
   end
+
+  it 'allows usage of regular methods for triggers' do
+    assert context.regular_method_trigger
+  end
+
+  it 'ignores nil trigger names' do
+    assert context.class.send(:trigger)
+  end
 end
 
 describe Surrounded::Context, '#role?' do
@@ -178,14 +186,6 @@ describe Surrounded::Context, 'assigning roles' do
     context = ClassRoleAssignmentContext.new(user, self)
 
     assert context.check_user_response
-  end
-
-  it 'allows usage of regular methods for triggers' do
-    assert context.regular_method_trigger
-  end
-
-  it 'ignores nil trigger names' do
-    assert context.class.send(:trigger)
   end
 end
 
