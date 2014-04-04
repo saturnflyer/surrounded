@@ -4,7 +4,6 @@ require 'test_helper'
 class WrapperContext
   extend Surrounded::Context
 
-  apply_roles_on(:trigger)
   initialize(:admin, :task)
 
   wrap :admin do
