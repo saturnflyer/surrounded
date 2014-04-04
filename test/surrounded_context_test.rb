@@ -46,8 +46,9 @@ describe Surrounded::Context, '.trigger' do
 
   it 'preserves arguments and blocks' do
     result = context.block_method('argument') do |*args, obj|
-      "Having an #{args.first} with #{obj}"
+      "Having an #{args.first} with #{obj.class}"
     end
+    assert_equal "Having an argument with TestContext", result
   end
 
   it 'allows usage of regular methods for triggers' do

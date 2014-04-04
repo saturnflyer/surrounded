@@ -47,12 +47,12 @@ module Surrounded
           alias_method :"__trigger_#{name}", :"#{name}"
           private :"__trigger_#{name}"
           remove_method :"#{name}"
-          define_trigger_wrap_method(name)
+          define_trigger(name)
           store_trigger(name)
         end
       end
 
-      def define_trigger_wrap_method(name)
+      def define_trigger(name)
         mod = Module.new
         line = __LINE__
         mod.class_eval %{
