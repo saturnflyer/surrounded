@@ -226,12 +226,13 @@ module Surrounded
       end
 
       def add_interface(role, behavior, object)
-        applicator = behavior.is_a?(Class) ? method(:add_class_interface) : method(:add_module_interface)
+        if behavior && role_const_defined?(behavior)
+          applicator = role_const(behavior).is_a?(Class) ? method(:add_class_interface) : method(:add_module_interface)
 
-        role_player = applicator.call(object, behavior)
-        map_role(role, behavior, role_player) if behavior
-        role_player.send(:store_context, self){}
-        role_player
+          role_player = applicator.call(object, role_const(behavior))
+          map_role(role, behavior, role_player)
+        end
+        role_player || object
       end
 
       def add_module_interface(obj, mod)
@@ -245,34 +246,34 @@ module Surrounded
       def add_class_interface(obj, klass)
         wrapper_name = wrap_methods.find{|meth| klass.respond_to?(meth) }
         return obj if !wrapper_name
-
         klass.method(wrapper_name).call(obj)
       end
 
       def remove_interface(role, behavior, object)
-        remover_name = (module_removal_methods + unwrap_methods).find{|meth| object.respond_to?(meth) }
-        object.send(:remove_context) do; end
+        if behavior && role_const_defined?(behavior)
+          remover_name = (module_removal_methods + unwrap_methods).find{|meth| object.respond_to?(meth) }
+        end
 
         if remover_name
           role_player = object.send(remover_name)
         end
 
-        return role_player || object
+        role_player || object
       end
 
       def apply_roles
-        traverse_map method(:add_interface)
+        role_map.each do |role, mod_name, object|
+          player = add_interface(role, mod_name, object)
+          player.send(:store_context, self) do; end
+        end
       end
 
       def remove_roles
-        traverse_map method(:remove_interface)
-      end
-
-      def traverse_map(applicator)
-        role_map.each do |role, mod_name, object|
-          if role_const_defined?(mod_name)
-            applicator.call(role, role_const(mod_name), object)
+        role_map.each do |role, mod_name, player|
+          if player.respond_to?(:remove_context, true)
+            player.send(:remove_context) do; end
           end
+          remove_interface(role, mod_name, player)
         end
       end
 
