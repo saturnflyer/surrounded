@@ -2,6 +2,7 @@ require 'set'
 require 'surrounded/context/role_map'
 require 'surrounded/context/role_builders'
 require 'surrounded/context/initializing'
+require 'surrounded/context/trigger_controls'
 require 'surrounded/access_control'
 require 'surrounded/shortcuts'
 require 'surrounded/east_oriented'
@@ -15,18 +16,18 @@ require 'surrounded/east_oriented'
 module Surrounded
   module Context
     def self.extended(base)
-      base.extend RoleBuilders, Initializing
       base.class_eval {
+        extend RoleBuilders, Initializing
+
         @triggers = Set.new
         include InstanceMethods
-      }
-    end
 
-    # Provides a Set of all available trigger methods where
-    # behaviors will be applied to the roles before execution
-    # and removed afterward.
-    def triggers
-      @triggers.dup
+        trigger_mod = Module.new
+        const_set('TriggerMethods', trigger_mod)
+        include trigger_mod
+
+        extend TriggerControls
+      }
     end
 
     private
@@ -56,71 +57,6 @@ module Surrounded
     # Set the default type of implementation for role method for an individual context.
     def default_role_type=(type)
       @default_role_type = type
-    end
-
-    # Creates a context instance method which will apply behaviors to role players
-    # before execution and remove the behaviors after execution.
-    #
-    # Alternatively you may define your own methods then declare them as triggers
-    # afterward.
-    # 
-    # Example:
-    #   trigger :some_event do
-    #     # code here
-    #   end
-    #
-    #   def some_event
-    #     # code here
-    #   end
-    #   trigger :some_event
-    #
-    def trigger(*names, &block)
-      if block.nil?
-        names.each do |name|
-          convert_method_to_trigger(name)
-        end
-      else
-        name = names.first
-        define_method(name, &block)
-        convert_method_to_trigger(name)
-      end
-    end
-
-    def store_trigger(*names)
-      @triggers.merge(names)
-    end
-    
-    def convert_method_to_trigger(name)
-      unless triggers.include?(name) || name.nil?
-        alias_method :"__trigger_#{name}", :"#{name}"
-        private :"__trigger_#{name}"
-        remove_method :"#{name}"
-        define_trigger_wrap_method(name)
-        store_trigger(name)
-      end
-    end
-
-    def define_trigger_wrap_method(name)
-      mod = Module.new
-      line = __LINE__
-      mod.class_eval %{
-        def #{name}(*args, &block)
-          begin
-            apply_roles
-
-            #{trigger_return_content(name)}
-
-          ensure
-            remove_roles
-          end
-        end
-      }, __FILE__, line
-      const_set("SurroundedTrigger#{name.to_s.upcase.sub(/\?\z/,'Query')}", mod)
-      include mod
-    end
-    
-    def trigger_return_content(name, *args, &block)
-      %{self.send("__trigger_#{name}", *args, &block)}
     end
     
     # === Utility shortcuts
