@@ -6,7 +6,6 @@ if test_rebinding_methods?
 class ProxyContext
   extend Surrounded::Context
 
-  apply_roles_on(:trigger)
   initialize(:admin, :task)
 
   interface :admin do

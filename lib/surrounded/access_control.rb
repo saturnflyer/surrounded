@@ -33,10 +33,10 @@ module Surrounded
       mod.class_eval {
         define_method "disallow_#{name}?" do
           begin
-            apply_roles if __apply_role_policy == :trigger
+            apply_roles
             instance_exec(&block)
           ensure
-            remove_roles if __apply_role_policy == :trigger
+            remove_roles
           end
         end
       }

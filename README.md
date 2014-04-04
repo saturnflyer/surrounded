@@ -433,61 +433,6 @@ class Organization
 end
 ```
 
-## Policies for the application of role methods
-
-There are 2 approaches to applying new behavior to your objects.
-
-By default your context will add methods to an object before a trigger is run
-and behaviors will be removed after the trigger is run.
-
-Alternatively you may set the behaviors to be added during the initialize method
-of your context.
-
-Here's how it works:
-
-```ruby
-class ActivatingAccount
-  extend Surrounded::Context
-
-  apply_roles_on(:trigger) # this is the default
-  # apply_roles_on(:initialize) # set this to apply behavior from the start
-
-  initialize(:activator, :account)
-
-  role :activator do
-    def some_behavior; end
-  end
-
-  def non_trigger_method
-    activator.some_behavior # not available unless you apply roles on initialize
-  end
-
-  trigger :some_trigger_method do
-    activator.some_behavior # always available
-  end
-end
-```
-
-_Why are those options there?_
-
-When you initialize a context and apply behavior at the same time, you'll need
-to remove that behavior. For example, if you are using Casting AND you apply roles on initialize:
-
-```ruby
-context = ActiviatingAccount.new(current_user, Account.find(123))
-context.do_something
-current_user.some_behavior # this method is still available
-current_user.uncast # you'll have to manually cleanup
-```
-
-But if you go with the default and apply behaviors on trigger, your roles will be cleaned up automatically:
-
-```ruby
-context = ActiviatingAccount.new(current_user, Account.find(123))
-context.do_something
-current_user.some_behavior # NoMethodError
-```
-
 ## Overview in code
 
 Here's a view of the possibilities in code.
@@ -498,9 +443,6 @@ Surrounded::Context.default_role_type = :module # also :wrap, :wrapper, or :inte
 
 class ActiviatingAccount
   extend Surrounded::Context
-
-  apply_roles_on(:trigger) # this is the default
-  # apply_roles_on(:initialize) # set this to apply behavior from the start
   
   # set the default role type only for this class
   self.default_role_type = :module # also :wrap, :wrapper, or :interface

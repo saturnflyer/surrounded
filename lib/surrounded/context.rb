@@ -58,16 +58,6 @@ module Surrounded
       @default_role_type = type
     end
 
-    # Set the time to apply roles to objects. Either :trigger or :initialize. 
-    # Defaults to :trigger
-    def apply_roles_on(which)
-      @__apply_role_policy = which
-    end
-
-    def __apply_role_policy
-      @__apply_role_policy ||= :trigger
-    end
-
     # Creates a context instance method which will apply behaviors to role players
     # before execution and remove the behaviors after execution.
     #
@@ -116,12 +106,12 @@ module Surrounded
       mod.class_eval %{
         def #{name}(*args, &block)
           begin
-            apply_roles if __apply_role_policy == :trigger
+            apply_roles
 
             #{trigger_return_content(name)}
 
           ensure
-            remove_roles if __apply_role_policy == :trigger
+            remove_roles
           end
         end
       }, __FILE__, line
@@ -184,11 +174,9 @@ module Surrounded
       private
 
       def preinitialize
-        @__apply_role_policy = self.class.send(:__apply_role_policy)
       end
 
       def postinitialize
-        apply_roles if __apply_role_policy == :initialize
       end
 
       def role_map
@@ -219,10 +207,6 @@ module Surrounded
       def map_role(role, mod_name, object)
         instance_variable_set("@#{role}", object)
         role_map.update(role, role_module_basename(mod_name), object)
-      end
-
-      def __apply_role_policy
-        @__apply_role_policy
       end
 
       def add_interface(role, behavior, object)

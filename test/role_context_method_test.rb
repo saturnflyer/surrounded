@@ -103,38 +103,46 @@ describe Surrounded::Context, '.role' do
   end
 
   describe 'custom default' do
+    include Surrounded # the test is a role player here
+
     it 'allows the use of custom default role types' do
       class CustomDefaultWrap
         extend Surrounded::Context
 
         self.default_role_type = :wrap
-        apply_roles_on(:initialize)
 
-        initialize(:admin)
+        initialize(:admin, :the_test)
 
         role :admin do
         end
+
+        trigger :check_admin_type do
+          the_test.assert_kind_of SimpleDelegator, admin
+        end
       end
-      context = CustomDefaultWrap.new(Object.new)
-      assert_kind_of(SimpleDelegator, context.send(:admin))
+      context = CustomDefaultWrap.new(Object.new, self)
+      context.check_admin_type
     end
 
-    it 'allows the setting of custom default role time for all Surrounded::Contexts' do
+    it 'allows the setting of custom default role type for all Surrounded::Contexts' do
       begin
         old_default = Surrounded::Context.default_role_type
         Surrounded::Context.default_role_type = :wrap
         class CustomGlobalDefault
           extend Surrounded::Context
-          apply_roles_on(:initialize)
 
-          initialize(:admin)
+          initialize(:admin, :the_test)
 
           role :admin do
           end
+
+          trigger :check_admin_type do
+            the_test.assert_kind_of SimpleDelegator, admin
+          end
         end
 
-        context = CustomGlobalDefault.new(Object.new)
-        assert_kind_of(SimpleDelegator, context.send(:admin))
+        context = CustomGlobalDefault.new(Object.new, self)
+        context.check_admin_type
       ensure
         Surrounded::Context.default_role_type = old_default
       end
