@@ -194,7 +194,7 @@ module Surrounded
       def map_roles(role_object_array)
         role_object_array.each do |role, object|
           if self.respond_to?("map_role_#{role}")
-            self.send("map_#{role}_role", object)
+            self.send("map_role_#{role}", object)
           else
             map_role(role, role_behavior_name(role), object)
             map_role_collection(role, role_behavior_name(role), object)
