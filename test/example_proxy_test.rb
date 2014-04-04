@@ -1,7 +1,5 @@
 require 'test_helper'
 
-if test_rebinding_methods?
-
 # If you want to use wrappers, here's how you could
 class ProxyContext
   extend Surrounded::Context
@@ -52,6 +50,4 @@ describe ProxyContext do
 
     assert_match 'ProxyUser name="Jim"', err.message
   end
-end
-
 end

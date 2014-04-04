@@ -44,48 +44,46 @@ describe Surrounded::Context, '.role' do
       assert_match(/private constant/i, error.message)
     end
   end
-  if test_rebinding_methods?
-    class InterfaceContext
-      extend Surrounded::Context
+  class InterfaceContext
+    extend Surrounded::Context
 
-      initialize(:admin, :other)
+    initialize(:admin, :other)
 
-      role :admin, :interface do
-        def hello
-          'hello from admin'
-        end
-      end
-
-      trigger :admin_hello do
-        admin.hello
-      end
-    end
-
-    class Hello
-      include Surrounded
+    role :admin, :interface do
       def hello
-        'hello'
+        'hello from admin'
       end
     end
 
-    describe 'interfaces' do
-      let(:context){
-        InterfaceContext.new(Hello.new, Hello.new)
+    trigger :admin_hello do
+      admin.hello
+    end
+  end
+
+  class Hello
+    include Surrounded
+    def hello
+      'hello'
+    end
+  end
+
+  describe 'interfaces' do
+    let(:context){
+      InterfaceContext.new(Hello.new, Hello.new)
+    }
+    it 'sets interface objects to use interface methods before singleton methods' do
+      assert_equal 'hello from admin', context.admin_hello
+    end
+
+    it 'marks the inteface constant private' do
+      error = assert_raises(NameError){
+        InterfaceContext::AdminInterface
       }
-      it 'sets interface objects to use interface methods before singleton methods' do
-        assert_equal 'hello from admin', context.admin_hello
-      end
+      assert_match(/private constant/i, error.message)
+    end
 
-      it 'marks the inteface constant private' do
-        error = assert_raises(NameError){
-          InterfaceContext::AdminInterface
-        }
-        assert_match(/private constant/i, error.message)
-      end
-
-      it 'creates a private accessor method' do
-        assert_respond_to(context, :admin)
-      end
+    it 'creates a private accessor method' do
+      assert_respond_to(context, :admin)
     end
   end
 
