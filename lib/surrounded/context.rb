@@ -152,9 +152,13 @@ module Surrounded
 
     # Conditional const_get for a named role behavior
     def role_const(name)
-      if const_defined?(name)
+      if role_const_defined?(name)
         const_get(name)
       end
+    end
+
+    def role_const_defined?(name)
+      const_defined?(name, false)
     end
 
     module InstanceMethods
@@ -305,7 +309,7 @@ module Surrounded
       end
 
       def role_const_defined?(name)
-        self.class.const_defined?(name)
+        self.class.send(:role_const_defined?, name)
       end
 
       def singularize_name(name)
