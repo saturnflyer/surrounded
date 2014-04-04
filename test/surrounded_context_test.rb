@@ -124,11 +124,7 @@ class RoleAssignmentContext
     user.respond_to?(:a_method!)
   end
   
-  def regular_method_trigger
-    user.respond_to?(:a_method!)
-  end
-  
-  trigger :user_ancestors, :other_user_ancestors, :regular_method_trigger
+  trigger :user_ancestors, :other_user_ancestors
 
   module User
     def a_method!; end
@@ -138,14 +134,47 @@ class RoleAssignmentContext
   end
 end
 
+class Special; end
+class IgnoreExternalConstantsContext
+  extend Surrounded::Context
+
+  initialize :user, :special, :other
+
+  role :other do
+    def something_or_other; end
+  end
+
+  trigger :check_special do
+    special.class
+  end
+end
+
 describe Surrounded::Context, '.initialize' do
   it 'defines an initialize method accepting the same arguments' do
     assert_equal 2, RoleAssignmentContext.instance_method(:initialize).arity
   end
 end
 
+class ClassRoleAssignmentContext
+  extend Surrounded::Context
+
+  initialize(:thing, :the_test)
+
+  trigger :check_user_response do
+    the_test.assert_respond_to thing, :method_from_class
+  end
+
+  class Thing
+    include Surrounded
+    def initialize(obj); end
+    def method_from_class; end
+  end
+
+end
+
 describe Surrounded::Context, 'assigning roles' do
-  include Surrounded
+  include Surrounded # the test must be context-aware
+
   let(:user){ User.new("Jim") }
   let(:other_user){ CastingUser.new("Guille") }
   let(:context){ RoleAssignmentContext.new(user, other_user) }
@@ -164,28 +193,18 @@ describe Surrounded::Context, 'assigning roles' do
   end
 
   it 'will use classes as roles' do
-    ClassRoleAssignmentContext = Class.new do
-      extend Surrounded::Context
-
-      initialize(:thing, :the_test)
-
-      trigger :check_user_response do
-        the_test.assert_respond_to thing, :method_from_class
-      end
-
-      class Thing
-        include Surrounded
-        def initialize(obj); end
-        def method_from_class; end
-      end
-
-    end
-
     user = User.new('Jim')
 
     context = ClassRoleAssignmentContext.new(user, self)
 
     assert context.check_user_response
+  end
+
+  it 'does not use constants defined outside the context class' do
+    special = User.new('Special')
+    other = User.new('Other')
+    context = IgnoreExternalConstantsContext.new(user, special, other)
+    assert_equal User, context.check_special
   end
 end
 
@@ -213,6 +232,9 @@ class CollectionContext
       "member show"
     end
   end
+
+  role :others do; end
+  role :other do; end
 
 end
 

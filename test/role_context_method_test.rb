@@ -62,6 +62,7 @@ describe Surrounded::Context, '.role' do
     end
 
     class Hello
+      include Surrounded
       def hello
         'hello'
       end

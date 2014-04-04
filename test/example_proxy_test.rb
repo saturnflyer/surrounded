@@ -14,6 +14,8 @@ class ProxyContext
       "hello from #{name}, the admin interface!"
     end
   end
+  wrap :task do
+  end
 
   trigger :do_something do
     admin.some_admin_method
@@ -29,6 +31,7 @@ class ProxyContext
 end
 
 ProxyUser = Struct.new(:name)
+ProxyUser.send(:include, Surrounded)
 
 describe ProxyContext do
   let(:user){
