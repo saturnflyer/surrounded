@@ -40,15 +40,6 @@ module Surrounded
     class << self
       attr_writer :default_role_type
     end
-    
-    # Provide the ability to create access control methods for your triggers.
-    def protect_triggers;  self.extend(::Surrounded::AccessControl); end
-    
-    # Automatically create class methods for each trigger method.
-    def shortcut_triggers; self.extend(::Surrounded::Shortcuts); end
-    
-    # Automatically return the context object from trigger methods.
-    def east_oriented_triggers; self.extend(::Surrounded::EastOriented); end
 
     def default_role_type
       @default_role_type ||= Surrounded::Context.default_role_type
@@ -59,11 +50,24 @@ module Surrounded
       @default_role_type = type
     end
     
+    # Provide the ability to create access control methods for your triggers.
+    def protect_triggers;  self.extend(::Surrounded::AccessControl); end
+
+    # Automatically create class methods for each trigger method.
+    def shortcut_triggers; self.extend(::Surrounded::Shortcuts); end
+
+    # Automatically return the context object from trigger methods.
+    def east_oriented_triggers; self.extend(::Surrounded::EastOriented); end
+
     # === Utility shortcuts
+
+    def role_const_defined?(name)
+      const_defined?(name, false)
+    end
     
     # Set a named constant and make it private
     def private_const_set(name, const)
-      unless self.const_defined?(name, false)
+      unless role_const_defined?(name)
         const = const_set(name, const)
         private_constant name.to_sym
       end
@@ -81,10 +85,6 @@ module Surrounded
       if role_const_defined?(name)
         const_get(name)
       end
-    end
-
-    def role_const_defined?(name)
-      const_defined?(name, false)
     end
 
     module InstanceMethods
