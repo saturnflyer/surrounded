@@ -109,12 +109,6 @@ module Surrounded
 
       private
 
-      def preinitialize
-      end
-
-      def postinitialize
-      end
-
       def role_map
         @role_map ||= RoleMap.new
       end
