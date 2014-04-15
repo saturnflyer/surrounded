@@ -23,6 +23,10 @@ class FilteredContext
     user.special
   end
   
+  trigger :unguarded do
+    # used for disallow check
+  end
+
   role :user do
     def special
       'special user method'
@@ -63,5 +67,17 @@ describe Surrounded::Context, 'access control' do
   
   it 'applies roles in disallow blocks' do
     assert_equal 'special user method', context.disallow_check_disallow_behavior?
+  end
+
+  it 'lets you ask if the object will allow a method' do
+    assert context.allow?(:unguarded)
+    refute context.allow?(:check_disallow_behavior)
+  end
+
+  it 'complains if you ask about an undefined method' do
+    error = assert_raises(NoMethodError){
+      context.allow?(:not_a_defined_method)
+    }
+    assert_match(/undefined method `not_a_defined_method' for #<#{context.class}/, error.message)
   end
 end

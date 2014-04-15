@@ -58,6 +58,18 @@ module Surrounded
           !self.respond_to?(method_restrictor, true) || !self.send(method_restrictor)
         }.to_set
       end
+
+      # Ask if the context will allow access to a trigger given the current players.
+      def allow?(name)
+        unless self.respond_to?(name)
+          raise NoMethodError, %{undefined method `#{name}' for #{self.inspect}}
+        end
+        if self.respond_to?("disallow_#{name}?")
+          !self.public_send("disallow_#{name}?")
+        else
+          true
+        end
+      end
     end
   end
 end
