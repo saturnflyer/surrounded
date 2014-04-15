@@ -151,7 +151,7 @@ module Surrounded
 
       def add_module_interface(obj, mod)
         adder_name = module_extension_methods.find{|meth| obj.respond_to?(meth) }
-        return obj if !adder_name
+        return obj unless adder_name
 
         obj.method(adder_name).call(mod)
         obj
