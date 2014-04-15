@@ -8,12 +8,11 @@ module Surrounded
         instance.public_send(name)
       end
     end
-    
     def store_trigger(*names)
       names.each do |name|
         define_shortcut(name)
       end
-      @triggers.merge(names)
+      super
     end
   end
 end

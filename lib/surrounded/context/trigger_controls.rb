@@ -36,9 +36,9 @@ module Surrounded
           end
         else
           name = names.first
-          define_method(name, &block)
           define_trigger_action(*names, &block)
-          convert_method_to_trigger(name)
+          define_trigger(name, &block)
+          store_trigger(name)
         end
       end
       
@@ -53,9 +53,8 @@ module Surrounded
       end
 
       def define_trigger(name)
-        mod = Module.new
         line = __LINE__
-        mod.class_eval %{
+        self.class_eval %{
           def #{name}(*args, &block)
             begin
               apply_roles
@@ -67,12 +66,14 @@ module Surrounded
             end
           end
         }, __FILE__, line
-        const_set("SurroundedTrigger#{name.to_s.upcase.sub(/\?\z/,'Query')}", mod)
-        include mod
       end
     
       def trigger_return_content(name)
-        %{self.send("__trigger_#{name}", *args, &block)}
+        if method_defined?(name)
+          %{super}
+        else
+          %{self.send("__trigger_#{name}", *args, &block)}
+        end
       end
       
       
