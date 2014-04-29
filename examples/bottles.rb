@@ -3,20 +3,13 @@ require 'surrounded'
 class Song
   extend Surrounded::Context
   
-  def initialize(chorus, bottle_count, container, location)
-    map_roles [ [:chorus, chorus], 
-                [:bottle_count, bottle_count], 
-                [:container, container], 
-                [:location, location] ]
-  end
-  private_attr_reader :chorus, :bottle_count, :container, :location
+  initialize :chorus, :bottle_count, :container, :location
   
   trigger :sing do
     chorus.sing
   end
   
-  role :bottle_count, :wrap do
-  end
+  role :bottle_count, :wrap
   
   role :chorus do
     def sing
