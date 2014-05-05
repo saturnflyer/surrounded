@@ -146,4 +146,31 @@ describe Surrounded::Context, '.role' do
       end
     end
   end
+
+  describe 'custom roles' do
+    it 'allows the creation of custom role methods' do
+      class PrependedRoles
+        extend Surrounded::Context
+
+        initialize :user
+
+        trigger :get_name do
+          user.name
+        end
+
+        role :user do
+          def name
+            "Not what you thought, #{super}"
+          end
+        end
+
+        def apply_behavior_user(mod, object)
+          object.singleton_class.prepend(mod)
+          object
+        end
+      end
+
+      assert_equal "Not what you thought, Jim", PrependedRoles.new(User.new('Jim')).get_name
+    end
+  end
 end

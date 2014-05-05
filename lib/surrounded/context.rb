@@ -141,15 +141,21 @@ module Surrounded
 
       def apply_behavior(role, behavior, object)
         if behavior && role_const_defined?(behavior)
-          applicator = role_const(behavior).is_a?(Class) ? method(:apply_class_behavior) : method(:apply_module_behavior)
+          applicator = if self.respond_to?("apply_behavior_#{role}")
+                          method("apply_behavior_#{role}")
+                        elsif role_const(behavior).is_a?(Class)
+                          method(:apply_class_behavior)
+                        else
+                          method(:apply_module_behavior)
+                        end
 
-          role_player = applicator.call(object, role_const(behavior))
+          role_player = applicator.call(role_const(behavior), object)
           map_role(role, behavior, role_player)
         end
         role_player || object
       end
 
-      def apply_module_behavior(obj, mod)
+      def apply_module_behavior(mod, obj)
         adder_name = module_extension_methods.find{|meth| obj.respond_to?(meth) }
         return obj unless adder_name
 
@@ -157,7 +163,7 @@ module Surrounded
         obj
       end
 
-      def apply_class_behavior(obj, klass)
+      def apply_class_behavior(klass, obj)
         wrapper_name = wrap_methods.find{|meth| klass.respond_to?(meth) }
         return obj if !wrapper_name
         klass.method(wrapper_name).call(obj)
