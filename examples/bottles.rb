@@ -133,5 +133,14 @@ class Chorus
   end
 end
 
+class Sheet
+  include Surrounded
+  def output(value)
+    File.open('bottles.txt', 'a') do |f|
+      f.puts(value)
+    end
+  end
+end
+
 Countdown.new(Chorus.new, 3, Wall.new).start
-# Countdown.new(Chorus.new, 3, Box.new).start
+# Countdown.new(Sheet.new, 3, Box.new).start
