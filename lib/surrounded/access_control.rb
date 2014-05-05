@@ -33,10 +33,10 @@ module Surrounded
       mod.class_eval {
         define_method "disallow_#{name}?" do
           begin
-            apply_roles
+            apply_behaviors
             instance_exec(&block)
           ensure
-            remove_roles
+            remove_behaviors
           end
         end
       }

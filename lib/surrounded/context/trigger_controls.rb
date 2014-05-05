@@ -57,12 +57,12 @@ module Surrounded
         self.class_eval %{
           def #{name}(*args, &block)
             begin
-              apply_roles
+              apply_behaviors
 
               #{trigger_return_content(name)}
 
             ensure
-              remove_roles
+              remove_behaviors
             end
           end
         }, __FILE__, line

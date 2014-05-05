@@ -139,9 +139,9 @@ module Surrounded
         role_map.update(role, role_module_basename(mod_name), object)
       end
 
-      def apply_role(role, behavior, object)
+      def apply_behavior(role, behavior, object)
         if behavior && role_const_defined?(behavior)
-          applicator = role_const(behavior).is_a?(Class) ? method(:add_class_interface) : method(:add_module_interface)
+          applicator = role_const(behavior).is_a?(Class) ? method(:apply_class_behavior) : method(:apply_module_behavior)
 
           role_player = applicator.call(object, role_const(behavior))
           map_role(role, behavior, role_player)
@@ -149,7 +149,7 @@ module Surrounded
         role_player || object
       end
 
-      def add_module_interface(obj, mod)
+      def apply_module_behavior(obj, mod)
         adder_name = module_extension_methods.find{|meth| obj.respond_to?(meth) }
         return obj unless adder_name
 
@@ -157,13 +157,13 @@ module Surrounded
         obj
       end
 
-      def add_class_interface(obj, klass)
+      def apply_class_behavior(obj, klass)
         wrapper_name = wrap_methods.find{|meth| klass.respond_to?(meth) }
         return obj if !wrapper_name
         klass.method(wrapper_name).call(obj)
       end
 
-      def remove_interface(role, behavior, object)
+      def remove_behavior(role, behavior, object)
         if behavior && role_const_defined?(behavior)
           remover_name = (module_removal_methods + unwrap_methods).find{|meth| object.respond_to?(meth) }
         end
@@ -175,19 +175,19 @@ module Surrounded
         role_player || object
       end
 
-      def apply_roles
+      def apply_behaviors
         role_map.each do |role, mod_name, object|
-          player = apply_role(role, mod_name, object)
+          player = apply_behavior(role, mod_name, object)
           player.send(:store_context, self) do; end
         end
       end
 
-      def remove_roles
+      def remove_behaviors
         role_map.each do |role, mod_name, player|
           if player.respond_to?(:remove_context, true)
             player.send(:remove_context) do; end
           end
-          remove_interface(role, mod_name, player)
+          remove_behavior(role, mod_name, player)
         end
       end
 

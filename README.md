@@ -487,9 +487,9 @@ class ActiviatingAccount
   # if you use a regular method and want to use context-specific behavior, 
   # you must handle storing the context yourself:
   def regular_method
-    apply_roles # handles the adding of all the roles and behaviors
+    apply_behaviors # handles the adding of all the roles and behaviors
     activator.some_behavior # behavior not available unless you apply roles on initialize
-    remove_roles # handles the removal of all roles and behaviors
+    remove_behaviors # handles the removal of all roles and behaviors
   end
 
   trigger :some_trigger_method do
