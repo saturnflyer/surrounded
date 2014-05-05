@@ -19,41 +19,40 @@ class Countdown
   
   role :singer do
     def start
-      announce_full_status.
-        take_action
+      announce_full_status
+      take_action
     end
     
     def continue
-      announce_status.
-        pause
-      
-      announce_full_status.
-        take_action
+      announce_status
+      pause
+      start
     end
     
     def announce_full_status
       output %{#{location.status}, #{location.inventory}}.capitalize
-      self
     end
     
     def announce_status
       output %{#{location.status}}.capitalize
-      self
     end
     
     def take_action
       if location.empty?
         output %{Go to the store and get some more}
-        Countdown.new(singer, 99, location).finish
+        next_part.finish
       else
-        output %{#{location.subtraction.capitalize}, pass it around}
-        Countdown.new(singer, number.pred, location).continue
+        output %{#{location.subtraction}, pass it around}.capitalize
+        next_part.continue
       end
     end
     
     def pause
       output ""
-      self
+    end
+    
+    def next_part
+      context.class.new(singer, number.pred, location)
     end
   end
   
@@ -69,6 +68,10 @@ class Countdown
     def container
       self == 1 ? 'bottle' : 'bottles'
     end
+    
+    def pred
+      self.zero? ? 99 : super
+    end
   end
   
   role :location do
@@ -76,12 +79,8 @@ class Countdown
       number.zero?
     end
     
-    def contents
-      %{#{number.container} of beer}
-    end
-    
     def inventory
-      %{#{number.name} #{contents}}
+      %{#{number.name} #{number.container} of beer}
     end
     
     def status
