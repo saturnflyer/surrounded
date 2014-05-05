@@ -139,7 +139,7 @@ module Surrounded
         role_map.update(role, role_module_basename(mod_name), object)
       end
 
-      def add_interface(role, behavior, object)
+      def apply_role(role, behavior, object)
         if behavior && role_const_defined?(behavior)
           applicator = role_const(behavior).is_a?(Class) ? method(:add_class_interface) : method(:add_module_interface)
 
@@ -177,7 +177,7 @@ module Surrounded
 
       def apply_roles
         role_map.each do |role, mod_name, object|
-          player = add_interface(role, mod_name, object)
+          player = apply_role(role, mod_name, object)
           player.send(:store_context, self) do; end
         end
       end
