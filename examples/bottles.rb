@@ -1,150 +1,108 @@
 require 'surrounded'
 
-class Song
+class Countdown
   extend Surrounded::Context
   
-  initialize :chorus, :bottle_count, :container, :location
+  initialize :singer, :number, :location
   
-  trigger :sing do
-    chorus.sing
+  trigger :start do
+    singer.start
   end
   
-  role :bottle_count, :wrap
-  
-  role :chorus do
-    def sing
-      bottle_count.downto(0).map {|count|
-        output Verse.new(count, container, location).sing
-      }
-    end
+  trigger :continue do
+    singer.continue
   end
   
-  class Verse
-    extend Surrounded::Context
-    
-    def initialize(number, container, location)
-      map_role_count(number)
-      map_role_next_count(next_count_or_reset)
-      map_roles([ [:container, container], [:location, location] ])
-    end
-    private_attr_reader :count, :next_count, :container, :location
-    
-    def next_count_or_reset
-      count.zero? ? 99 : count.pred
+  trigger :finish do
+    singer.announce_status
+  end
+  
+  role :singer do
+    def start
+      announce_full_status.
+        take_action
     end
     
-    trigger :sing do
-      count.to_s
+    def continue
+      announce_status.
+        pause
+      
+      announce_full_status.
+        take_action
     end
     
-    def map_role_next_count(obj)
-      role_class = case obj
-      when 0
-        Count0
-      when 1
-        Count1
+    def announce_full_status
+      output %{#{location.status}, #{location.inventory}}.capitalize
+      self
+    end
+    
+    def announce_status
+      output %{#{location.status}}.capitalize
+      self
+    end
+    
+    def take_action
+      if location.empty?
+        output %{Go to the store and get some more}
+        Countdown.new(singer, 99, location).finish
       else
-        Count
-      end
-      map_role(:next_count, role_module_basename(role_class), obj)
-    end
-    
-    def map_role_count(obj)
-      role_class = case obj
-      when 0
-        Count0
-      when 1
-        Count1
-      else
-        Count
-      end
-      map_role(:count, role_module_basename(role_class), obj)
-    end
-    
-    role :count, :wrap do
-      def to_s
-        %{
-#{what.capitalize} #{where}, #{what},
-#{action}
-#{next_count.what.capitalize} #{next_count.where}
-}
-      end
-      
-      def what
-        %{#{container.contents(__getobj__)}}
-      end
-      
-      def action
-        "Take #{pronoun} down, pass it around"
-      end
-      
-      def pronoun
-        'one'
-      end
-      
-      def where
-        %{#{location.placement} the #{location.name}}
+        output %{#{location.subtraction.capitalize}, pass it around}
+        Countdown.new(singer, number.pred, location).continue
       end
     end
     
-    class Count0 < Count
-      def action
-        "Go to the store and get some more"
-      end
-      
-      def what
-        "no more #{container.plural_name} of #{container.ingredients}"
-      end
+    def pause
+      output ""
+      self
+    end
+  end
+  
+  role :number, :wrap do
+    def name
+      self.zero? ? 'no more' : to_i
     end
     
-    class Count1 < Count
-      def pronoun
-        "it"
-      end
+    def pronoun
+      self == 1 ? 'it' : 'one'
+    end
+    
+    def container
+      self == 1 ? 'bottle' : 'bottles'
+    end
+  end
+  
+  role :location do
+    def empty?
+      number.zero?
+    end
+    
+    def contents
+      %{#{number.container} of beer}
+    end
+    
+    def inventory
+      %{#{number.name} #{contents}}
+    end
+    
+    def status
+      %{#{inventory} #{placement} #{name}}
+    end
+    
+    def subtraction
+      %{take #{number.pronoun} #{removal}}
     end
   end
 end
 
-class Collection
-  include Surrounded
-  
-  def initialize(ingredients)
-    @ingredients = ingredients
-  end
-  attr_reader :ingredients
-  
-  def plural_name
-    self.class.to_s.downcase
-  end
-  
-  def singular_name
-    raise 'unimplemented!'
-  end
-  
-  def contents(amount)
-    name = (amount == 1 ? singular_name : plural_name)
-    %{#{amount} #{name} of #@ingredients}
-  end
-end
-
-class Bottles < Collection
-  def singular_name
-    'bottle'
-  end
-end
-
-class Jars < Collection
-  def singular_name
-    'jar'
-  end
-end
-
-
-class Container
+class Location
   include Surrounded
   
   def placement
     'on'
+  end
+  
+  def removal
+    'off'
   end
   
   def name
@@ -152,11 +110,19 @@ class Container
   end
 end
 
-class Wall < Container; end
+class Wall < Location
+  def removal
+    'down'
+  end
+end
 
-class Box < Container
+class Box < Location
   def placement
     'in'
+  end
+  
+  def removal
+    'out'
   end
 end
 
@@ -167,6 +133,5 @@ class Chorus
   end
 end
 
-# context = Song.new(Chorus.new, 3, Jars.new('jam'), Box.new)
-context = Song.new(Chorus.new, 3, Bottles.new('beer'), Wall.new)
-context.sing
+Countdown.new(Chorus.new, 3, Wall.new).start
+# Countdown.new(Chorus.new, 3, Box.new).start
