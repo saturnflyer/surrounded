@@ -1,7 +1,7 @@
 require 'triad'
 module Surrounded
   module Context
-    class InvalidRole < ::Triad::KeyNotPresent; end
+    class InvalidRole < ::Triad::ItemNotPresent; end
     module InvalidRoleType; end
     class AccessError < ::StandardError; end
   end
