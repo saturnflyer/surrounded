@@ -168,15 +168,19 @@ module Surrounded
         return obj if !wrapper_name
         klass.method(wrapper_name).call(obj)
       end
-
+      
       def remove_behavior(role, behavior, object)
         if behavior && role_const_defined?(behavior)
-          remover_name = (module_removal_methods + unwrap_methods).find{|meth| object.respond_to?(meth) }
+          remover_name = (module_removal_methods + unwrap_methods).find do |meth|
+            object.respond_to?(meth)
+          end
         end
 
-        if remover_name
-          role_player = object.send(remover_name)
-        end
+        role_player = if self.respond_to?("remove_behavior_#{role}")
+                        self.send("remove_behavior_#{role}", role_const(behavior), object)
+                      elsif remover_name
+                        object.send(remover_name)
+                      end
 
         role_player || object
       end
