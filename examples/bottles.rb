@@ -88,7 +88,7 @@ class Countdown
     end
     
     def subtraction
-      %{take #{number.pronoun} #{removal}}
+      %{take #{number.pronoun} #{removal_strategy}}
     end
   end
 end
@@ -100,7 +100,7 @@ class Location
     'on'
   end
   
-  def removal
+  def removal_strategy
     'off'
   end
   
@@ -110,7 +110,7 @@ class Location
 end
 
 class Wall < Location
-  def removal
+  def removal_strategy
     'down'
   end
 end
@@ -120,7 +120,7 @@ class Box < Location
     'in'
   end
   
-  def removal
+  def removal_strategy
     'out'
   end
 end
