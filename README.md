@@ -1,29 +1,173 @@
 # ![Surrounded](http://saturnflyer.github.io/surrounded/images/surrounded.png "Surrounded")
-## Bring your own complexity
+## Be in control of business logic.
 
 [![Build Status](https://travis-ci.org/saturnflyer/surrounded.png?branch=master)](https://travis-ci.org/saturnflyer/surrounded)
 [![Code Climate](https://codeclimate.com/github/saturnflyer/surrounded.png)](https://codeclimate.com/github/saturnflyer/surrounded)
 [![Coverage Status](https://coveralls.io/repos/saturnflyer/surrounded/badge.png)](https://coveralls.io/r/saturnflyer/surrounded)
 [![Gem Version](https://badge.fury.io/rb/surrounded.png)](http://badge.fury.io/rb/surrounded)
 
-# Surrounded aims to make things simple and get out of your way.
+# Get work done with only what you need and nothing more.
 
-Most of what you care about is defining the behavior of objects. How they interact is important.
-The purpose of this library is to clear away the details of getting things setup and to allow you to make changes to the way you handle roles.
+Surrounded is designed to help you better manage your business logic.
 
-There are two main parts to this library. 
+## How to think about your objects
 
-1. `Surrounded` gives objects an implicit awareness of other objects in their environments.
-2. `Surrounded::Context` helps you create objects which encapsulate other objects **and** their behavior. These *are* the environments.
+First, name the problem you're solving. Then, break down your problem into responsible roles.
 
-First, take a look at creating contexts. This is where you'll spend most of your time.
+Use your problem name as a class and extend it with `Surrounded::Context`
 
-## Easily create encapsulated environments for your objects.
+It might look like this:
+
+```ruby
+class Employment
+  extend Surrounded::Context
+
+  role :boss
+  role :employee
+end
+```
+
+In your application, you'll initialize this class with objects to play the roles that you've defined, so you'll need to specify which role players will use which role.
+
+```ruby
+class Employment
+  extend Surrounded::Context
+
+  initialize :employee, :boss
+
+  role :boss
+  role :employee
+end
+```
+
+Here, you've specified the order when initializing so you can use it like this:
+
+```ruby
+user1 = User.find(1)
+user2 = User.find(2)
+context = Employment.new(user1, user2)
+```
+
+That ensures that `user1` will become (and have all the features of) the `employee` and `user2` will become (and have all the features of) the `boss`.
+
+There are 2 things left to do:
+
+1. define behaviors for each role and
+2. define how you can trigger their actions
+
+## Defining behaviors for roles
+
+Behaviors for your roles are easily defined just like you define a method. Provide your role a block and define methods there.
+
+```ruby
+class Employment
+  extend Surrounded::Context
+
+  initialize :employee, :boss
+
+  role :boss
+
+  role :employee do
+    def work_weekend
+      if fed_up?
+        quit
+      else
+        schedule_weekend_work
+      end
+    end
+
+    def quit
+      say("I'm sick of this place, #{boss.name}!")
+      stomp
+      throw_papers
+      say("I quit!")
+    end
+
+    def schedule_weekend_work
+      # ...
+    end
+  end
+end
+```
+
+If any of your roles don't have special behaviors, like `boss`, you don't need to specify it. Your `initialize` setup will handle assiging who's who when this context is used.
+
+```ruby
+class Employment
+  extend Surrounded::Context
+
+  initialize :employee, :boss
+
+  role :employee do
+    #...
+  end
+end
+```
+
+## Triggering interactions
+
+You'll need to define way to trigger these behaviors to occur so that you can use them.
+
+```ruby
+context = Employment.new(user1, user2)
+
+context.plan_weekend_work
+```
+
+The method you need is defined as an instance method in your context, but before that method will work as expected you'll need to mark it as a trigger.
+
+```ruby
+class Employment
+  extend Surrounded::Context
+
+  initialize :employee, :boss
+
+  def plan_weekend_work
+    employee.work_weekend
+  end
+  trigger :plan_weekend_work
+
+  role :employee do
+    #...
+  end
+end
+```
+
+Trigger methods are different from regular instance methods in that they apply behaviors from the roles to the role players.
+A regular instance method just does what you define. But a trigger will make your role players come alive with their behaviors.
+
+There's one last thing to make this work.
+
+## Getting your role players ready
+
+You'll need to include `Surrounded` in the classes of objects which will be role players in your context.
+
+It's as easy as:
+
+```ruby
+class User
+  include Surrounded
+
+  # ...
+end
+```
+
+This gives each of the objects the ability to understand its context and direct access to other objects in the context.
+
+## Why is this valuable?
+
+By creating environments which encapsulate roles and all necessary behaviors, you will be better able to isolate the logic of your system. A `user` in your system doesn't have all possible behaviors defined in its class, it gains the behaviors only when they are necessary.
+
+The objects that interact have their behaviors defined and available right where they are needed. Implementation is in proximity to necessity. The behaviors you need for each role player are highly cohesive and are coupled to their use rather than being coupled to the class of an object which might use them at some point.
+
+# Deeper Dive
+
+## Create encapsulated environments for your objects.
 
 Typical initialization of an environment, or a Context in DCI, has a lot of code. For example:
 
 ```ruby
-class MyEnvironment
+class Employment
 
   attr_reader :employee, :boss
   private :employee, :boss
@@ -38,7 +182,7 @@ class MyEnvironment
 end
 ```
 
-This code allows the MyEnvironment class to create instances where it will have an `employee` and a `boss` role internally. These are set to `attr_reader`s and are made private.
+This code allows the Employment class to create instances where it will have an `employee` and a `boss` role internally. These are set to `attr_reader`s and are made private.
 
 The `employee` is extended with behaviors defined in the `Employee` module, and in this case there's no extra stuff for the `boss` so it doesn't get extended with anything.
 
@@ -47,7 +191,7 @@ Most of the time you'll follow a pattern like this. Some objects will get extra 
 By adding `Surrounded::Context` you can shortcut all this work.
 
 ```ruby
-class MyEnvironment
+class Employment
   extend Surrounded::Context
   
   initialize(:employee, :boss)
@@ -67,7 +211,7 @@ _I don't want to use modules. Can't I use something like SimpleDelegator?_
 Well, it just so happens that you can. This code will work just fine:
 
 ```ruby
-class MyEnvironment
+class Employment
   extend Surrounded::Context
   
   initialize(:employee, :boss)
@@ -83,7 +227,7 @@ Instead of extending the `employee` object, Surrounded will run `Employee.new(em
 But the syntax can be even simpler than that if you want.
 
 ```ruby
-class MyEnvironment
+class Employment
   extend Surrounded::Context
   
   initialize(:employee, :boss)
@@ -97,7 +241,7 @@ end
 By default, this code will create a module for you named `Employee`. If you want to use a wrapper, you can do this:
 
 ```ruby
-class MyEnvironment
+class Employment
   extend Surrounded::Context
   
   initialize(:employee, :boss)
@@ -111,7 +255,7 @@ end
 But if you're making changes and you decide to move from a module to a wrapper or from a wrapper to a module, you'll need to change that method call. Instead, you could just tell it which type of role to use:
 
 ```ruby
-class MyEnvironment
+class Employment
   extend Surrounded::Context
   
   initialize(:employee, :boss)
@@ -148,17 +292,17 @@ Now the `User` instances will be able to implicitly access objects in their envi
 
 Via `method_missing` those `User` instances can access a `context` object it stores in an internal collection. 
 
-Inside of the `MyEnvironment` context we saw above, the `employee` and `boss` objects are instances of `User` for this example.
+Inside of the `Employment` context we saw above, the `employee` and `boss` objects are instances of `User` for this example.
 
 Because the `User` class includes `Surrounded`, the instances of that class will be able to access other objects in the same context implicitly.
 
 Let's make our context look like this:
 
 ```ruby
-class MyEnvironment
+class Employment
   # other stuff from above is still here...
 
-  def shove_it
+  def plan_weekend_work
     employee.quit
   end
 
@@ -173,7 +317,7 @@ class MyEnvironment
 end
 ```
 
-What's happening in there is that when the `shove_it` method is called on the instance of `MyEnvironment`, the `employee` has the ability to refer to `boss` because it is in the same context, e.g. the same environment.
+What's happening in there is that when the `plan_weekend_work` method is called on the instance of `Employment`, the `employee` has the ability to refer to `boss` because it is in the same context, e.g. the same environment.
 
 The behavior defined in the `Employee` module assumes that it may access other objects in it's local environment. The `boss` object, for example, is never explicitly passed in as an argument.
 
@@ -188,10 +332,10 @@ Your context will have methods of it's own which will trigger actions on the obj
 Here's an example of what we want:
 
 ```ruby
-class MyEnvironment
+class Employment
   # other stuff from above is still here...
 
-  def shove_it
+  def plan_weekend_work
     employee.store_context(self)
     employee.quit
     employee.remove_context
@@ -213,10 +357,10 @@ Now that the `employee` has a reference to the context, it won't blow up when it
 We saw how we were able to clear up a lot of that repetitive work with the `initialize` method, so this is how we do it here:
 
 ```ruby
-class MyEnvironment
+class Employment
   # other stuff from above is still here...
 
-  trigger :shove_it do
+  trigger :plan_weekend_work do
     employee.quit
   end
 
@@ -236,8 +380,8 @@ By using this `trigger` keyword, our block is the code we care about, but intern
 The context will also store the triggers so that you can, for example, provide details outside of the environment about what triggers exist.
 
 ```ruby
-context = MyEnvironment.new(current_user, the_boss)
-context.triggers #=> [:shove_it]
+context = Employment.new(current_user, the_boss)
+context.triggers #=> [:plan_weekend_work]
 ```
 
 You might find that useful for dynamically defining user interfaces.
@@ -247,16 +391,16 @@ Sometimes I'd rather not use this DSL, however. I want to just write regular met
 We can do that too. You'll need to opt in to this by specifying `trigger :your_method_name` for the methods you want to use.
 
 ```ruby
-class MyEnvironment
+class Employment
   # other stuff from above is still here...
 
-  def shove_it
+  def plan_weekend_work
     employee.quit
   end
-  trigger :shove_it
+  trigger :plan_weekend_work
   
   # or in Ruby 2.x
-  trigger def shove_it
+  trigger def plan_weekend_work
     employee.quit
   end
 
@@ -284,30 +428,30 @@ Fortunately, you can make it easy.
 By running `protect_triggers` you'll be able to define when triggers may or may not be run. You can still run them, but they'll raise an error. Here's an example.
 
 ```ruby
-class MyEnvironment
+class Employment
   extend Surrounded::Context
   protect_triggers
   
-  def shove_it
+  def plan_weekend_work
     employee.quit
   end
-  trigger :shove_it
+  trigger :plan_weekend_work
   
-  disallow :shove_it do
-    employee.bank_balance < 100
+  disallow :plan_weekend_work do
+    employee.bank_balance > 1000000
   end
 end
 ```
 
-Then, when the employee role's `bank_balance` is less than `100`, the available triggers won't include `:shove_it`.
+Then, when the employee role's `bank_balance` is greater than `1000000`, the available triggers won't include `:plan_weekend_work`.
 
 You can compare the instance of the context by listing `all_triggers` and `triggers` to see what could be possible and what's currently possible.
 
 Alternatively, if you just want to define your own methods without the DSL using `disallow`, you can just follow the pattern of `disallow_#{method_name}?` when creating your own protection.
 
-In fact, that's exactly what happens with the `disallow` keyword. After using it here, we'd have a `disallow_shove_it?` method defined.
+In fact, that's exactly what happens with the `disallow` keyword. After using it here, we'd have a `disallow_plan_weekend_work?` method defined.
 
-If you call the disallowed trigger directly, you'll raise a `MyEnvironment::AccessError` exception and the code in your trigger will not be run. You may rescue from that or you may rescue from `Surrounded::Context::AccessError` although you should prefer to use the error name from your own class.
+If you call the disallowed trigger directly, you'll raise a `Employment::AccessError` exception and the code in your trigger will not be run. You may rescue from that or you may rescue from `Surrounded::Context::AccessError` although you should prefer to use the error name from your own class.
 
 ## Restricting return values
 
@@ -316,7 +460,7 @@ _Tell, Don't Ask_ style programming can better be enforced by following East-ori
 Here's how you enforce it:
 
 ```ruby
-class MyEnvironment
+class Employment
   extend Surrounded::Context
   east_oriented_triggers
 end
