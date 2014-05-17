@@ -1,12 +1,6 @@
 module Surrounded
   module Context
     module Initializing
-      def new(*args, &block)
-        instance = allocate
-        instance.send(:initialize, *args, &block)
-        instance
-      end
-
       # Shorthand for creating an instance level initialize method which
       # handles the mapping of the given arguments to their named role.
       def initialize(*setup_args)
