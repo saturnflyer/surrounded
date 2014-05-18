@@ -451,11 +451,11 @@ Alternatively, if you just want to define your own methods without the DSL using
 
 In fact, that's exactly what happens with the `disallow` keyword. After using it here, we'd have a `disallow_plan_weekend_work?` method defined.
 
-If you call the disallowed trigger directly, you'll raise a `Employment::AccessError` exception and the code in your trigger will not be run. You may rescue from that or you may rescue from `Surrounded::Context::AccessError` although you should prefer to use the error name from your own class.
+If you call the disallowed trigger directly, you'll raise an `Employment::AccessError` exception and the code in your trigger will not be run. You may rescue from that or you may rescue from `Surrounded::Context::AccessError` although you should prefer to use the error name from your own class.
 
 ## Restricting return values
 
-_Tell, Don't Ask_ style programming can better be enforced by following East-oriented Code principles. This means that the returns values from methods on your objects should not provide information about their internal state. Instead of returning values, you can enforce that triggers return the context object. This forces you to place context responsiblities inside the context and prevents leaking the details and responsiblities outside of the system.
+_Tell, Don't Ask_ style programming can better be enforced by following East-oriented Code principles. This means that the return values from methods on your objects should not provide information about their internal state. Instead of returning values, you can enforce that triggers return the context object. This forces you to place context responsiblities inside the context and prevents leaking the details and responsiblities outside of the system.
 
 Here's how you enforce it:
 
@@ -598,6 +598,10 @@ class ActiviatingAccount
     # this must be done to handle the mapping of roles to objects
     # pass an array of arrays with role name symbol and the object for that role
     map_roles([[:activator, activator],[:account, account]])
+
+    # or load extra objects, perform other functions, etc. if you need and then use super
+    account.perform_some_funtion
+    super
   end
   # these also must be done if you create your own initialize method.
   # this is a shortcut for using attr_reader and private
@@ -633,6 +637,9 @@ class ActiviatingAccount
   def regular_method
     apply_behaviors # handles the adding of all the roles and behaviors
     activator.some_behavior # behavior not available unless you apply roles on initialize
+  ensure
+     # Use ensure to enforce the removal of behaviors in case of exceptions.
+     # This also does not affect the return value of this method.
     remove_behaviors # handles the removal of all roles and behaviors
   end
 
@@ -682,6 +689,89 @@ end
 The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need. The [Triad](http://github.com/saturnflyer/triad) project was written specifically to manage the mapping of roles and objects to the modules which contain the behaviors.
 
 If you're using [Casting](http://github.com/saturnflyer/casting), for example, Surrounded will attempt to use that before extending an object, but it will still work without it.
+
+## Support for other ways to apply behavior
+
+Surrounded is designed to be flexible for you. If you have your own code to manage applying behaviors, you can setup your context class to use it.
+
+### Additional libraries
+
+Here's an example using [Behavioral](https://github.com/saturnflyer/behavioral)
+
+```ruby
+class MyCustomContext
+  extend Surrounded::Context
+
+  initialize :employee, :boss
+
+  def module_extension_methods
+    [:with_behaviors].concat(super)
+  end
+
+  def module_removal_methods
+    [:without_behaviors].concat(super)
+  end
+end
+```
+
+If you're using your own non-SimpleDelegator wrapper you can conform to that; whatever it may be.
+
+```ruby
+class MyCustomContext
+  extend Surrounded::Context
+
+  initialize :employee, :boss
+
+  class Employee < SuperWrapper
+    include Surrounded
+
+    # defined behaviors here...
+
+    def wrapped_object
+      # return the object that is wrapped
+    end
+
+  end
+
+  def unwrap_methods
+    [:wrapped_object]
+  end
+end
+```
+
+### Applying individual roles
+
+If you'd like to use a special approach for just a single role, you may do that too.
+
+When applying behaviors from a role to your role players, your Surrounded context will first look for a method named  `"apply_behavior_#{role}"`. Define your own method and set it to accept 2 arguments: the role constant and the role player.
+
+```ruby
+class MyCustomContext
+  extend Surrounded::Context
+
+  initialize :employee, :boss
+
+  def apply_behavior_employee(behavior_constant, role_player)
+    behavior_constant.build(role_player).apply # or whatever your need to do with your constant and object.
+  end
+end
+```
+
+You can also plan for special ways to remove behavior as well.
+
+```ruby
+class MyCustomContext
+  extend Surrounded::Context
+
+  initialize :employee, :boss
+
+  def remove_behavior_employee(behavior_constant, role_player)
+    role_player.cleanup # or whatever your need to do with your constant and object.
+  end
+end
+```
+
+You can remember the method name by the convention that `remove` or `apply` describes it's function, `behavior` refers to the first argument (thet contsant holding the behaviors), and then the name of the role which refers to the role playing object: `remove_behavior_role`.
 
 ## Installation
 
