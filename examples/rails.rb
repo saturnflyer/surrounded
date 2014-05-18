@@ -34,6 +34,16 @@ class SomeUseCase
       listener.redirect_to('/')
     end
   end
+
+  class OtherUser < ::User
+    def special_feature
+      #....
+    end
+  end
+
+  def apply_behavior_other_user(role, behavior, role_player)
+    role_player.becomes(behavior)
+  end
 end
 
 class SomethingController < ApplicationController
