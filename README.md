@@ -773,6 +773,63 @@ end
 
 You can remember the method name by the convention that `remove` or `apply` describes it's function, `behavior` refers to the first argument (thet contsant holding the behaviors), and then the name of the role which refers to the role playing object: `remove_behavior_role`.
 
+## How to read this code
+
+If you use this library, it's important to understand it.
+
+As much as possible, when you use the Surrounded DSL for creating triggers, roles, initialize methods, and others you'll likely fine the actual method definitions created in a module and then find that module included in your class.
+
+This is a design choice which allows you to override any standard behavior more easily.
+
+### Where methods exist and why
+
+When you define an initialize method for a Context class, Surrounded _could_ define the method on your class like this:
+
+```ruby
+def initialize(*roles)
+  self.class_eval do # <=== this evaluates on _your_ class and defines it there.
+    # code...
+  end
+end
+```
+
+If we used the above approach, you'd need to redefine initialize in its entirety:
+
+```ruby
+initialize(:role1, role2)
+
+def initialize(role1, role2) # <=== this will completely redefine initialize on _this class_
+  super # <=== this will NOT be the initialize method as provided to the Surrounded initialize above.
+end
+```
+
+Surrounded uses a more flexible approach for you:
+
+```ruby
+def initialize(*roles)
+  mod = Module.new
+  mod.class_eval do # <=== this evaluates on the module and defines it there.
+    # code...
+  end
+  include mod # <=== this adds it to the class ancestors
+end
+```
+
+With this approach you can use the way Surrounded is setup, but make changes if you need.
+
+```ruby
+initialize(:role1, :role2) # <=== defined in a module in the class ancestors
+
+def initialize(role1, role2)
+  super # <=== run the method as defined above in the Surrounded DSL
+  # ... then do additional work
+end
+```
+
+### Read methods, expect modules
+
+When you go to read the code, expect to find behavior defined in modules.
+
 ## Installation
 
 Add this line to your application's Gemfile:
