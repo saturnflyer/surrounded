@@ -6,8 +6,7 @@ module Surrounded
       def role(name, type=default_role_type, &block)
         if type == :module
           mod_name = RoleBuilders.mod_name(name)
-          mod = Module.new(&block)
-          mod.send(:include, ::Surrounded)
+          mod = Module.new(&block).send(:include, ::Surrounded)
           private_const_set(mod_name, mod)
         else
           meth = method(type)
