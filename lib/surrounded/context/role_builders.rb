@@ -3,15 +3,14 @@ module Surrounded
     module RoleBuilders
 
       # Define behaviors for your role players
-      def role(name, type=nil, &block)
-        role_type = type || default_role_type
-        if role_type == :module
+      def role(name, type=default_role_type, &block)
+        if type == :module
           mod_name = name.to_s.gsub(/(?:^|_)([a-z])/){ $1.upcase }
           mod = Module.new(&block)
           mod.send(:include, ::Surrounded)
           private_const_set(mod_name, mod)
         else
-          meth = method(role_type)
+          meth = method(type)
           meth.call(name, &block)
         end
       rescue NameError => e
