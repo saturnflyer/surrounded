@@ -29,8 +29,7 @@ module Surrounded
 
       # Create an object which will bind methods to the role player
       def interface(name, &block)
-        class_basename = RoleBuilders.mod_name(name)
-        interface_name = class_basename + 'Interface'
+        interface_name = RoleBuilders.mod_name(name) + 'Interface'
 
         behavior = private_const_set(interface_name, Module.new(&block))
 
