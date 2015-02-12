@@ -2,6 +2,7 @@ require 'set'
 require 'surrounded/context/role_map'
 require 'surrounded/context/role_builders'
 require 'surrounded/context/initializing'
+require 'surrounded/context/forwarding'
 require 'surrounded/context/trigger_controls'
 require 'surrounded/access_control'
 require 'surrounded/shortcuts'
@@ -17,7 +18,7 @@ module Surrounded
   module Context
     def self.extended(base)
       base.class_eval {
-        extend RoleBuilders, Initializing
+        extend RoleBuilders, Initializing, Forwarding
 
         @triggers = Set.new
         include InstanceMethods
