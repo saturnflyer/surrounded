@@ -26,6 +26,15 @@ module Surrounded
       end
       alias_method :wrapper, :wrap
 
+      # Create a named behavior for a role using the standard library DelegateClass.
+      # This ties the implementation of the role to a specific class or module API.
+      def delegate_class(name, class_name, &block)
+        require 'delegate'
+        wrapper_name = RoleBuilders.mod_name(name)
+        klass = private_const_set(wrapper_name, DelegateClass(Object.const_get(class_name.to_s)))
+        klass.class_eval(&block)
+        klass.send(:include, Surrounded)
+      end
 
       # Create an object which will bind methods to the role player
       def interface(name, &block)
