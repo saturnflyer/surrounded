@@ -53,8 +53,7 @@ module Surrounded
       end
 
       def define_trigger(name)
-        line = __LINE__
-        self.class_eval %{
+        line = __LINE__; self.class_eval %{
           def #{name}(*args, &block)
             begin
               apply_behaviors
