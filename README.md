@@ -681,6 +681,11 @@ class ActiviatingAccount
   # so you can enforce East-oriented style or Tell, Don't Ask
   east_oriented_triggers
   
+  # Forward context instance methods as triggers to role players
+  forward_trigger :role_name, :method_name
+  forward_trigger :role_name, :method_name, :alternative_trigger_name_for_method_name
+  forward_triggers :role_name, :list, :of, :methods, :to, :forward
+  forwarding [:list, :of, :methods, :to, :forward] => :role_name
 end
 ```
 
