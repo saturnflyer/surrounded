@@ -37,7 +37,7 @@ module Surrounded
         else
           name = names.first
           define_trigger_action(*names, &block)
-          define_trigger(name, &block)
+          define_trigger(name)
           store_trigger(name)
         end
       end
@@ -78,9 +78,7 @@ module Surrounded
       
       
       def define_trigger_action(*name_and_args, &block)
-        trigger_action_module.module_eval do
-          define_method(*name_and_args, &block)
-        end
+        trigger_action_module.send(:define_method, *name_and_args, &block)
       end
       
       def trigger_action_module
