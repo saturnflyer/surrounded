@@ -24,5 +24,7 @@ module Surrounded
         end
       end
     end
+
+    Negotiator.send(:prepend, Surrounded)
   end
 end

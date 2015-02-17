@@ -10,12 +10,21 @@ class ProxyContext
     def some_admin_method
       "hello from #{name}, the admin interface!"
     end
+
+    def talking_to_others
+      task.name
+    end
   end
+
   wrap :task do
   end
 
   trigger :do_something do
     admin.some_admin_method
+  end
+
+  trigger :talking do
+    admin.talking_to_others
   end
 
   trigger :admin_name do
@@ -34,8 +43,11 @@ describe ProxyContext do
   let(:user){
     ProxyUser.new('Jim')
   }
+  let(:task){
+    OpenStruct.new(name: 'GTD')
+  }
   let(:context){
-    ProxyContext.new(user, Object.new)
+    ProxyContext.new(user, task)
   }
   it 'proxys methods between objects and its interface' do
     assert_equal 'hello from Jim, the admin interface!', context.do_something
@@ -49,5 +61,9 @@ describe ProxyContext do
     err = ->{ context.admin_missing_method }.must_raise(NoMethodError)
 
     assert_match 'ProxyUser name="Jim"', err.message
+  end
+
+  it 'allows access to other objects in the context' do
+    assert_equal 'GTD', context.talking
   end
 end
