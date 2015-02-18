@@ -136,6 +136,36 @@ end
 Trigger methods are different from regular instance methods in that they apply behaviors from the roles to the role players.
 A regular instance method just does what you define. But a trigger will make your role players come alive with their behaviors.
 
+You may find that the code for your triggers is extremely simple and is merely creating a method to tell a role player what to do. If you find you have many methods like this:
+
+```ruby
+  def plan_weekend_work
+    employee.work_weekend
+  end
+  trigger :plan_weekend_work
+```
+
+You can shorten it to:
+
+```ruby
+  trigger :plan_weekend_work do
+    employee.work_weekend
+  end
+```
+
+But it can be even simpler and follows the same pattern provided by Ruby's standard library Forwardable:
+
+```ruby
+  # The first argument is the role to receive the messaged defined in the second argument.
+  # The third argument is optional and if provided will be the name of the trigger method on your context instance.
+  forward_trigger :employee, :work_weekend, :plan_weekend_work
+
+  # Alternatively, you can use an API similar to that of the `delegate` method from Forwardable
+  forwarding [:work_weekend] => :employee
+```
+
+The difference between `forward_trigger` and `forwarding` is that the first accepts an alternative method name for the context instance method. There's more on this below in the "Overview in code" section, or see `lib/surrounded/context/forwarding.rb`.
+
 There's one last thing to make this work.
 
 ## Getting your role players ready
@@ -643,6 +673,7 @@ class ActiviatingAccount
     remove_behaviors # handles the removal of all roles and behaviors
   end
 
+  # This trigger or the forward* methods are preferred for creating triggers.
   trigger :some_trigger_method do
     activator.some_behavior # behavior always available
   end
@@ -666,6 +697,8 @@ class ActiviatingAccount
   def disallow_some_trigger_method?
     # whatever conditional code for the instance of the context
   end
+  # Prefer using `disallow` because it will wrap role players in their roles for you;
+  # the `disallow_some_trigger_method?` defined above, does not.
   
   # Create shortcuts for triggers as class methods
   # so you can do ActiviatingAccount.some_trigger_method(activator, account)
