@@ -543,9 +543,11 @@ Using the `role` method to define modules and classes takes care of the setup fo
   end
 ```
 
-The `:interface` option is a special object which has all of its methods removed (excepting `__send__` and `object_id`) so that other methods will be pulled from the ones that you define, or from the object it attempts to proxy.
+The `:interface` option is a special object which has all of the standard Object methods removed (excepting `__send__` and `object_id`) so that other methods will be pulled from the ones that you define, or from the object it attempts to proxy.
 
 Notice that the `:interface` allows you to return `self` whereas the `:wrap` acts more like a wrapper and forces you to deal with that shortcoming by using it's wrapped-object-accessor method: `__getobj__`.
+
+The downside of using an interface is that it is still a wrapper. All of your defined role methods are executed in the context of the object playing the role, but the interface has it's own identity.
 
 If you'd like to choose one and use it all the time, you can set the default:
 
