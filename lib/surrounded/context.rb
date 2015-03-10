@@ -88,6 +88,14 @@ module Surrounded
       end
     end
 
+    # Allow alternative implementations for the role map
+    # This requires that the specified mapper klass have an
+    # initializer method called 'from_base' which accepts a
+    # class name used to initialize the base object
+    def role_mapper_class(mapper: RoleMap, base: ::Triad)
+      @role_mapper_class ||= mapper.from_base(base)
+    end
+
     module InstanceMethods
       # Check whether a given name is a role inside the context.
       # The provided block is used to evaluate whether or not the caller
@@ -111,7 +119,7 @@ module Surrounded
       private
 
       def role_map
-        @role_map ||= RoleMap.new
+        @role_map ||= role_mapper_class.new
       end
 
       def map_roles(role_object_array)
@@ -236,6 +244,10 @@ module Surrounded
 
       def role_const_defined?(name)
         self.class.send(:role_const_defined?, name)
+      end
+
+      def role_mapper_class
+        self.class.send(:role_mapper_class)
       end
 
       def singularize_name(name)
