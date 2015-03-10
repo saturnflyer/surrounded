@@ -12,9 +12,7 @@ module Surrounded
               @container ||= #{klass}.new
             end
           }
-          klass.instance_methods.reject{|m|
-            m.to_s =~ /object_id|__send__/
-          }.each do |meth|
+          %w{ update each values keys }.each do |meth|
             role_mapper.class_eval %{
               def #{meth}(*args, &block)
                 container.send(:#{meth}, *args, &block)
