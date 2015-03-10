@@ -16,9 +16,8 @@ module Surrounded
       end
 
       def method_missing(meth, *args, &block)
-        if @behaviors.instance_methods.include?(meth)
-          the_method = @behaviors.instance_method(meth)
-          the_method.bind(@object).call(*args, &block)
+        if @behaviors.method_defined?(meth)
+          @behaviors.instance_method(meth).bind(@object).call(*args, &block)
         else
           @object.send(meth, *args, &block)
         end
