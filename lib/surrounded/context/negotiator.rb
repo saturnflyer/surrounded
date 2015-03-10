@@ -1,12 +1,31 @@
 module Surrounded
   module Context
     class Negotiator
+      class << self
+        # Return a class which has methods defined to forward the method to
+        # the wrapped object delegating to the behavior module.
+        # This prevents hits to method_missing.
+        def for_role(mod)
+          klass = Class.new(self)
+          mod.instance_methods(false).each do |meth|
+            klass.class_eval %{
+              def #{meth}(*args, &block)
+                @behaviors.instance_method(:#{meth}).bind(@object).call(*args, &block)
+              end
+            }
+          end
+          klass
+        end
+      end
+
+
       identity = "__send__|object_id"
 
-      instance_methods.each do |meth|
-        unless meth.to_s =~ /#{identity}/
-          undef_method meth
-        end
+      # Remove all methods except the identity methods
+      instance_methods.reject{ |m|
+        m.to_s =~ /#{identity}/
+      }.each do |meth|
+        undef_method meth
       end
 
       private
@@ -16,11 +35,7 @@ module Surrounded
       end
 
       def method_missing(meth, *args, &block)
-        if @behaviors.method_defined?(meth)
-          @behaviors.instance_method(meth).bind(@object).call(*args, &block)
-        else
-          @object.send(meth, *args, &block)
-        end
+        @object.send(meth, *args, &block)
       end
     end
 

@@ -38,14 +38,17 @@ module Surrounded
 
       # Create an object which will bind methods to the role player
       def interface(name, &block)
+        # AdminInterface
         interface_name = RoleBuilders.mod_name(name) + 'Interface'
-
         behavior = private_const_set(interface_name, Module.new(&block))
 
         require 'surrounded/context/negotiator'
         undef_method(name)
+
+        # AdminInterfaceProxy
+        proxy = private_const_set(interface_name + 'Proxy', Negotiator.for_role(behavior))
         define_method(name) do
-          instance_variable_set("@#{name}", Negotiator.new(role_map.assigned_player(name), behavior))
+          instance_variable_set("@#{name}", proxy.new(role_map.assigned_player(name), behavior))
         end
       end
       
