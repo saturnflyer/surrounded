@@ -39,6 +39,9 @@ module Surrounded
       end
     end
 
+    # The method_missing definition from Surrounded will apply
+    # before the one defined above. This allows the methods for
+    # the objects in the context to work properly
     Negotiator.send(:prepend, Surrounded)
   end
 end
