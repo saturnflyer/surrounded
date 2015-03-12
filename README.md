@@ -726,7 +726,7 @@ end
 
 ## Dependencies
 
-The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need. The [Triad](http://github.com/saturnflyer/triad) project was written specifically to manage the mapping of roles and objects to the modules which contain the behaviors.
+The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need. The [Triad](http://github.com/saturnflyer/triad) project was written specifically to manage the mapping of roles and objects to the modules which contain the behaviors. It is used in Surrounded to keep track of role player, roles, and role constant names but it is not a hard requirement. You may implement your own but presently you'll need to dive into the implementation to fully understand how. Future updates may provide better support and guidance.
 
 If you're using [Casting](http://github.com/saturnflyer/casting), for example, Surrounded will attempt to use that before extending an object, but it will still work without it.
 
