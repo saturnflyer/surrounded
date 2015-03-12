@@ -231,7 +231,7 @@ module Surrounded
       end
 
       def role_behavior_name(role)
-        role.to_s.gsub(/(?:^|_)([a-z])/) { $1.upcase }.sub(/_\d+/,'')
+        ModuleName.new(role)
       end
 
       def role_module_basename(mod)
@@ -263,6 +263,28 @@ module Surrounded
             end
           end
         end
+      end
+    end
+
+    class ModuleName
+      def initialize(string, suffix=nil)
+        @string = string.
+                    to_s.
+                    split(/_/).
+                    map{|part|
+                      part.capitalize
+                    }.
+                    join.
+                    sub(/_\d+/,'') + suffix.to_s
+      end
+
+      def to_str
+        @string
+      end
+      alias to_s to_str
+
+      def to_sym
+        @string.to_sym
       end
     end
   end
