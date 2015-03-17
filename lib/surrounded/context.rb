@@ -231,7 +231,7 @@ module Surrounded
       end
 
       def role_behavior_name(role)
-        ModuleName.new(role)
+        RoleName.new(role)
       end
 
       def role_module_basename(mod)
@@ -266,7 +266,7 @@ module Surrounded
       end
     end
 
-    class ModuleName
+    class RoleName
       def initialize(string, suffix=nil)
         @string = string.
                     to_s.
