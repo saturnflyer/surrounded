@@ -6,9 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/saturnflyer/surrounded/badge.png)](https://coveralls.io/r/saturnflyer/surrounded)
 [![Gem Version](https://badge.fury.io/rb/surrounded.png)](http://badge.fury.io/rb/surrounded)
 
-# Get work done with only what you need and nothing more.
-
-Surrounded is designed to help you better manage your business logic.
+Surrounded is designed to help you better manage your business logic by keeping cohesive behaviors together. Bring objects together to implement your use cases and gain behavior only when necessary.
 
 ## How to think about your objects
 
