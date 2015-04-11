@@ -7,17 +7,17 @@ module Surrounded
       class << self
         def from_base(klass=::Triad)
           role_mapper = Class.new(::Surrounded::Context::RoleMap)
-          role_mapper.class_eval %{
+          num = __LINE__; role_mapper.class_eval %{
             def container
               @container ||= #{klass}.new
             end
-          }
+          }, __FILE__, num
           %w{ update each values keys }.each do |meth|
-            role_mapper.class_eval %{
+            num = __LINE__; role_mapper.class_eval %{
               def #{meth}(*args, &block)
                 container.send(:#{meth}, *args, &block)
               end
-            }
+            }, __FILE__, num
           end
           role_mapper
         end

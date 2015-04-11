@@ -8,11 +8,11 @@ module Surrounded
         def for_role(mod)
           klass = Class.new(self)
           mod.instance_methods(false).each do |meth|
-            klass.class_eval %{
+            num = __LINE__; klass.class_eval %{
               def #{meth}(*args, &block)
                 @behaviors.instance_method(:#{meth}).bind(@object).call(*args, &block)
               end
-            }
+            }, __FILE__, num
           end
           klass
         end
