@@ -36,8 +36,13 @@ class ProxyContext
   end
 end
 
-ProxyUser = Struct.new(:name)
-ProxyUser.send(:include, Surrounded)
+ProxyUser = Class.new do
+  include Surrounded
+  def initialize(name)
+    @name = name
+  end
+  attr_reader :name
+end
 
 describe ProxyContext do
   let(:user){
