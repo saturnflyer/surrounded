@@ -37,6 +37,10 @@ module Surrounded
       def method_missing(meth, *args, &block)
         @object.send(meth, *args, &block)
       end
+
+      def respond_to_missing?(meth, include_private=false)
+        @object.respond_to?(meth, include_private)
+      end
     end
 
     # The method_missing definition from Surrounded will apply
