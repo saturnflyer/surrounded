@@ -11,19 +11,15 @@ module Surrounded
 
   private
 
-  def store_context(ctxt, &block)
+  def store_context(&block)
     accessor = block.binding.eval('self')
-    if accessor.role_player?(self)
-      surroundings.unshift(ctxt)
-    end
+    surroundings.unshift(accessor)
     self
   end
 
   def remove_context(&block)
     accessor = block.binding.eval('self')
-    if accessor.role_player?(self)
-      surroundings.shift
-    end
+    surroundings.shift if surroundings.include?(accessor)
     self
   end
 
