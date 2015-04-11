@@ -83,7 +83,7 @@ describe Surrounded::Context, '.role' do
     end
  
     it 'creates a private accessor method' do
-      assert_respond_to(context, :admin)
+      assert context.respond_to?(:admin, true)
     end
   end
  

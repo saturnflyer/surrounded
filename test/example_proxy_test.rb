@@ -65,7 +65,7 @@ describe ProxyContext do
   it 'passes missing methods up the ancestry of the object' do
     err = ->{ context.admin_missing_method }.must_raise(NoMethodError)
 
-    assert_match 'ProxyUser name="Jim"', err.message
+    assert_match /ProxyUser.*name="Jim"/, err.message
   end
 
   it 'allows access to other objects in the context' do
