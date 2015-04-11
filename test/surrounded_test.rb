@@ -40,7 +40,7 @@ describe "Surrounded", "added to an existing object" do
     thing.name = 'Jim'
 
     assert_raises(NoMethodError){
-      thing.send(:store_context)
+      thing.__send__(:store_context)
     }
     thing.extend(Surrounded)
 

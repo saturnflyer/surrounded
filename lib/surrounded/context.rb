@@ -197,14 +197,14 @@ module Surrounded
       def apply_behaviors
         role_map.each do |role, mod_name, object|
           player = apply_behavior(role, mod_name, object)
-          player.send(:store_context, self) do; end
+          player.__send__(:store_context) do; end
         end
       end
 
       def remove_behaviors
         role_map.each do |role, mod_name, player|
           if player.respond_to?(:remove_context, true)
-            player.send(:remove_context) do; end
+            player.__send__(:remove_context) do; end
           end
           remove_behavior(role, mod_name, player)
         end
