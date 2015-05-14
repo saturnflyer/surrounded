@@ -636,7 +636,7 @@ class ActiviatingAccount
   # these also must be done if you create your own initialize method.
   # this is a shortcut for using attr_reader and private
   private_attr_reader :activator, :account
-
+  
   # initialize with keyword arguments
   keyword_initialize(:activator, :account)
   # this makes the following instance method signature with required keyword arguments
