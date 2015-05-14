@@ -637,6 +637,13 @@ class ActiviatingAccount
   # this is a shortcut for using attr_reader and private
   private_attr_reader :activator, :account
 
+  # initialize with keyword arguments
+  keyword_initialize(:activator, :account)
+  # this makes the following instance method signature with required keyword arguments
+  def initialize(activator:, account:)
+    # ...
+  end
+
   role :activator do # module by default
     def some_behavior; end
   end
