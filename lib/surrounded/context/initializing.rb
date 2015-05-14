@@ -22,7 +22,6 @@ module Surrounded
         private_attr_reader(*setup_args)
 
         parameters = setup_args.map{|a| "#{a}:"}.join(',')
-        puts parameters
 
         mod = Module.new
         line = __LINE__
