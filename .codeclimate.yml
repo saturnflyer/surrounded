@@ -1,0 +1,4 @@
+languages:
+  Ruby: true
+exclude_paths:
+- "examples"
