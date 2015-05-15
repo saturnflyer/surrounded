@@ -3,8 +3,8 @@ module Surrounded
     module Forwarding
       def forward_trigger(receiver, message, alternate=message)
         raise(ArgumentError, %{you may not forward '%{m}`} % {m: message}) if ['__id__','__send__'].include?(message.to_s)
-        trigger alternate do
-          self.send(receiver).public_send(message)
+        trigger alternate do |*args, &block|
+          self.send(receiver).public_send(message,*args, &block)
         end
       end
       

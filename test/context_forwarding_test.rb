@@ -7,6 +7,8 @@ class Sending
   
   forwarding [:hello, :goodbye] => :one
   forward_trigger :two, :ping
+  forward_trigger :two, :argumentative
+  forwards :two, :blockhead
   
   role :one do
     def hello
@@ -21,6 +23,14 @@ class Sending
   role :two do
     def ping
       one.hello
+    end
+
+    def argumentative(yes, no)
+      [yes, no].join(' and ')
+    end
+
+    def blockhead
+      yield
     end
   end
 end
@@ -55,5 +65,16 @@ describe Surrounded::Context, 'forwarding triggers' do
       end
     }
     assert_match(/you may not forward '__send__/i, error.message)
+  end
+
+  it 'passes arguments' do
+    assert_equal 'YES and NO', context.argumentative('YES','NO')
+  end
+
+  it 'passes blocks' do
+    result = context.blockhead do
+      "Put them in the iron maiden. Excellent!"
+    end
+    assert_equal "Put them in the iron maiden. Excellent!", result
   end
 end
