@@ -267,13 +267,13 @@ end
 
 describe Surrounded::Context, 'keyword initializers' do
   it 'works with keyword arguments' do
-    assert context = Keyworder.new(this: User.new('Jim'), that: User.new('Guille'))
+    assert Keyworder.new(this: User.new('Jim'), that: User.new('Guille'))
   end
 
   it 'raises errors with missing keywords' do
     err = assert_raises(ArgumentError){
       Keyworder.new(this: User.new('Amy'))
     }
-    assert_match /missing keyword: that/, err.message
+    assert_match(/missing keyword: that/, err.message)
   end
 end

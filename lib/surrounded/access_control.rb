@@ -30,7 +30,7 @@ module Surrounded
     
     def define_access_method(name, &block)
       mod = Module.new
-      num = __LINE__; mod.class_eval {
+      mod.class_eval {
         define_method "disallow_#{name}?" do
           begin
             apply_behaviors
