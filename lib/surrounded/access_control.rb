@@ -14,7 +14,7 @@ module Surrounded
         define_access_method(name, &block)
       end
     end
-    alias_method :guard, :disallow
+    alias guard disallow
     
     def trigger_return_content(name, *args, &block)
       %{
