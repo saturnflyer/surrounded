@@ -53,6 +53,24 @@ There are 2 things left to do:
 1. define behaviors for each role and
 2. define how you can trigger their actions
 
+Currently initializing contexts does not require the use of keyword arguments, _but it will in the future_.
+
+You should consider using explicit names when initialize now by using `keyword_initialize`:
+
+```ruby
+class Employment
+  extend Surrounded::Context
+
+  keyword_initialize :employee, :boss
+end
+
+user1 = User.find(1)
+user2 = User.find(2)
+context = Employment.new(employee: user1, boss: user2)
+```
+
+This will allow you to prepare your accessing code to use keywords.
+
 ## Defining behaviors for roles
 
 Behaviors for your roles are easily defined just like you define a method. Provide your role a block and define methods there.

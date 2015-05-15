@@ -3,7 +3,7 @@ module Surrounded
     module Initializing
       # Shorthand for creating an instance level initialize method which
       # handles the mapping of the given arguments to their named role.
-      def initialize(*setup_args)
+      def initialize_without_keywords(*setup_args)
         private_attr_reader(*setup_args)
       
         mod = Module.new
@@ -16,6 +16,11 @@ module Surrounded
         ", __FILE__, line
         const_set("ContextInitializer", mod)
         include mod
+      end
+      def initialize(*setup_args)
+        warn "Deprecated: The behavior of 'initialize' will require keywords in the future
+            Consider using keyword arguments or switching to 'initialize_without_keywords'\n\n"
+        initialize_without_keywords(*setup_args)
       end
 
       def keyword_initialize(*setup_args)
