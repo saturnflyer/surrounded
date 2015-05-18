@@ -40,6 +40,10 @@ module Surrounded
         include mod
       end
       alias initialize_with_keywords keyword_initialize
+
+      def rebind(**kwargs)
+        map_roles(kwargs.to_a)
+      end
     end
   end
 end
