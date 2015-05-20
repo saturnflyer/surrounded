@@ -116,7 +116,24 @@ module Surrounded
         self.class.triggers
       end
 
+      # Ruby 2.1 and up
+      if RUBY_VERSION.split('.')[1].to_i >= 1
+        def rebind(**kwargs)
+          clear_instance_variables
+          map_roles(kwargs.to_a)
+        end
+      else
+        def rebind(options_hash)
+          clear_instance_variables
+          map_roles(options_hash.to_a)
+        end
+      end
+
       private
+
+      def clear_instance_variables
+        instance_variables.each{|ivar| remove_instance_variable(ivar) }
+      end
 
       def role_map
         @role_map ||= role_mapper_class.new

@@ -10,7 +10,6 @@ module Surrounded
         line = __LINE__
         mod.class_eval "
           def initialize(#{setup_args.join(',')})
-            @role_map = role_mapper_class.new
             map_roles(#{setup_args.to_s}.zip([#{setup_args.join(',')}]))
           end
         ", __FILE__, line
@@ -40,10 +39,6 @@ module Surrounded
         include mod
       end
       alias initialize_with_keywords keyword_initialize
-
-      def rebind(**kwargs)
-        map_roles(kwargs.to_a)
-      end
     end
   end
 end
