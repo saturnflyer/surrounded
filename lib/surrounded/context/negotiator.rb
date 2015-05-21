@@ -20,10 +20,11 @@ module Surrounded
 
 
       identity = "__send__|object_id"
+      method_access = "respond_to?|method"
 
       # Remove all methods except the identity methods
       instance_methods.reject{ |m|
-        m.to_s =~ /#{identity}/
+        m.to_s =~ /#{[identity,'|',method_access].join}/
       }.each do |meth|
         undef_method meth
       end

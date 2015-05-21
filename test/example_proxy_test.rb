@@ -1,6 +1,5 @@
 require 'test_helper'
 
-# If you want to use wrappers, here's how you could
 class ProxyContext
   extend Surrounded::Context
 
@@ -33,6 +32,14 @@ class ProxyContext
 
   trigger :admin_missing_method do
     admin.method_that_does_not_exist
+  end
+
+  trigger :admin_responds? do
+    admin.respond_to?(:talking_to_others)
+  end
+
+  trigger :get_admin_method do
+    admin.method(:talking_to_others)
   end
 end
 
@@ -70,5 +77,13 @@ describe ProxyContext do
 
   it 'allows access to other objects in the context' do
     assert_equal 'GTD', context.talking
+  end
+
+  it 'sets roles to respond to role methods' do
+    assert context.admin_responds?
+  end
+
+  it 'is able to grab methods from the object' do
+    assert context.get_admin_method
   end
 end
