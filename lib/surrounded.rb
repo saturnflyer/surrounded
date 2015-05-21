@@ -1,5 +1,6 @@
 require "surrounded/version"
 require "surrounded/context"
+require "singleton"
 
 # This module should be added to objects which will enter
 # into context objects. 
@@ -28,7 +29,7 @@ module Surrounded
   end
 
   def context
-    surroundings.first || NullContext.new
+    surroundings.first || NullContext.instance
   end
 
   def method_missing(meth, *args, &block)
@@ -40,6 +41,7 @@ module Surrounded
   end
 
   class NullContext
+    include Singleton
     def role?(*args)
       nil
     end
