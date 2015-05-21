@@ -44,7 +44,6 @@ class ProxyContext
 end
 
 ProxyUser = Class.new do
-  include Surrounded
   def initialize(name)
     @name = name
   end
@@ -75,8 +74,9 @@ describe ProxyContext do
     assert_match(/ProxyUser.*name="Jim"/, err.message)
   end
 
-  it 'allows access to other objects in the context' do
-    assert_equal 'GTD', context.talking
+  it 'fails access to other objects in the context' do
+    err = _{ context.talking }.must_raise NameError
+    assert_match(%r{undefined local variable or method `task'}, err.message)
   end
 
   it 'sets roles to respond to role methods' do
@@ -84,6 +84,15 @@ describe ProxyContext do
   end
 
   it 'is able to grab methods from the object' do
+    assert_equal :talking_to_others, context.get_admin_method.name
+  end
+
+  it 'works with frozen and primitive objects' do
+    context.rebind(admin: "brrr".freeze, task: task)
+    assert context.get_admin_method
+    context.rebind(admin: nil, task: task)
+    assert context.get_admin_method
+    context.rebind(admin: true, task: task)
     assert context.get_admin_method
   end
 end

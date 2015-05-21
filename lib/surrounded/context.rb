@@ -116,17 +116,12 @@ module Surrounded
         self.class.triggers
       end
 
-      # Ruby 2.1 and up
-      if RUBY_VERSION.split('.')[1].to_i >= 1
-        def rebind(**kwargs)
-          clear_instance_variables
-          map_roles(kwargs.to_a)
-        end
-      else
-        def rebind(options_hash)
-          clear_instance_variables
-          map_roles(options_hash.to_a)
-        end
+      def rebind(options_hash)
+        clear_instance_variables
+        initialize(options_hash.to_a)
+      rescue ArgumentError
+        initialize(*options_hash.values)
+        self
       end
 
       private

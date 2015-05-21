@@ -14,13 +14,16 @@ module Surrounded
               end
             }, __FILE__, num
           end
+          klass.send(:define_method, :__behaviors__) do
+            mod
+          end
           klass
         end
       end
 
 
-      identity = %w[__send__ object_id]
-      method_access = %w[respond_to? method]
+      identity = %w[__send__ object_id equal?]
+      method_access = %w[respond_to? method __behaviors__]
 
       reserved_methods = (identity + method_access).join('|')
 
@@ -33,8 +36,8 @@ module Surrounded
 
       private
 
-      def initialize(object, behaviors)
-        @object, @behaviors = object, behaviors
+      def initialize(object)
+        @object, @behaviors = object, __behaviors__
       end
 
       def method_missing(meth, *args, &block)

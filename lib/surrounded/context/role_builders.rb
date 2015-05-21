@@ -43,13 +43,8 @@ module Surrounded
         behavior = private_const_set(interface_name, Module.new(&block))
 
         require 'surrounded/context/negotiator'
-        undef_method(name)
-
-        # AdminInterfaceProxy
-        proxy = private_const_set(RoleName(interface_name, 'Proxy'), Negotiator.for_role(behavior))
-        define_method(name) do
-          instance_variable_set("@#{name}", proxy.new(role_map.assigned_player(name), behavior))
-        end
+        # Admin
+        private_const_set(RoleName(name), Negotiator.for_role(behavior))
       end
       
       private
