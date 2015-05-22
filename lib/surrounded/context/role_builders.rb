@@ -13,7 +13,7 @@ module Surrounded
           meth.call(name, &block)
         end
       rescue NameError => e
-        raise e.extend(InvalidRoleType)
+        raise InvalidRoleType, e.message
       end
       alias_method :role_methods, :role
 
