@@ -553,17 +553,18 @@ Using the `role` method to define modules and classes takes care of the setup fo
   role :source, :interface do
     def transfer
       self.balance -= amount
-      destination.balance += amount
+      # not able to access destination
+      # destination.balance += amount
       self
     end
   end
 ```
 
-The `:interface` option is a special object which has all of the standard Object methods removed (excepting `__send__` and `object_id`) so that other methods will be pulled from the ones that you define, or from the object it attempts to proxy.
+The `:interface` option is a special object which has all of the standard Object methods removed (excepting ones like `__send__` and `object_id`) so that other methods will be pulled from the ones that you define, or from the object it attempts to proxy.
 
 Notice that the `:interface` allows you to return `self` whereas the `:wrap` acts more like a wrapper and forces you to deal with that shortcoming by using it's wrapped-object-accessor method: `__getobj__`.
 
-The downside of using an interface is that it is still a wrapper. All of your defined role methods are executed in the context of the object playing the role, but the interface has it's own identity.
+The downside of using an interface is that it is still a wrapper and it doesn't have access to the other objects in the context. All of your defined role methods are executed in the context of the object playing the role, but the interface has it's own identity.
 
 If you'd like to choose one and use it all the time, you can set the default:
 
@@ -571,13 +572,13 @@ If you'd like to choose one and use it all the time, you can set the default:
 class MoneyTransfer
   extend Surrounded::Context
 
-  self.default_role_type = :interface # also :wrap, :wrapper, or :module
+  self.default_role_type = :wrapper # also :wrap, :interface, or :module
 
   role :source do
     def transfer
       self.balance -= amount
       destination.balance += amount
-      self
+      __getobj__
     end
   end
 end
@@ -586,7 +587,7 @@ end
 Or, if you like, you can choose the default for your entire project:
 
 ```ruby
-Surrounded::Context.default_role_type = :interface
+Surrounded::Context.default_role_type = :wrap
 
 class MoneyTransfer
   extend Surrounded::Context
@@ -595,7 +596,7 @@ class MoneyTransfer
     def transfer
       self.balance -= amount
       destination.balance += amount
-      self
+      __getobj__
     end
   end
 end
@@ -717,6 +718,7 @@ class ActiviatingAccount
   disallow :some_trigger_method do
     # whatever conditional code for the instance of the context
   end
+  # you could also use `guard` instead of `disallow`
   
   # or define your own method without the `disallow` keyword
   def disallow_some_trigger_method?
