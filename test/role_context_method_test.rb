@@ -89,14 +89,15 @@ describe Surrounded::Context, '.role' do
  
   describe 'unknown' do
     it 'raises an error' do
-      assert_raises(Surrounded::Context::InvalidRoleType){
+      err = _{
         class UnknownRole
           extend Surrounded::Context
  
           role :admin, :unknown do
           end
         end
-      }
+      }.must_raise Surrounded::Context::InvalidRoleType
+      _(err.cause).must_be_kind_of NameError
     end
   end
  
