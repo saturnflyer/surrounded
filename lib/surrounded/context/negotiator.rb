@@ -7,13 +7,16 @@ module Surrounded
         # This prevents hits to method_missing.
         def for_role(mod)
           klass = Class.new(self)
+          # For each method in the module, directly forward to the wrapped object to
+          # circumvent method_missing
           mod.instance_methods(false).each do |meth|
             num = __LINE__; klass.class_eval %{
               def #{meth}(*args, &block)
-                @behaviors.instance_method(:#{meth}).bind(@object).call(*args, &block)
+                __behaviors__.instance_method(:#{meth}).bind(@object).call(*args, &block)
               end
             }, __FILE__, num
           end
+          # Define access to the provided module
           klass.send(:define_method, :__behaviors__) do
             mod
           end
@@ -27,7 +30,7 @@ module Surrounded
 
       reserved_methods = (identity + method_access).join('|')
 
-      # Remove all methods except the identity methods
+      # Remove all methods except the reserved methods
       instance_methods.reject{ |m|
         m.to_s =~ /#{reserved_methods}/
       }.each do |meth|
@@ -38,6 +41,7 @@ module Surrounded
 
       private
 
+      # Store the context in the wrapped object if it can do so
       def store_context(&block)
         if @object.respond_to?(__method__, true)
           @object.send(__method__, &block)
@@ -50,7 +54,7 @@ module Surrounded
       alias remove_context store_context
 
       def initialize(object)
-        @object, @behaviors = object, __behaviors__
+        @object = object
       end
 
       def method_missing(meth, *args, &block)
