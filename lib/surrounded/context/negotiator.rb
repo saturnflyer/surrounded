@@ -39,22 +39,15 @@ module Surrounded
       private
 
       def store_context(&block)
-        if @object.is_a?(Surrounded)
+        if @object.respond_to?(__method__, true)
           @object.send(__method__, &block)
         else
           super
         end
         self
       end
-
-      def remove_context(&block)
-        if @object.is_a?(Surrounded)
-          @object.send(__method__, &block)
-        else
-          super
-        end
-        self
-      end
+      # These only differ in the message they send
+      alias remove_context store_context
 
       def initialize(object)
         @object, @behaviors = object, __behaviors__
