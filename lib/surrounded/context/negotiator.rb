@@ -7,6 +7,10 @@ module Surrounded
         # This prevents hits to method_missing.
         def for_role(mod)
           klass = Class.new(self)
+          # Define access to the provided module
+          klass.send(:define_method, :__behaviors__) do
+            mod
+          end
           # For each method in the module, directly forward to the wrapped object to
           # circumvent method_missing
           mod.instance_methods(false).each do |meth|
@@ -15,10 +19,6 @@ module Surrounded
                 __behaviors__.instance_method(:#{meth}).bind(@object).call(*args, &block)
               end
             }, __FILE__, num
-          end
-          # Define access to the provided module
-          klass.send(:define_method, :__behaviors__) do
-            mod
           end
           klass
         end
