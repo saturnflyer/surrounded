@@ -614,7 +614,9 @@ would be given behavior from a `Member` behavior module or class if you create o
 
 ```ruby
 class Organization
-  initialize :leader, :members
+  extend Surrounded::Context
+
+  initialize_without_keywords :leader, :members
   
   role :members do
     # special behavior for the collection
@@ -624,6 +626,15 @@ class Organization
     # special behavior to be applied to each member in the collection
   end  
 end
+```
+
+## Reusing context objects
+
+If you create a context object and need to use the same type of object with new role players, you may use the `rebind` method. It will clear any instance_variables from your context object and map the given objects to their names:
+
+```ruby
+context = Employment.new(current_user, the_boss)
+context.rebind(employee: another_user, boss: someone_else) # same context, new players
 ```
 
 ## Overview in code
@@ -747,6 +758,19 @@ class ActiviatingAccount
   forward_triggers :role_name, :list, :of, :methods, :to, :forward
   forwarding [:list, :of, :methods, :to, :forward] => :role_name
 end
+
+# with keyword_initialize (will be changed to initialize)
+context = ActiviatingAccount.new(activator: some_object, account: some_account)
+# with initialize (this will be moved to initialize_without_keywords)
+context = ActiviatingAccount.new(some_object, some_account)
+context.triggers # => lists a Set of triggers
+# when using protect_triggers
+context.triggers # => lists a Set of triggers which may currently be called
+context.triggers # => lists a Set of all triggers (the same as if protect_triggers was _not_ used)
+context.allow?(:trigger_name) # => returns a boolean if the trigger may be run
+
+# reuse the context object with new role players
+context.rebind(activator: another_object, account: another_account)
 ```
 
 ## Dependencies
