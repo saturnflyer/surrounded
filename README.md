@@ -532,7 +532,7 @@ By using `Surrounded::Context` you are declaring a relationship between the obje
 
 Because all the behavior is defined internally and only relevant internally, those relationships don't exist outside of the environment.
 
-Surrounded makes all of your role modules and classes private constants. It's not a good idea to try to reuse behavior defined for one context in another area.
+Surrounded makes **all** of your role modules and classes _private_ constants. It's not a good idea to try to reuse behavior defined for one context in another area.
 
 ## The role DSL
 
