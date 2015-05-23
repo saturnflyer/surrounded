@@ -6,7 +6,7 @@
     <title>Surrounded by saturnflyer</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -16,7 +16,7 @@
     <div class="wrapper">
       <header>
         <h1>Surrounded</h1>
-        <p>Gives an object implicit access to other objects in it's environment.</p>
+        <p>Gives an object implicit access to other objects in it&#39;s environment.</p>
 
         <p class="view"><a href="https://github.com/saturnflyer/surrounded">View the Project on GitHub <small>saturnflyer/surrounded</small></a></p>
 
@@ -29,53 +29,223 @@
       </header>
       <section>
         <h1>
-<a name="" class="anchor" href="#"><span class="octicon octicon-link"></span></a><img src="http://saturnflyer.github.io/surrounded/images/surrounded.png" alt="Surrounded" title="Surrounded">
+<a id="" class="anchor" href="#" aria-hidden="true"><span class="octicon octicon-link"></span></a><img src="http://saturnflyer.github.io/surrounded/images/surrounded.png" alt="Surrounded" title="Surrounded">
 </h1>
 
 <h2>
-<a name="bring-your-own-complexity" class="anchor" href="#bring-your-own-complexity"><span class="octicon octicon-link"></span></a>Bring your own complexity</h2>
+<a id="be-in-control-of-business-logic" class="anchor" href="#be-in-control-of-business-logic" aria-hidden="true"><span class="octicon octicon-link"></span></a>Be in control of business logic.</h2>
 
 <p><a href="https://travis-ci.org/saturnflyer/surrounded"><img src="https://travis-ci.org/saturnflyer/surrounded.png?branch=master" alt="Build Status"></a>
 <a href="https://codeclimate.com/github/saturnflyer/surrounded"><img src="https://codeclimate.com/github/saturnflyer/surrounded.png" alt="Code Climate"></a>
 <a href="https://coveralls.io/r/saturnflyer/surrounded"><img src="https://coveralls.io/repos/saturnflyer/surrounded/badge.png" alt="Coverage Status"></a>
 <a href="http://badge.fury.io/rb/surrounded"><img src="https://badge.fury.io/rb/surrounded.png" alt="Gem Version"></a></p>
 
-<h1>
-<a name="surrounded-aims-to-make-things-simple-and-get-out-of-your-way" class="anchor" href="#surrounded-aims-to-make-things-simple-and-get-out-of-your-way"><span class="octicon octicon-link"></span></a>Surrounded aims to make things simple and get out of your way.</h1>
-
-<p>Most of what you care about is defining the behavior of objects. How they interact is important.
-The purpose of this library is to clear away the details of getting things setup and to allow you to make changes to the way you handle roles.</p>
-
-<p>There are two main parts to this library. </p>
-
-<ol>
-<li>
-<code>Surrounded</code> gives objects an implicit awareness of other objects in their environments.</li>
-<li>
-<code>Surrounded::Context</code> helps you create objects which encapsulate other objects. These <em>are</em> the environments.</li>
-</ol><p>First, take a look at creating contexts. This is where you'll spend most of your time.</p>
+<p>Surrounded is designed to help you better manage your business logic by keeping cohesive behaviors together. Bring objects together to implement your use cases and gain behavior only when necessary.</p>
 
 <h2>
-<a name="easily-create-encapsulated-environments-for-your-objects" class="anchor" href="#easily-create-encapsulated-environments-for-your-objects"><span class="octicon octicon-link"></span></a>Easily create encapsulated environments for your objects.</h2>
+<a id="how-to-think-about-your-objects" class="anchor" href="#how-to-think-about-your-objects" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to think about your objects</h2>
+
+<p>First, name the problem you're solving. Then, break down your problem into responsible roles.</p>
+
+<p>Use your problem name as a class and extend it with <code>Surrounded::Context</code></p>
+
+<p>It might look like this:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+
+  role <span class="pl-c1">:boss</span>
+  role <span class="pl-c1">:employee</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>In your application, you'll initialize this class with objects to play the roles that you've defined, so you'll need to specify which role players will use which role.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+
+  <span class="pl-k">initialize</span> <span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>
+
+  role <span class="pl-c1">:boss</span>
+  role <span class="pl-c1">:employee</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>Here, you've specified the order when initializing so you can use it like this:</p>
+
+<div class="highlight highlight-ruby"><pre>user1 <span class="pl-k">=</span> <span class="pl-c1">User</span>.find(<span class="pl-c1">1</span>)
+user2 <span class="pl-k">=</span> <span class="pl-c1">User</span>.find(<span class="pl-c1">2</span>)
+context <span class="pl-k">=</span> <span class="pl-c1">Employment</span>.<span class="pl-k">new</span>(user1, user2)</pre></div>
+
+<p>That ensures that <code>user1</code> will become (and have all the features of) the <code>employee</code> and <code>user2</code> will become (and have all the features of) the <code>boss</code>.</p>
+
+<p>There are 2 things left to do:</p>
+
+<ol>
+<li>define behaviors for each role and</li>
+<li>define how you can trigger their actions</li>
+</ol>
+
+<p>Currently initializing contexts does not require the use of keyword arguments, <em>but it will in the future</em>.</p>
+
+<p>You should consider using explicit names when initialize now by using <code>keyword_initialize</code>:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+
+  keyword_initialize <span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>
+<span class="pl-k">end</span>
+
+user1 <span class="pl-k">=</span> <span class="pl-c1">User</span>.find(<span class="pl-c1">1</span>)
+user2 <span class="pl-k">=</span> <span class="pl-c1">User</span>.find(<span class="pl-c1">2</span>)
+context <span class="pl-k">=</span> <span class="pl-c1">Employment</span>.<span class="pl-k">new</span>(<span class="pl-c1">employee:</span> user1, <span class="pl-c1">boss:</span> user2)</pre></div>
+
+<p>This will allow you to prepare your accessing code to use keywords.</p>
+
+<h2>
+<a id="defining-behaviors-for-roles" class="anchor" href="#defining-behaviors-for-roles" aria-hidden="true"><span class="octicon octicon-link"></span></a>Defining behaviors for roles</h2>
+
+<p>Behaviors for your roles are easily defined just like you define a method. Provide your role a block and define methods there.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+
+  <span class="pl-k">initialize</span> <span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>
+
+  role <span class="pl-c1">:boss</span>
+
+  role <span class="pl-c1">:employee</span> <span class="pl-k">do</span>
+    <span class="pl-k">def</span> <span class="pl-en">work_weekend</span>
+      <span class="pl-k">if</span> fed_up?
+        quit
+      <span class="pl-k">else</span>
+        schedule_weekend_work
+      <span class="pl-k">end</span>
+    <span class="pl-k">end</span>
+
+    <span class="pl-k">def</span> <span class="pl-en">quit</span>
+      say(<span class="pl-s"><span class="pl-pds">"</span>I'm sick of this place, <span class="pl-pse">#{</span><span class="pl-s1">boss.name</span><span class="pl-pse"><span class="pl-s1">}</span></span>!<span class="pl-pds">"</span></span>)
+      stomp
+      throw_papers
+      say(<span class="pl-s"><span class="pl-pds">"</span>I quit!<span class="pl-pds">"</span></span>)
+    <span class="pl-k">end</span>
+
+    <span class="pl-k">def</span> <span class="pl-en">schedule_weekend_work</span>
+      <span class="pl-c"># ...</span>
+    <span class="pl-k">end</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>If any of your roles don't have special behaviors, like <code>boss</code>, you don't need to specify it. Your <code>initialize</code> setup will handle assiging who's who when this context is used.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+
+  <span class="pl-k">initialize</span> <span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>
+
+  role <span class="pl-c1">:employee</span> <span class="pl-k">do</span>
+    <span class="pl-c">#...</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<h2>
+<a id="triggering-interactions" class="anchor" href="#triggering-interactions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Triggering interactions</h2>
+
+<p>You'll need to define way to trigger these behaviors to occur so that you can use them.</p>
+
+<div class="highlight highlight-ruby"><pre>context <span class="pl-k">=</span> <span class="pl-c1">Employment</span>.<span class="pl-k">new</span>(user1, user2)
+
+context.plan_weekend_work</pre></div>
+
+<p>The method you need is defined as an instance method in your context, but before that method will work as expected you'll need to mark it as a trigger.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+
+  <span class="pl-k">initialize</span> <span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>
+
+  <span class="pl-k">def</span> <span class="pl-en">plan_weekend_work</span>
+    employee.work_weekend
+  <span class="pl-k">end</span>
+  trigger <span class="pl-c1">:plan_weekend_work</span>
+
+  role <span class="pl-c1">:employee</span> <span class="pl-k">do</span>
+    <span class="pl-c">#...</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>Trigger methods are different from regular instance methods in that they apply behaviors from the roles to the role players.
+A regular instance method just does what you define. But a trigger will make your role players come alive with their behaviors.</p>
+
+<p>You may find that the code for your triggers is extremely simple and is merely creating a method to tell a role player what to do. If you find you have many methods like this:</p>
+
+<div class="highlight highlight-ruby"><pre>  <span class="pl-k">def</span> <span class="pl-en">plan_weekend_work</span>
+    employee.work_weekend
+  <span class="pl-k">end</span>
+  trigger <span class="pl-c1">:plan_weekend_work</span></pre></div>
+
+<p>You can shorten it to:</p>
+
+<div class="highlight highlight-ruby"><pre>  trigger <span class="pl-c1">:plan_weekend_work</span> <span class="pl-k">do</span>
+    employee.work_weekend
+  <span class="pl-k">end</span></pre></div>
+
+<p>But it can be even simpler and follows the same pattern provided by Ruby's standard library Forwardable:</p>
+
+<div class="highlight highlight-ruby"><pre>  <span class="pl-c"># The first argument is the role to receive the messaged defined in the second argument.</span>
+  <span class="pl-c"># The third argument is optional and if provided will be the name of the trigger method on your context instance.</span>
+  forward_trigger <span class="pl-c1">:employee</span>, <span class="pl-c1">:work_weekend</span>, <span class="pl-c1">:plan_weekend_work</span>
+
+  <span class="pl-c"># Alternatively, you can use an API similar to that of the `delegate` method from Forwardable</span>
+  forwarding [<span class="pl-c1">:work_weekend</span>] =&gt; <span class="pl-c1">:employee</span></pre></div>
+
+<p>The difference between <code>forward_trigger</code> and <code>forwarding</code> is that the first accepts an alternative method name for the context instance method. There's more on this below in the "Overview in code" section, or see <code>lib/surrounded/context/forwarding.rb</code>.</p>
+
+<p>There's one last thing to make this work.</p>
+
+<h2>
+<a id="getting-your-role-players-ready" class="anchor" href="#getting-your-role-players-ready" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting your role players ready</h2>
+
+<p>You'll need to include <code>Surrounded</code> in the classes of objects which will be role players in your context.</p>
+
+<p>It's as easy as:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">User</span>
+  <span class="pl-k">include</span> <span class="pl-c1">Surrounded</span>
+
+  <span class="pl-c"># ...</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>This gives each of the objects the ability to understand its context and direct access to other objects in the context.</p>
+
+<h2>
+<a id="why-is-this-valuable" class="anchor" href="#why-is-this-valuable" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why is this valuable?</h2>
+
+<p>By creating environments which encapsulate roles and all necessary behaviors, you will be better able to isolate the logic of your system. A <code>user</code> in your system doesn't have all possible behaviors defined in its class, it gains the behaviors only when they are necessary.</p>
+
+<p>The objects that interact have their behaviors defined and available right where they are needed. Implementation is in proximity to necessity. The behaviors you need for each role player are highly cohesive and are coupled to their use rather than being coupled to the class of an object which might use them at some point.</p>
+
+<h1>
+<a id="deeper-dive" class="anchor" href="#deeper-dive" aria-hidden="true"><span class="octicon octicon-link"></span></a>Deeper Dive</h1>
+
+<h2>
+<a id="create-encapsulated-environments-for-your-objects" class="anchor" href="#create-encapsulated-environments-for-your-objects" aria-hidden="true"><span class="octicon octicon-link"></span></a>Create encapsulated environments for your objects.</h2>
 
 <p>Typical initialization of an environment, or a Context in DCI, has a lot of code. For example:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
 
-  <span class="kp">attr_reader</span> <span class="ss">:employee</span><span class="p">,</span> <span class="ss">:boss</span>
-  <span class="kp">private</span> <span class="ss">:employee</span><span class="p">,</span> <span class="ss">:boss</span>
-  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">employee</span><span class="p">,</span> <span class="n">boss</span><span class="p">)</span>
-    <span class="vi">@employee</span> <span class="o">=</span> <span class="n">employee</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="no">Employee</span><span class="p">)</span>
-    <span class="vi">@boss</span> <span class="o">=</span> <span class="n">boss</span>
-  <span class="k">end</span>
+  <span class="pl-k">attr_reader</span> <span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>
+  <span class="pl-k">private</span> <span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>
+  <span class="pl-k">def</span> <span class="pl-en">initialize</span>(<span class="pl-smi">employee</span>, <span class="pl-smi">boss</span>)
+    <span class="pl-smi">@employee</span> <span class="pl-k">=</span> employee.<span class="pl-k">extend</span>(<span class="pl-c1">Employee</span>)
+    <span class="pl-smi">@boss</span> <span class="pl-k">=</span> boss
+  <span class="pl-k">end</span>
 
-  <span class="k">module</span> <span class="nn">Employee</span>
-    <span class="c1"># extra behavior here...</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  <span class="pl-k">module</span> <span class="pl-en">Employee</span>
+    <span class="pl-c"># extra behavior here...</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
-<p>This code allows the MyEnvironment class to create instances where it will have an <code>employee</code> and a <code>boss</code> role internally. These are set to <code>attr_reader</code>s and are made private.</p>
+<p>This code allows the Employment class to create instances where it will have an <code>employee</code> and a <code>boss</code> role internally. These are set to <code>attr_reader</code>s and are made private.</p>
 
 <p>The <code>employee</code> is extended with behaviors defined in the <code>Employee</code> module, and in this case there's no extra stuff for the <code>boss</code> so it doesn't get extended with anything.</p>
 
@@ -83,77 +253,72 @@ The purpose of this library is to clear away the details of getting things setup
 
 <p>By adding <code>Surrounded::Context</code> you can shortcut all this work.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
-  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
 
-  <span class="kp">initialize</span><span class="p">(</span><span class="ss">:employee</span><span class="p">,</span> <span class="ss">:boss</span><span class="p">)</span>
+  <span class="pl-k">initialize</span>(<span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>)
 
-  <span class="k">module</span> <span class="nn">Employee</span>
-    <span class="c1"># extra behavior here...</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  <span class="pl-k">module</span> <span class="pl-en">Employee</span>
+    <span class="pl-c"># extra behavior here...</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>Surrounded gives you an <code>initialize</code> class method which does all the setup work for you.</p>
 
 <h2>
-<a name="managing-roles" class="anchor" href="#managing-roles"><span class="octicon octicon-link"></span></a>Managing Roles</h2>
+<a id="managing-roles" class="anchor" href="#managing-roles" aria-hidden="true"><span class="octicon octicon-link"></span></a>Managing Roles</h2>
 
 <p><em>I don't want to use modules. Can't I use something like SimpleDelegator?</em></p>
 
 <p>Well, it just so happens that you can. This code will work just fine:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
-  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
 
-  <span class="kp">initialize</span><span class="p">(</span><span class="ss">:employee</span><span class="p">,</span> <span class="ss">:boss</span><span class="p">)</span>
+  <span class="pl-k">initialize</span>(<span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>)
 
-  <span class="k">class</span> <span class="nc">Employee</span> <span class="o">&lt;</span> <span class="no">SimpleDelegator</span>
-    <span class="c1"># extra behavior here...</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  <span class="pl-k">class</span> <span class="pl-en">Employee<span class="pl-e"> &lt; SimpleDelegator</span></span>
+    <span class="pl-c"># extra behavior here...</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>Instead of extending the <code>employee</code> object, Surrounded will run <code>Employee.new(employee)</code> to create the wrapper for you. You'll need to include the <code>Surrounded</code> module in your wrapper, but we'll get to that.</p>
 
 <p>But the syntax can be even simpler than that if you want.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
-  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
 
-  <span class="kp">initialize</span><span class="p">(</span><span class="ss">:employee</span><span class="p">,</span> <span class="ss">:boss</span><span class="p">)</span>
+  <span class="pl-k">initialize</span>(<span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>)
 
-  <span class="n">role</span> <span class="ss">:employee</span> <span class="k">do</span>
-    <span class="c1"># extra behavior here...</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  role <span class="pl-c1">:employee</span> <span class="pl-k">do</span>
+    <span class="pl-c"># extra behavior here...</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>By default, this code will create a module for you named <code>Employee</code>. If you want to use a wrapper, you can do this:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
-  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
 
-  <span class="kp">initialize</span><span class="p">(</span><span class="ss">:employee</span><span class="p">,</span> <span class="ss">:boss</span><span class="p">)</span>
+  <span class="pl-k">initialize</span>(<span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>)
 
-  <span class="n">wrap</span> <span class="ss">:employee</span> <span class="k">do</span>
-    <span class="c1"># extra behavior here...</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  wrap <span class="pl-c1">:employee</span> <span class="pl-k">do</span>
+    <span class="pl-c"># extra behavior here...</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>But if you're making changes and you decide to move from a module to a wrapper or from a wrapper to a module, you'll need to change that method call. Instead, you could just tell it which type of role to use:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
-  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
 
-  <span class="kp">initialize</span><span class="p">(</span><span class="ss">:employee</span><span class="p">,</span> <span class="ss">:boss</span><span class="p">)</span>
+  <span class="pl-k">initialize</span>(<span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>)
 
-  <span class="n">role</span> <span class="ss">:employee</span><span class="p">,</span> <span class="ss">:wrapper</span> <span class="k">do</span>
-    <span class="c1"># extra behavior here...</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  role <span class="pl-c1">:employee</span>, <span class="pl-c1">:wrapper</span> <span class="pl-k">do</span>
+    <span class="pl-c"># extra behavior here...</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>The default available types are <code>:module</code>, <code>:wrap</code> or <code>:wrapper</code>, and <code>:interface</code>. We'll get to <code>interface</code> below. The <code>:wrap</code> and <code>:wrapper</code> types are the same and they'll both create classes which inherit from SimpleDelegator <em>and</em> include Surrounded for you.</p>
 
@@ -168,44 +333,42 @@ The purpose of this library is to clear away the details of getting things setup
 <p>There's a lot more. Let's look at the individual objects and what they need for this to be valuable...</p>
 
 <h2>
-<a name="objects-access-to-their-environments" class="anchor" href="#objects-access-to-their-environments"><span class="octicon octicon-link"></span></a>Objects' access to their environments</h2>
+<a id="objects-access-to-their-environments" class="anchor" href="#objects-access-to-their-environments" aria-hidden="true"><span class="octicon octicon-link"></span></a>Objects' access to their environments</h2>
 
 <p>Add <code>Surrounded</code> to your objects to give them awareness of other objects.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">User</span>
-  <span class="kp">include</span> <span class="no">Surrounded</span>
-<span class="k">end</span>
-</pre></div>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">User</span>
+  <span class="pl-k">include</span> <span class="pl-c1">Surrounded</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>Now the <code>User</code> instances will be able to implicitly access objects in their environment.</p>
 
 <p>Via <code>method_missing</code> those <code>User</code> instances can access a <code>context</code> object it stores in an internal collection. </p>
 
-<p>Inside of the <code>MyEnvironment</code> context we saw above, the <code>employee</code> and <code>boss</code> objects are instances of <code>User</code> for this example.</p>
+<p>Inside of the <code>Employment</code> context we saw above, the <code>employee</code> and <code>boss</code> objects are instances of <code>User</code> for this example.</p>
 
 <p>Because the <code>User</code> class includes <code>Surrounded</code>, the instances of that class will be able to access other objects in the same context implicitly.</p>
 
 <p>Let's make our context look like this:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
-  <span class="c1"># other stuff from above is still here...</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-c"># other stuff from above is still here...</span>
 
-  <span class="k">def</span> <span class="nf">shove_it</span>
-    <span class="n">employee</span><span class="o">.</span><span class="n">quit</span>
-  <span class="k">end</span>
+  <span class="pl-k">def</span> <span class="pl-en">plan_weekend_work</span>
+    employee.quit
+  <span class="pl-k">end</span>
 
-  <span class="n">role</span> <span class="ss">:employee</span> <span class="k">do</span>
-    <span class="k">def</span> <span class="nf">quit</span>
-      <span class="n">say</span><span class="p">(</span><span class="s2">"I'm sick of this place, </span><span class="si">#{</span><span class="n">boss</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">!"</span><span class="p">)</span>
-      <span class="n">stomp</span>
-      <span class="n">throw_papers</span>
-      <span class="n">say</span><span class="p">(</span><span class="s2">"I quit!"</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  role <span class="pl-c1">:employee</span> <span class="pl-k">do</span>
+    <span class="pl-k">def</span> <span class="pl-en">quit</span>
+      say(<span class="pl-s"><span class="pl-pds">"</span>I'm sick of this place, <span class="pl-pse">#{</span><span class="pl-s1">boss.name</span><span class="pl-pse"><span class="pl-s1">}</span></span>!<span class="pl-pds">"</span></span>)
+      stomp
+      throw_papers
+      say(<span class="pl-s"><span class="pl-pds">"</span>I quit!<span class="pl-pds">"</span></span>)
+    <span class="pl-k">end</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
-<p>What's happening in there is that when the <code>shove_it</code> method is called on the instance of <code>MyEnvironment</code>, the <code>employee</code> has the ability to refer to <code>boss</code> because it is in the same context, e.g. the same environment.</p>
+<p>What's happening in there is that when the <code>plan_weekend_work</code> method is called on the instance of <code>Employment</code>, the <code>employee</code> has the ability to refer to <code>boss</code> because it is in the same context, e.g. the same environment.</p>
 
 <p>The behavior defined in the <code>Employee</code> module assumes that it may access other objects in it's local environment. The <code>boss</code> object, for example, is never explicitly passed in as an argument.</p>
 
@@ -214,94 +377,143 @@ The purpose of this library is to clear away the details of getting things setup
 <p>I didn't mention how the context is set, however.</p>
 
 <h2>
-<a name="tying-objects-together" class="anchor" href="#tying-objects-together"><span class="octicon octicon-link"></span></a>Tying objects together</h2>
+<a id="tying-objects-together" class="anchor" href="#tying-objects-together" aria-hidden="true"><span class="octicon octicon-link"></span></a>Tying objects together</h2>
 
 <p>Your context will have methods of it's own which will trigger actions on the objects inside, but we need those trigger methods to set the accessible context for each of the contained objects.</p>
 
 <p>Here's an example of what we want:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
-  <span class="c1"># other stuff from above is still here...</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-c"># other stuff from above is still here...</span>
 
-  <span class="k">def</span> <span class="nf">shove_it</span>
-    <span class="n">employee</span><span class="o">.</span><span class="n">store_context</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
-    <span class="n">employee</span><span class="o">.</span><span class="n">quit</span>
-    <span class="n">employee</span><span class="o">.</span><span class="n">remove_context</span>
-  <span class="k">end</span>
+  <span class="pl-k">def</span> <span class="pl-en">plan_weekend_work</span>
+    employee.store_context(<span class="pl-v">self</span>)
+    employee.quit
+    employee.remove_context
+  <span class="pl-k">end</span>
 
-  <span class="n">role</span> <span class="ss">:employee</span> <span class="k">do</span>
-    <span class="k">def</span> <span class="nf">quit</span>
-      <span class="n">say</span><span class="p">(</span><span class="s2">"I'm sick of this place, </span><span class="si">#{</span><span class="n">boss</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">!"</span><span class="p">)</span>
-      <span class="n">stomp</span>
-      <span class="n">throw_papers</span>
-      <span class="n">say</span><span class="p">(</span><span class="s2">"I quit!"</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  role <span class="pl-c1">:employee</span> <span class="pl-k">do</span>
+    <span class="pl-k">def</span> <span class="pl-en">quit</span>
+      say(<span class="pl-s"><span class="pl-pds">"</span>I'm sick of this place, <span class="pl-pse">#{</span><span class="pl-s1">boss.name</span><span class="pl-pse"><span class="pl-s1">}</span></span>!<span class="pl-pds">"</span></span>)
+      stomp
+      throw_papers
+      say(<span class="pl-s"><span class="pl-pds">"</span>I quit!<span class="pl-pds">"</span></span>)
+    <span class="pl-k">end</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>Now that the <code>employee</code> has a reference to the context, it won't blow up when it hits <code>boss</code> inside that <code>quit</code> method.</p>
 
 <p>We saw how we were able to clear up a lot of that repetitive work with the <code>initialize</code> method, so this is how we do it here:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
-  <span class="c1"># other stuff from above is still here...</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-c"># other stuff from above is still here...</span>
 
-  <span class="n">trigger</span> <span class="ss">:shove_it</span> <span class="k">do</span>
-    <span class="n">employee</span><span class="o">.</span><span class="n">quit</span>
-  <span class="k">end</span>
+  trigger <span class="pl-c1">:plan_weekend_work</span> <span class="pl-k">do</span>
+    employee.quit
+  <span class="pl-k">end</span>
 
-  <span class="n">role</span> <span class="ss">:employee</span> <span class="k">do</span>
-    <span class="k">def</span> <span class="nf">quit</span>
-      <span class="n">say</span><span class="p">(</span><span class="s2">"I'm sick of this place, </span><span class="si">#{</span><span class="n">boss</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">!"</span><span class="p">)</span>
-      <span class="n">stomp</span>
-      <span class="n">throw_papers</span>
-      <span class="n">say</span><span class="p">(</span><span class="s2">"I quit!"</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  role <span class="pl-c1">:employee</span> <span class="pl-k">do</span>
+    <span class="pl-k">def</span> <span class="pl-en">quit</span>
+      say(<span class="pl-s"><span class="pl-pds">"</span>I'm sick of this place, <span class="pl-pse">#{</span><span class="pl-s1">boss.name</span><span class="pl-pse"><span class="pl-s1">}</span></span>!<span class="pl-pds">"</span></span>)
+      stomp
+      throw_papers
+      say(<span class="pl-s"><span class="pl-pds">"</span>I quit!<span class="pl-pds">"</span></span>)
+    <span class="pl-k">end</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>By using this <code>trigger</code> keyword, our block is the code we care about, but internally the method is created to first set all the objects' current contexts.</p>
 
 <p>The context will also store the triggers so that you can, for example, provide details outside of the environment about what triggers exist.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="n">context</span> <span class="o">=</span> <span class="no">MyEnvironment</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="n">the_boss</span><span class="p">)</span>
-<span class="n">context</span><span class="o">.</span><span class="n">triggers</span> <span class="c1">#=&gt; [:shove_it]</span>
-</pre></div>
+<div class="highlight highlight-ruby"><pre>context <span class="pl-k">=</span> <span class="pl-c1">Employment</span>.<span class="pl-k">new</span>(current_user, the_boss)
+context.triggers <span class="pl-c">#=&gt; [:plan_weekend_work]</span></pre></div>
 
 <p>You might find that useful for dynamically defining user interfaces.</p>
 
 <p>Sometimes I'd rather not use this DSL, however. I want to just write regular methods. </p>
 
-<p>We can do that too. You'll need to opt in to this by specifying <code>set_methods_as_triggers</code> for the context class.</p>
+<p>We can do that too. You'll need to opt in to this by specifying <code>trigger :your_method_name</code> for the methods you want to use.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">MyEnvironment</span>
-  <span class="c1"># other stuff from above is still here...</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-c"># other stuff from above is still here...</span>
 
-  <span class="n">set_methods_as_triggers</span>
+  <span class="pl-k">def</span> <span class="pl-en">plan_weekend_work</span>
+    employee.quit
+  <span class="pl-k">end</span>
+  trigger <span class="pl-c1">:plan_weekend_work</span>
 
-  <span class="k">def</span> <span class="nf">shove_it</span>
-    <span class="n">employee</span><span class="o">.</span><span class="n">quit</span>
-  <span class="k">end</span>
+  <span class="pl-c"># or in Ruby 2.x</span>
+  trigger <span class="pl-k">def</span> <span class="pl-en">plan_weekend_work</span>
+    employee.quit
+  <span class="pl-k">end</span>
 
-  <span class="n">role</span> <span class="ss">:employee</span> <span class="k">do</span>
-    <span class="k">def</span> <span class="nf">quit</span>
-      <span class="n">say</span><span class="p">(</span><span class="s2">"I'm sick of this place, </span><span class="si">#{</span><span class="n">boss</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">!"</span><span class="p">)</span>
-      <span class="n">stomp</span>
-      <span class="n">throw_papers</span>
-      <span class="n">say</span><span class="p">(</span><span class="s2">"I quit!"</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  role <span class="pl-c1">:employee</span> <span class="pl-k">do</span>
+    <span class="pl-k">def</span> <span class="pl-en">quit</span>
+      say(<span class="pl-s"><span class="pl-pds">"</span>I'm sick of this place, <span class="pl-pse">#{</span><span class="pl-s1">boss.name</span><span class="pl-pse"><span class="pl-s1">}</span></span>!<span class="pl-pds">"</span></span>)
+      stomp
+      throw_papers
+      say(<span class="pl-s"><span class="pl-pds">"</span>I quit!<span class="pl-pds">"</span></span>)
+    <span class="pl-k">end</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>This will allow you to write methods like you normally would. They are aliased internally with a prefix and the method name that you use is rewritten to add and remove the context for the objects in this context. The public API of your class remains the same, but the extra feature of wrapping your method is handled for you.</p>
 
-<p>This will treat all instance methods defined on your context the same way, so be aware of that.</p>
+<p>This works like Ruby's <code>public</code>,<code>protected</code>, and <code>private</code> keywords in that you can send symbols of method names to it. But <code>trigger</code> does not alter the parsing of the document like those core keywords do. In other words, you can't merely type <code>trigger</code> on one line, and have methods added afterward be treated as trigger methods.</p>
 
 <h2>
-<a name="where-roles-exist" class="anchor" href="#where-roles-exist"><span class="octicon octicon-link"></span></a>Where roles exist</h2>
+<a id="access-control-for-triggers" class="anchor" href="#access-control-for-triggers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Access Control for Triggers</h2>
+
+<p>If you decide to build a user interface from the available triggers, you'll find you need to know what triggers are available.</p>
+
+<p>Fortunately, you can make it easy.</p>
+
+<p>By running <code>protect_triggers</code> you'll be able to define when triggers may or may not be run. You can still run them, but they'll raise an error. Here's an example.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+  protect_triggers
+
+  <span class="pl-k">def</span> <span class="pl-en">plan_weekend_work</span>
+    employee.quit
+  <span class="pl-k">end</span>
+  trigger <span class="pl-c1">:plan_weekend_work</span>
+
+  disallow <span class="pl-c1">:plan_weekend_work</span> <span class="pl-k">do</span>
+    employee.bank_balance <span class="pl-k">&gt;</span> <span class="pl-c1">1000000</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>Then, when the employee role's <code>bank_balance</code> is greater than <code>1000000</code>, the available triggers won't include <code>:plan_weekend_work</code>.</p>
+
+<p>You can compare the instance of the context by listing <code>all_triggers</code> and <code>triggers</code> to see what could be possible and what's currently possible.</p>
+
+<p>Alternatively, if you just want to define your own methods without the DSL using <code>disallow</code>, you can just follow the pattern of <code>disallow_#{method_name}?</code> when creating your own protection.</p>
+
+<p>In fact, that's exactly what happens with the <code>disallow</code> keyword. After using it here, we'd have a <code>disallow_plan_weekend_work?</code> method defined.</p>
+
+<p>If you call the disallowed trigger directly, you'll raise an <code>Employment::AccessError</code> exception and the code in your trigger will not be run. You may rescue from that or you may rescue from <code>Surrounded::Context::AccessError</code> although you should prefer to use the error name from your own class.</p>
+
+<h2>
+<a id="restricting-return-values" class="anchor" href="#restricting-return-values" aria-hidden="true"><span class="octicon octicon-link"></span></a>Restricting return values</h2>
+
+<p><em>Tell, Don't Ask</em> style programming can better be enforced by following East-oriented Code principles. This means that the return values from methods on your objects should not provide information about their internal state. Instead of returning values, you can enforce that triggers return the context object. This forces you to place context responsiblities inside the context and prevents leaking the details and responsiblities outside of the system.</p>
+
+<p>Here's how you enforce it:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Employment</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+  east_oriented_triggers
+<span class="pl-k">end</span></pre></div>
+
+<p>That's it.</p>
+
+<p>With that change, any trigger you define will execute the block you provide and return <code>self</code>, being the instance of the context.</p>
+
+<h2>
+<a id="where-roles-exist" class="anchor" href="#where-roles-exist" aria-hidden="true"><span class="octicon octicon-link"></span></a>Where roles exist</h2>
 
 <p>By using <code>Surrounded::Context</code> you are declaring a relationship between the objects inside playing your defined roles.</p>
 
@@ -310,202 +522,389 @@ The purpose of this library is to clear away the details of getting things setup
 <p>Surrounded makes all of your role modules and classes private constants. It's not a good idea to try to reuse behavior defined for one context in another area.</p>
 
 <h2>
-<a name="the-role-dsl" class="anchor" href="#the-role-dsl"><span class="octicon octicon-link"></span></a>The role DSL</h2>
+<a id="the-role-dsl" class="anchor" href="#the-role-dsl" aria-hidden="true"><span class="octicon octicon-link"></span></a>The role DSL</h2>
 
 <p>Using the <code>role</code> method to define modules and classes takes care of the setup for you. This way you can swap between implementations:</p>
 
 <div class="highlight highlight-ruby"><pre>
-  <span class="c1"># this uses modules</span>
-  <span class="n">role</span> <span class="ss">:source</span> <span class="k">do</span>
-    <span class="k">def</span> <span class="nf">transfer</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">balance</span> <span class="o">-=</span> <span class="n">amount</span>
-      <span class="n">destination</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="n">amount</span>
-      <span class="nb">self</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
+  <span class="pl-c"># this uses modules which include Surrounded</span>
+  role <span class="pl-c1">:source</span> <span class="pl-k">do</span>
+    <span class="pl-k">def</span> <span class="pl-en">transfer</span>
+      <span class="pl-v">self</span>.balance <span class="pl-k">-=</span> amount
+      destination.balance <span class="pl-k">+=</span> amount
+      <span class="pl-v">self</span>
+    <span class="pl-k">end</span>
+  <span class="pl-k">end</span>
 
-  <span class="c1"># this uses SimpleDelegator and Surrounded</span>
-  <span class="n">role</span> <span class="ss">:source</span><span class="p">,</span> <span class="ss">:wrap</span> <span class="k">do</span>
-    <span class="k">def</span> <span class="nf">transfer</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">balance</span> <span class="o">-=</span> <span class="n">amount</span>
-      <span class="n">destination</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="n">amount</span>
-      <span class="n">__getobj__</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
+  <span class="pl-c"># this uses SimpleDelegator and Surrounded</span>
+  role <span class="pl-c1">:source</span>, <span class="pl-c1">:wrap</span> <span class="pl-k">do</span>
+    <span class="pl-k">def</span> <span class="pl-en">transfer</span>
+      <span class="pl-v">self</span>.balance <span class="pl-k">-=</span> amount
+      destination.balance <span class="pl-k">+=</span> amount
+      __getobj__
+    <span class="pl-k">end</span>
+  <span class="pl-k">end</span>
 
-  <span class="c1"># this uses a special interface object which pulls</span>
-  <span class="c1"># methods from a module and applies them to your object.</span>
-  <span class="n">role</span> <span class="ss">:source</span><span class="p">,</span> <span class="ss">:interface</span> <span class="k">do</span>
-    <span class="k">def</span> <span class="nf">transfer</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">balance</span> <span class="o">-=</span> <span class="n">amount</span>
-      <span class="n">destination</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="n">amount</span>
-      <span class="nb">self</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-</pre></div>
+  <span class="pl-c"># this uses a special interface object which pulls</span>
+  <span class="pl-c"># methods from a module and applies them to your object.</span>
+  role <span class="pl-c1">:source</span>, <span class="pl-c1">:interface</span> <span class="pl-k">do</span>
+    <span class="pl-k">def</span> <span class="pl-en">transfer</span>
+      <span class="pl-v">self</span>.balance <span class="pl-k">-=</span> amount
+      <span class="pl-c"># not able to access destination unless the object playing source is Surrounded</span>
+      destination.balance <span class="pl-k">+=</span> amount
+      <span class="pl-v">self</span>
+    <span class="pl-k">end</span>
+  <span class="pl-k">end</span></pre></div>
 
-<p>The <code>:interface</code> option is a special object which has all of its methods removed (excepting <code>__send__</code> and <code>object_id</code>) so that other methods will be pulled from the ones that you define, or from the object it attempts to proxy.</p>
+<p>The <code>:interface</code> option is a special object which has all of the standard Object methods removed (excepting ones like <code>__send__</code> and <code>object_id</code>) so that other methods will be pulled from the ones that you define, or from the object it attempts to proxy.</p>
 
 <p>Notice that the <code>:interface</code> allows you to return <code>self</code> whereas the <code>:wrap</code> acts more like a wrapper and forces you to deal with that shortcoming by using it's wrapped-object-accessor method: <code>__getobj__</code>.</p>
 
+<p>The downside of using an interface is that it is still a wrapper and it only has access to the other objects in the context if the wrapped object already includes Surrounded. All of your defined role methods are executed in the context of the object playing the role, but the interface has it's own identity.</p>
+
 <p>If you'd like to choose one and use it all the time, you can set the default:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">MoneyTransfer</span>
-  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">MoneyTransfer</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
 
-  <span class="nb">self</span><span class="o">.</span><span class="n">default_role_type</span> <span class="o">=</span> <span class="ss">:interface</span> <span class="c1"># also :wrap, :wrapper, or :module</span>
+  <span class="pl-v">self</span>.default_role_type <span class="pl-k">=</span> <span class="pl-c1">:interface</span> <span class="pl-c"># also :wrap, :wrapper, or :module</span>
 
-  <span class="n">role</span> <span class="ss">:source</span> <span class="k">do</span>
-    <span class="k">def</span> <span class="nf">transfer</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">balance</span> <span class="o">-=</span> <span class="n">amount</span>
-      <span class="n">destination</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="n">amount</span>
-      <span class="nb">self</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  role <span class="pl-c1">:source</span> <span class="pl-k">do</span>
+    <span class="pl-k">def</span> <span class="pl-en">transfer</span>
+      <span class="pl-v">self</span>.balance <span class="pl-k">-=</span> amount
+      destination.balance <span class="pl-k">+=</span> amount
+      <span class="pl-v">self</span>
+    <span class="pl-k">end</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>Or, if you like, you can choose the default for your entire project:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span><span class="o">.</span><span class="n">default_role_type</span> <span class="o">=</span> <span class="ss">:interface</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>.default_role_type <span class="pl-k">=</span> <span class="pl-c1">:interface</span>
 
-<span class="k">class</span> <span class="nc">MoneyTransfer</span>
-  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+<span class="pl-k">class</span> <span class="pl-en">MoneyTransfer</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
 
-  <span class="n">role</span> <span class="ss">:source</span> <span class="k">do</span>
-    <span class="k">def</span> <span class="nf">transfer</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">balance</span> <span class="o">-=</span> <span class="n">amount</span>
-      <span class="n">destination</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="n">amount</span>
-      <span class="nb">self</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
-
-<h2>
-<a name="policies-for-the-application-of-role-methods" class="anchor" href="#policies-for-the-application-of-role-methods"><span class="octicon octicon-link"></span></a>Policies for the application of role methods</h2>
-
-<p>There are 2 approaches to applying new behavior to your objects.</p>
-
-<p>By default your context will add methods to an object before a trigger is run
-and behaviors will be removed after the trigger is run.</p>
-
-<p>Alternatively you may set the behaviors to be added during the initialize method
-of your context.</p>
-
-<p>Here's how it works:</p>
-
-<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">ActiviatingAccount</span>
-  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
-
-  <span class="n">apply_roles_on</span><span class="p">(</span><span class="ss">:trigger</span><span class="p">)</span> <span class="c1"># this is the default</span>
-  <span class="c1"># apply_roles_on(:initialize) # set this to apply behavior from the start</span>
-
-  <span class="kp">initialize</span><span class="p">(</span><span class="ss">:activator</span><span class="p">,</span> <span class="ss">:account</span><span class="p">)</span>
-
-  <span class="n">role</span> <span class="ss">:activator</span> <span class="k">do</span>
-    <span class="k">def</span> <span class="nf">some_behavior</span><span class="p">;</span> <span class="k">end</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nf">non_trigger_method</span>
-    <span class="n">activator</span><span class="o">.</span><span class="n">some_behavior</span> <span class="c1"># not available unless you apply roles on initialize</span>
-  <span class="k">end</span>
-
-  <span class="n">trigger</span> <span class="ss">:some_trigger_method</span> <span class="k">do</span>
-    <span class="n">activator</span><span class="o">.</span><span class="n">some_behavior</span> <span class="c1"># always available</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
-
-<p><em>Why are those options there?</em></p>
-
-<p>When you initialize a context and apply behavior at the same time, you'll need
-to remove that behavior. For example, if you are using Casting AND you apply roles on initialize:</p>
-
-<div class="highlight highlight-ruby"><pre><span class="n">context</span> <span class="o">=</span> <span class="no">ActiviatingAccount</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="no">Account</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="mi">123</span><span class="p">))</span>
-<span class="n">context</span><span class="o">.</span><span class="n">do_something</span>
-<span class="n">current_user</span><span class="o">.</span><span class="n">some_behavior</span> <span class="c1"># this method is still available</span>
-<span class="n">current_user</span><span class="o">.</span><span class="n">uncast</span> <span class="c1"># you'll have to manually cleanup</span>
-</pre></div>
-
-<p>But if you go with the default and apply behaviors on trigger, your roles will be cleaned up automatically:</p>
-
-<div class="highlight highlight-ruby"><pre><span class="n">context</span> <span class="o">=</span> <span class="no">ActiviatingAccount</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">current_user</span><span class="p">,</span> <span class="no">Account</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="mi">123</span><span class="p">))</span>
-<span class="n">context</span><span class="o">.</span><span class="n">do_something</span>
-<span class="n">current_user</span><span class="o">.</span><span class="n">some_behavior</span> <span class="c1"># NoMethodError</span>
-</pre></div>
+  role <span class="pl-c1">:source</span> <span class="pl-k">do</span>
+    <span class="pl-k">def</span> <span class="pl-en">transfer</span>
+      <span class="pl-v">self</span>.balance <span class="pl-k">-=</span> amount
+      destination.balance <span class="pl-k">+=</span> amount
+      <span class="pl-v">self</span>
+    <span class="pl-k">end</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
 
 <h2>
-<a name="overview-in-code" class="anchor" href="#overview-in-code"><span class="octicon octicon-link"></span></a>Overview in code</h2>
+<a id="working-with-collections" class="anchor" href="#working-with-collections" aria-hidden="true"><span class="octicon octicon-link"></span></a>Working with collections</h2>
+
+<p>If you want to use an Array of objects (for example) as a role player in your context,
+you may do so. If you want each item in your collection to gain behavior, you merely need to
+create a role for the items.</p>
+
+<p>Surrounded will attempt to guess at the singular role name. For example, a role player named <code>members</code> would
+be given the behaviors from a <code>Members</code> behavior module or class. Each item in your <code>members</code> collection
+would be given behavior from a <code>Member</code> behavior module or class if you create one.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Organization</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+
+  initialize_without_keywords <span class="pl-c1">:leader</span>, <span class="pl-c1">:members</span>
+
+  role <span class="pl-c1">:members</span> <span class="pl-k">do</span>
+    <span class="pl-c"># special behavior for the collection</span>
+  <span class="pl-k">end</span>
+
+  role <span class="pl-c1">:member</span> <span class="pl-k">do</span>
+    <span class="pl-c"># special behavior to be applied to each member in the collection</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<h2>
+<a id="reusing-context-objects" class="anchor" href="#reusing-context-objects" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reusing context objects</h2>
+
+<p>If you create a context object and need to use the same type of object with new role players, you may use the <code>rebind</code> method. It will clear any instance_variables from your context object and map the given objects to their names:</p>
+
+<div class="highlight highlight-ruby"><pre>context <span class="pl-k">=</span> <span class="pl-c1">Employment</span>.<span class="pl-k">new</span>(current_user, the_boss)
+context.rebind(<span class="pl-c1">employee:</span> another_user, <span class="pl-c1">boss:</span> someone_else) <span class="pl-c"># same context, new players</span></pre></div>
+
+<h2>
+<a id="overview-in-code" class="anchor" href="#overview-in-code" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview in code</h2>
 
 <p>Here's a view of the possibilities in code.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="c1"># set default role type for *all* contexts in your program</span>
-<span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span><span class="o">.</span><span class="n">default_role_type</span> <span class="o">=</span> <span class="ss">:module</span> <span class="c1"># also :wrap, :wrapper, or :interface</span>
+<div class="highlight highlight-ruby"><pre><span class="pl-c"># set default role type for *all* contexts in your program</span>
+<span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>.default_role_type <span class="pl-k">=</span> <span class="pl-c1">:module</span> <span class="pl-c"># also :wrap, :wrapper, or :interface</span>
 
-<span class="k">class</span> <span class="nc">ActiviatingAccount</span>
-  <span class="kp">extend</span> <span class="ss">Surrounded</span><span class="p">:</span><span class="ss">:Context</span>
+<span class="pl-k">class</span> <span class="pl-en">ActiviatingAccount</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
 
-  <span class="n">apply_roles_on</span><span class="p">(</span><span class="ss">:trigger</span><span class="p">)</span> <span class="c1"># this is the default</span>
-  <span class="c1"># apply_roles_on(:initialize) # set this to apply behavior from the start</span>
+  <span class="pl-c"># set the default role type only for this class</span>
+  <span class="pl-v">self</span>.default_role_type <span class="pl-k">=</span> <span class="pl-c1">:module</span> <span class="pl-c"># also :wrap, :wrapper, or :interface</span>
 
-  <span class="n">set_methods_as_triggers</span> <span class="c1"># allows you to skip the 'trigger' dsl</span>
+  <span class="pl-c"># shortcut initialization code</span>
+  <span class="pl-k">initialize</span>(<span class="pl-c1">:activator</span>, <span class="pl-c1">:account</span>)
+  <span class="pl-c"># or handle it yourself</span>
+  <span class="pl-k">def</span> <span class="pl-en">initialize</span>(<span class="pl-smi">activator</span>, <span class="pl-smi">account</span>)
+    <span class="pl-c"># this must be done to handle the mapping of roles to objects</span>
+    <span class="pl-c"># pass an array of arrays with role name symbol and the object for that role</span>
+    map_roles([[<span class="pl-c1">:activator</span>, activator],[<span class="pl-c1">:account</span>, account]])
 
-  <span class="c1"># set the default role type only for this class</span>
-  <span class="nb">self</span><span class="o">.</span><span class="n">default_role_type</span> <span class="o">=</span> <span class="ss">:module</span> <span class="c1"># also :wrap, :wrapper, or :interface</span>
+    <span class="pl-c"># or load extra objects, perform other functions, etc. if you need and then use super</span>
+    account.perform_some_funtion
+    <span class="pl-k">super</span>
+  <span class="pl-k">end</span>
+  <span class="pl-c"># these also must be done if you create your own initialize method.</span>
+  <span class="pl-c"># this is a shortcut for using attr_reader and private</span>
+  private_attr_reader <span class="pl-c1">:activator</span>, <span class="pl-c1">:account</span>
 
-  <span class="kp">initialize</span><span class="p">(</span><span class="ss">:activator</span><span class="p">,</span> <span class="ss">:account</span><span class="p">)</span>
+  <span class="pl-c"># initialize with keyword arguments</span>
+  keyword_initialize(<span class="pl-c1">:activator</span>, <span class="pl-c1">:account</span>)
+  <span class="pl-c"># this makes the following instance method signature with required keyword arguments</span>
+  <span class="pl-k">def</span> <span class="pl-en">initialize</span>(<span class="pl-smi">activator</span>:, <span class="pl-smi">account</span>:)
+    <span class="pl-c"># ...</span>
+  <span class="pl-k">end</span>
 
-  <span class="n">role</span> <span class="ss">:activator</span> <span class="k">do</span> <span class="c1"># module by default</span>
-    <span class="k">def</span> <span class="nf">some_behavior</span><span class="p">;</span> <span class="k">end</span>
-  <span class="k">end</span>
+  role <span class="pl-c1">:activator</span> <span class="pl-k">do </span><span class="pl-c"># module by default</span>
+    <span class="pl-k">def</span> <span class="pl-en">some_behavior</span>; <span class="pl-k">end</span>
+  <span class="pl-k">end</span>
 
-  <span class="c1">#  role :activator, :module do</span>
-  <span class="c1">#    def some_behavior; end</span>
-  <span class="c1">#  end</span>
-  <span class="c1">#</span>
-  <span class="c1">#  role :activator, :wrap do</span>
-  <span class="c1">#    def some_behavior; end</span>
-  <span class="c1">#  end</span>
-  <span class="c1">#</span>
-  <span class="c1">#  role :activator, :interface do</span>
-  <span class="c1">#    def some_behavior; end</span>
-  <span class="c1">#  end</span>
-  <span class="c1">#</span>
-  <span class="c1"># use your own classes if you don't want SimpleDelegator</span>
-  <span class="c1"># class SomeSpecialRole</span>
-  <span class="c1">#   include Surrounded # you must remember this</span>
-  <span class="c1">#   # Surrounded assumes SomeSpecialRole.new(some_special_role)</span>
-  <span class="c1">#   def initialize(...);</span>
-  <span class="c1">#     # ... your code here</span>
-  <span class="c1">#   end</span>
-  <span class="c1"># end</span>
+  <span class="pl-c">#  role_methods :activator, :module do # alternatively use role_methods if you choose</span>
+  <span class="pl-c">#    def some_behavior; end</span>
+  <span class="pl-c">#  end</span>
+  <span class="pl-c">#</span>
+  <span class="pl-c">#  role :activator, :wrap do</span>
+  <span class="pl-c">#    def some_behavior; end</span>
+  <span class="pl-c">#  end</span>
+  <span class="pl-c">#</span>
+  <span class="pl-c">#  role :activator, :interface do</span>
+  <span class="pl-c">#    def some_behavior; end</span>
+  <span class="pl-c">#  end</span>
+  <span class="pl-c">#</span>
+  <span class="pl-c"># use your own classes if you don't want SimpleDelegator</span>
+  <span class="pl-c"># class SomeSpecialRole</span>
+  <span class="pl-c">#   include Surrounded # &lt;-- you must remember this in your own classes</span>
+  <span class="pl-c">#   # Surrounded assumes SomeSpecialRole.new(some_special_role)</span>
+  <span class="pl-c">#   def initialize(...);</span>
+  <span class="pl-c">#     # ... your code here</span>
+  <span class="pl-c">#   end</span>
+  <span class="pl-c"># end</span>
 
-  <span class="c1"># works as a trigger (assigning the current context) only if set_methods_as_triggers is set</span>
-  <span class="k">def</span> <span class="nf">regular_method</span>
-    <span class="n">activator</span><span class="o">.</span><span class="n">some_behavior</span> <span class="c1"># behavior not available unless you apply roles on initialize</span>
-  <span class="k">end</span>
+  <span class="pl-c"># if you use a regular method and want to use context-specific behavior, </span>
+  <span class="pl-c"># you must handle storing the context yourself:</span>
+  <span class="pl-k">def</span> <span class="pl-en">regular_method</span>
+    apply_behaviors <span class="pl-c"># handles the adding of all the roles and behaviors</span>
+    activator.some_behavior <span class="pl-c"># behavior not available unless you apply roles on initialize</span>
+  <span class="pl-k">ensure</span>
+     <span class="pl-c"># Use ensure to enforce the removal of behaviors in case of exceptions.</span>
+     <span class="pl-c"># This also does not affect the return value of this method.</span>
+    remove_behaviors <span class="pl-c"># handles the removal of all roles and behaviors</span>
+  <span class="pl-k">end</span>
 
-  <span class="n">trigger</span> <span class="ss">:some_trigger_method</span> <span class="k">do</span>
-    <span class="n">activator</span><span class="o">.</span><span class="n">some_behavior</span> <span class="c1"># behavior always available</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
+  <span class="pl-c"># This trigger or the forward* methods are preferred for creating triggers.</span>
+  trigger <span class="pl-c1">:some_trigger_method</span> <span class="pl-k">do</span>
+    activator.some_behavior <span class="pl-c"># behavior always available</span>
+  <span class="pl-k">end</span>
+
+  trigger <span class="pl-k">def</span> <span class="pl-en">some_other_trigger</span>
+    activator.some_behavior <span class="pl-c"># behavior always available</span>
+  <span class="pl-k">end</span>
+
+  <span class="pl-k">def</span> <span class="pl-en">regular_non_trigger</span>
+    activator.some_behavior <span class="pl-c"># behavior always available with the following line</span>
+  <span class="pl-k">end</span>
+  trigger <span class="pl-c1">:regular_non_trigger</span> <span class="pl-c"># turns the method into a trigger</span>
+
+  <span class="pl-c"># create restrictions on what triggers may be used</span>
+  protect_triggers <span class="pl-c"># &lt;-- this is required if you want to protect your triggers this way.</span>
+  disallow <span class="pl-c1">:some_trigger_method</span> <span class="pl-k">do</span>
+    <span class="pl-c"># whatever conditional code for the instance of the context</span>
+  <span class="pl-k">end</span>
+  <span class="pl-c"># you could also use `guard` instead of `disallow`</span>
+
+  <span class="pl-c"># or define your own method without the `disallow` keyword</span>
+  <span class="pl-k">def</span> <span class="pl-en">disallow_some_trigger_method?</span>
+    <span class="pl-c"># whatever conditional code for the instance of the context</span>
+  <span class="pl-k">end</span>
+  <span class="pl-c"># Prefer using `disallow` because it will wrap role players in their roles for you;</span>
+  <span class="pl-c"># the `disallow_some_trigger_method?` defined above, does not.</span>
+
+  <span class="pl-c"># Create shortcuts for triggers as class methods</span>
+  <span class="pl-c"># so you can do ActiviatingAccount.some_trigger_method(activator, account)</span>
+  <span class="pl-c"># This will make all triggers shortcuts.</span>
+  shortcut_triggers
+  <span class="pl-c"># Alterantively, you could implement shortcuts individually:</span>
+  <span class="pl-k">def</span> <span class="pl-en">self.some_trigger_method</span>(<span class="pl-smi">activator</span>, <span class="pl-smi">account</span>)
+    instance <span class="pl-k">=</span> <span class="pl-v">self</span>.<span class="pl-k">new</span>(activator, account)
+    instance.some_trigger_method
+  <span class="pl-k">end</span>
+
+  <span class="pl-c"># Set triggers to always return the context object</span>
+  <span class="pl-c"># so you can enforce East-oriented style or Tell, Don't Ask</span>
+  east_oriented_triggers
+
+  <span class="pl-c"># Forward context instance methods as triggers to role players</span>
+  forward_trigger <span class="pl-c1">:role_name</span>, <span class="pl-c1">:method_name</span>
+  forward_trigger <span class="pl-c1">:role_name</span>, <span class="pl-c1">:method_name</span>, <span class="pl-c1">:alternative_trigger_name_for_method_name</span>
+  forward_triggers <span class="pl-c1">:role_name</span>, <span class="pl-c1">:list</span>, <span class="pl-c1">:of</span>, <span class="pl-c1">:methods</span>, <span class="pl-c1">:to</span>, <span class="pl-c1">:forward</span>
+  forwarding [<span class="pl-c1">:list</span>, <span class="pl-c1">:of</span>, <span class="pl-c1">:methods</span>, <span class="pl-c1">:to</span>, <span class="pl-c1">:forward</span>] =&gt; <span class="pl-c1">:role_name</span>
+<span class="pl-k">end</span>
+
+<span class="pl-c"># with keyword_initialize (will be changed to initialize)</span>
+context <span class="pl-k">=</span> <span class="pl-c1">ActiviatingAccount</span>.<span class="pl-k">new</span>(<span class="pl-c1">activator:</span> some_object, <span class="pl-c1">account:</span> some_account)
+<span class="pl-c"># with initialize (this will be moved to initialize_without_keywords)</span>
+context <span class="pl-k">=</span> <span class="pl-c1">ActiviatingAccount</span>.<span class="pl-k">new</span>(some_object, some_account)
+context.triggers <span class="pl-c"># =&gt; lists a Set of triggers</span>
+<span class="pl-c"># when using protect_triggers</span>
+context.triggers <span class="pl-c"># =&gt; lists a Set of triggers which may currently be called</span>
+context.triggers <span class="pl-c"># =&gt; lists a Set of all triggers (the same as if protect_triggers was _not_ used)</span>
+context.allow?(<span class="pl-c1">:trigger_name</span>) <span class="pl-c"># =&gt; returns a boolean if the trigger may be run</span>
+
+<span class="pl-c"># reuse the context object with new role players</span>
+context.rebind(<span class="pl-c1">activator:</span> another_object, <span class="pl-c1">account:</span> another_account)</pre></div>
 
 <h2>
-<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h2>
 
-<p>The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need. The <a href="http://github.com/saturnflyer/triad">Triad</a> project was written specifically to manage the mapping of roles and objects to the modules which contain the behaviors.</p>
+<p>The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need. The <a href="http://github.com/saturnflyer/triad">Triad</a> project was written specifically to manage the mapping of roles and objects to the modules which contain the behaviors. It is used in Surrounded to keep track of role player, roles, and role constant names but it is not a hard requirement. You may implement your own but presently you'll need to dive into the implementation to fully understand how. Future updates may provide better support and guidance.</p>
 
 <p>If you're using <a href="http://github.com/saturnflyer/casting">Casting</a>, for example, Surrounded will attempt to use that before extending an object, but it will still work without it.</p>
 
 <h2>
-<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+<a id="support-for-other-ways-to-apply-behavior" class="anchor" href="#support-for-other-ways-to-apply-behavior" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support for other ways to apply behavior</h2>
+
+<p>Surrounded is designed to be flexible for you. If you have your own code to manage applying behaviors, you can setup your context class to use it.</p>
+
+<h3>
+<a id="additional-libraries" class="anchor" href="#additional-libraries" aria-hidden="true"><span class="octicon octicon-link"></span></a>Additional libraries</h3>
+
+<p>Here's an example using <a href="https://github.com/saturnflyer/behavioral">Behavioral</a></p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">MyCustomContext</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+
+  <span class="pl-k">initialize</span> <span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>
+
+  <span class="pl-k">def</span> <span class="pl-en">module_extension_methods</span>
+    [<span class="pl-c1">:with_behaviors</span>].concat(<span class="pl-k">super</span>)
+  <span class="pl-k">end</span>
+
+  <span class="pl-k">def</span> <span class="pl-en">module_removal_methods</span>
+    [<span class="pl-c1">:without_behaviors</span>].concat(<span class="pl-k">super</span>)
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>If you're using your own non-SimpleDelegator wrapper you can conform to that; whatever it may be.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">MyCustomContext</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+
+  <span class="pl-k">initialize</span> <span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>
+
+  <span class="pl-k">class</span> <span class="pl-en">Employee<span class="pl-e"> &lt; SuperWrapper</span></span>
+    <span class="pl-k">include</span> <span class="pl-c1">Surrounded</span>
+
+    <span class="pl-c"># defined behaviors here...</span>
+
+    <span class="pl-k">def</span> <span class="pl-en">wrapped_object</span>
+      <span class="pl-c"># return the object that is wrapped</span>
+    <span class="pl-k">end</span>
+
+  <span class="pl-k">end</span>
+
+  <span class="pl-k">def</span> <span class="pl-en">unwrap_methods</span>
+    [<span class="pl-c1">:wrapped_object</span>]
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<h3>
+<a id="applying-individual-roles" class="anchor" href="#applying-individual-roles" aria-hidden="true"><span class="octicon octicon-link"></span></a>Applying individual roles</h3>
+
+<p>If you'd like to use a special approach for just a single role, you may do that too.</p>
+
+<p>When applying behaviors from a role to your role players, your Surrounded context will first look for a method named  <code>"apply_behavior_#{role}"</code>. Define your own method and set it to accept 2 arguments: the role constant and the role player.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">MyCustomContext</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+
+  <span class="pl-k">initialize</span> <span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>
+
+  <span class="pl-k">def</span> <span class="pl-en">apply_behavior_employee</span>(<span class="pl-smi">behavior_constant</span>, <span class="pl-smi">role_player</span>)
+    behavior_constant.build(role_player).apply <span class="pl-c"># or whatever your need to do with your constant and object.</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>You can also plan for special ways to remove behavior as well.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">MyCustomContext</span>
+  <span class="pl-k">extend</span> <span class="pl-c1">Surrounded</span>::<span class="pl-c1">Context</span>
+
+  <span class="pl-k">initialize</span> <span class="pl-c1">:employee</span>, <span class="pl-c1">:boss</span>
+
+  <span class="pl-k">def</span> <span class="pl-en">remove_behavior_employee</span>(<span class="pl-smi">behavior_constant</span>, <span class="pl-smi">role_player</span>)
+    role_player.cleanup <span class="pl-c"># or whatever your need to do with your constant and object.</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>You can remember the method name by the convention that <code>remove</code> or <code>apply</code> describes it's function, <code>behavior</code> refers to the first argument (thet contsant holding the behaviors), and then the name of the role which refers to the role playing object: <code>remove_behavior_role</code>.</p>
+
+<h2>
+<a id="how-to-read-this-code" class="anchor" href="#how-to-read-this-code" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to read this code</h2>
+
+<p>If you use this library, it's important to understand it.</p>
+
+<p>As much as possible, when you use the Surrounded DSL for creating triggers, roles, initialize methods, and others you'll likely fine the actual method definitions created in a module and then find that module included in your class.</p>
+
+<p>This is a design choice which allows you to override any standard behavior more easily.</p>
+
+<h3>
+<a id="where-methods-exist-and-why" class="anchor" href="#where-methods-exist-and-why" aria-hidden="true"><span class="octicon octicon-link"></span></a>Where methods exist and why</h3>
+
+<p>When you define an initialize method for a Context class, Surrounded <em>could</em> define the method on your class like this:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">def</span> <span class="pl-en">initialize</span>(<span class="pl-k">*</span><span class="pl-smi">roles</span>)
+  <span class="pl-v">self</span>.class_eval <span class="pl-k">do </span><span class="pl-c"># &lt;=== this evaluates on _your_ class and defines it there.</span>
+    <span class="pl-c"># code...</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>If we used the above approach, you'd need to redefine initialize in its entirety:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">initialize</span>(<span class="pl-c1">:role1</span>, role2)
+
+<span class="pl-k">def</span> <span class="pl-en">initialize</span>(<span class="pl-smi">role1</span>, <span class="pl-smi">role2</span>) <span class="pl-c"># &lt;=== this will completely redefine initialize on _this class_</span>
+  <span class="pl-k">super</span> <span class="pl-c"># &lt;=== this will NOT be the initialize method as provided to the Surrounded initialize above.</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>Surrounded uses a more flexible approach for you:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">def</span> <span class="pl-en">initialize</span>(<span class="pl-k">*</span><span class="pl-smi">roles</span>)
+  mod <span class="pl-k">=</span> <span class="pl-c1">Module</span>.<span class="pl-k">new</span>
+  mod.class_eval <span class="pl-k">do </span><span class="pl-c"># &lt;=== this evaluates on the module and defines it there.</span>
+    <span class="pl-c"># code...</span>
+  <span class="pl-k">end</span>
+  <span class="pl-k">include</span> mod <span class="pl-c"># &lt;=== this adds it to the class ancestors</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>With this approach you can use the way Surrounded is setup, but make changes if you need.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="pl-k">initialize</span>(<span class="pl-c1">:role1</span>, <span class="pl-c1">:role2</span>) <span class="pl-c"># &lt;=== defined in a module in the class ancestors</span>
+
+<span class="pl-k">def</span> <span class="pl-en">initialize</span>(<span class="pl-smi">role1</span>, <span class="pl-smi">role2</span>)
+  <span class="pl-k">super</span> <span class="pl-c"># &lt;=== run the method as defined above in the Surrounded DSL</span>
+  <span class="pl-c"># ... then do additional work</span>
+<span class="pl-k">end</span></pre></div>
+
+<h3>
+<a id="read-methods-expect-modules" class="anchor" href="#read-methods-expect-modules" aria-hidden="true"><span class="octicon octicon-link"></span></a>Read methods, expect modules</h3>
+
+<p>When you go to read the code, expect to find behavior defined in modules.</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
 
 <p>Add this line to your application's Gemfile:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="n">gem</span> <span class="s1">'surrounded'</span>
-</pre></div>
+<div class="highlight highlight-ruby"><pre><span class="pl-k">gem</span> <span class="pl-s"><span class="pl-pds">'</span>surrounded<span class="pl-pds">'</span></span></pre></div>
 
 <p>And then execute:</p>
 
@@ -518,12 +917,12 @@ to remove that behavior. For example, if you are using Casting AND you apply rol
 </code></pre>
 
 <h2>
-<a name="installation-for-rails" class="anchor" href="#installation-for-rails"><span class="octicon octicon-link"></span></a>Installation for Rails</h2>
+<a id="installation-for-rails" class="anchor" href="#installation-for-rails" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation for Rails</h2>
 
 <p>See <a href="https://github.com/saturnflyer/surrounded-rails">surrounded-rails</a></p>
 
 <h2>
-<a name="contributing" class="anchor" href="#contributing"><span class="octicon octicon-link"></span></a>Contributing</h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h2>
 
 <ol>
 <li>Fork it</li>
