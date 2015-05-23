@@ -87,6 +87,10 @@ describe ProxyContext do
     assert_equal :talking_to_others, context.get_admin_method.name
   end
 
+  it 'allows Surrounded objects to interact with others' do
+    assert context.rebind(user: User.new('Surrounded'), task: task).talking
+  end
+
   it 'works with frozen and primitive objects' do
     context.rebind(admin: "brrr".freeze, task: task)
     assert context.get_admin_method

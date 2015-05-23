@@ -34,7 +34,27 @@ module Surrounded
         undef_method meth
       end
 
+      include Surrounded
+
       private
+
+      def store_context(&block)
+        if @object.is_a?(Surrounded)
+          @object.send(__method__, &block)
+        else
+          super
+        end
+        self
+      end
+
+      def remove_context(&block)
+        if @object.is_a?(Surrounded)
+          @object.send(__method__, &block)
+        else
+          super
+        end
+        self
+      end
 
       def initialize(object)
         @object, @behaviors = object, __behaviors__
@@ -48,10 +68,5 @@ module Surrounded
         @object.respond_to?(meth, include_private)
       end
     end
-
-    # The method_missing definition from Surrounded will apply
-    # before the one defined above. This allows the methods for
-    # the objects in the context to work properly
-    Negotiator.send(:prepend, Surrounded)
   end
 end
