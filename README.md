@@ -866,7 +866,7 @@ You can remember the method name by the convention that `remove` or `apply` desc
 
 If you use this library, it's important to understand it.
 
-As much as possible, when you use the Surrounded DSL for creating triggers, roles, initialize methods, and others you'll likely fine the actual method definitions created in a module and then find that module included in your class.
+As much as possible, when you use the Surrounded DSL for creating triggers, roles, initialize methods, and others you'll likely find the actual method definitions created in a module and then find that module included in your class.
 
 This is a design choice which allows you to override any standard behavior more easily.
 
