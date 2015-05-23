@@ -553,8 +553,8 @@ Using the `role` method to define modules and classes takes care of the setup fo
   role :source, :interface do
     def transfer
       self.balance -= amount
-      # not able to access destination
-      # destination.balance += amount
+      # not able to access destination unless the object playing source is Surrounded
+      destination.balance += amount
       self
     end
   end
@@ -564,7 +564,7 @@ The `:interface` option is a special object which has all of the standard Object
 
 Notice that the `:interface` allows you to return `self` whereas the `:wrap` acts more like a wrapper and forces you to deal with that shortcoming by using it's wrapped-object-accessor method: `__getobj__`.
 
-The downside of using an interface is that it is still a wrapper and it doesn't have access to the other objects in the context. All of your defined role methods are executed in the context of the object playing the role, but the interface has it's own identity.
+The downside of using an interface is that it is still a wrapper and it only has access to the other objects in the context if the wrapped object already includes Surrounded. All of your defined role methods are executed in the context of the object playing the role, but the interface has it's own identity.
 
 If you'd like to choose one and use it all the time, you can set the default:
 
@@ -572,13 +572,13 @@ If you'd like to choose one and use it all the time, you can set the default:
 class MoneyTransfer
   extend Surrounded::Context
 
-  self.default_role_type = :wrapper # also :wrap, :interface, or :module
+  self.default_role_type = :interface # also :wrap, :wrapper, or :module
 
   role :source do
     def transfer
       self.balance -= amount
       destination.balance += amount
-      __getobj__
+      self
     end
   end
 end
@@ -587,7 +587,7 @@ end
 Or, if you like, you can choose the default for your entire project:
 
 ```ruby
-Surrounded::Context.default_role_type = :wrap
+Surrounded::Context.default_role_type = :interface
 
 class MoneyTransfer
   extend Surrounded::Context
@@ -596,7 +596,7 @@ class MoneyTransfer
     def transfer
       self.balance -= amount
       destination.balance += amount
-      __getobj__
+      self
     end
   end
 end
