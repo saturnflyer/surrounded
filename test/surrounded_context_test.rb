@@ -106,7 +106,9 @@ end
 class RoleAssignmentContext
   extend Surrounded::Context
 
-  initialize(:user, :other_user)
+  initialize(:user, :other_user) do
+    self.instance_variable_set(:@defined_by_initializer_block, 'yup')
+  end
 
   def user_ancestors
     user.singleton_class.ancestors
@@ -207,6 +209,10 @@ describe Surrounded::Context, 'assigning roles' do
     context = IgnoreExternalConstantsContext.new(user, special, other)
     assert_equal User, context.check_special
   end
+
+  it 'applies a provided block to the instance' do
+    assert_equal 'yup', context.instance_variable_get(:@defined_by_initializer_block)
+  end
 end
 
 class CollectionContext
@@ -284,7 +290,9 @@ begin
   class Keyworder
     extend Surrounded::Context
 
-    keyword_initialize :this, :that
+    keyword_initialize :this, :that do
+      self.instance_variable_set(:@defined_by_initializer_block, 'yes')
+    end
   end
 
   describe Surrounded::Context, 'keyword initializers' do
@@ -297,6 +305,10 @@ begin
         Keyworder.new(this: User.new('Amy'))
       }
       assert_match(/missing keyword: that/, err.message)
+    end
+
+    it 'evaluates a given block' do
+      assert_equal 'yes', Keyworder.new(this: User.new('Jim'), that: User.new('Guille')).instance_variable_get(:@defined_by_initializer_block)
     end
   end
 rescue SyntaxError
