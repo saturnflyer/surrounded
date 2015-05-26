@@ -71,6 +71,16 @@ context = Employment.new(employee: user1, boss: user2)
 
 This will allow you to prepare your accessing code to use keywords.
 
+If you need to override the initializer with additional work, you have the ability to use a block to be evaluated in the context of the initialized object.
+
+```ruby
+initialize :role1, :role3 do
+  map_role(:role3, 'SomeRoleConstantName', initialize_the_object_to_play)
+end
+```
+
+This block will be called _after_ the default initialization is done.
+
 ## Defining behaviors for roles
 
 Behaviors for your roles are easily defined just like you define a method. Provide your role a block and define methods there.
