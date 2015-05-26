@@ -7,9 +7,9 @@ module Surrounded
         private_attr_reader(*setup_args)
       
         mod = Module.new
-        line = __LINE__
-        mod.class_eval "
+        line = __LINE__; mod.class_eval "
           def initialize(#{setup_args.join(',')})
+            @role_map = role_mapper_class.new
             map_roles(#{setup_args.to_s}.zip([#{setup_args.join(',')}]))
           end
         ", __FILE__, line
@@ -28,8 +28,7 @@ module Surrounded
         parameters = setup_args.map{|a| "#{a}:"}.join(',')
 
         mod = Module.new
-        line = __LINE__
-        mod.class_eval %{
+        line = __LINE__; mod.class_eval %{
           def initialize(#{parameters})
             @role_map = role_mapper_class.new
             map_roles(#{setup_args.to_s}.zip([#{setup_args.join(',')}]))
