@@ -74,7 +74,7 @@ This will allow you to prepare your accessing code to use keywords.
 If you need to override the initializer with additional work, you have the ability to use a block to be evaluated in the context of the initialized object.
 
 ```ruby
-initialize :role1, :role3 do
+initialize :role1, :role2 do
   map_role(:role3, 'SomeRoleConstantName', initialize_the_object_to_play)
 end
 ```
