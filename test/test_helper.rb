@@ -1,5 +1,5 @@
 require 'simplecov'
-require 'minitest/autorun'
+require 'minitest/autorun' unless ENV['MUTANT']
 require 'coveralls'
 
 if ENV['COVERALLS']
