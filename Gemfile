@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 group :test do
   gem 'minitest'
-  gem 'mutant'
+  # gem 'mutant', git: 'https://github.com/kbrock/mutant.git', ref: 'minitest'
   gem "simplecov"
   gem 'coveralls', :require => false
   gem 'casting'

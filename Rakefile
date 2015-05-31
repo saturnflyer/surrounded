@@ -11,7 +11,7 @@ end
 task :default => :test
 
 
-task :mutant, [:class] do |task, args|
-  klass = args[:class] || '::Surrounded'
-  sh "bundle exec mutant --include lib --require surrounded #{klass}"
-end
+# task :mutant, [:class] do |task, args|
+#   klass = args[:class] || 'Surrounded'
+#   sh "bundle exec mutant --include lib --require surrounded --use minitest #{klass}"
+# end
