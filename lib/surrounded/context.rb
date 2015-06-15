@@ -209,7 +209,9 @@ module Surrounded
       def apply_behaviors
         role_map.each do |role, mod_name, object|
           player = apply_behavior(role, mod_name, object)
-          player.__send__(:store_context) do; end
+          if player.respond_to?(:store_context, true)
+            player.__send__(:store_context) do; end
+          end
         end
       end
 
