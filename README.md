@@ -668,6 +668,8 @@ class ActiviatingAccount
     # this must be done to handle the mapping of roles to objects
     # pass an array of arrays with role name symbol and the object for that role
     map_roles([[:activator, activator],[:account, account]])
+    # or pass a hash
+    map_roles(:activator => activator, :account => account)
 
     # or load extra objects, perform other functions, etc. if you need and then use super
     account.perform_some_funtion
