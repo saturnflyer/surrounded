@@ -218,7 +218,10 @@ end
 class BareObjectContext
   extend Surrounded::Context
 
-  initialize_without_keywords :number, :string, :user
+  def initialize(number, string, user)
+    map_roles(:number => number, :string => string, :user => user)
+  end
+  private_attr_reader :number, :string, :user
 
   role :user do
     def output

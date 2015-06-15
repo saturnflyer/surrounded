@@ -135,7 +135,7 @@ module Surrounded
       end
 
       def map_roles(role_object_array)
-        role_object_array.each do |role, object|
+        role_object_array.to_a.each do |role, object|
           if self.respond_to?("map_role_#{role}")
             self.send("map_role_#{role}", object)
           else
