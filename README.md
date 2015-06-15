@@ -679,6 +679,13 @@ class ActiviatingAccount
   # this is a shortcut for using attr_reader and private
   private_attr_reader :activator, :account
   
+  # If you need to mix default initialzation and extra work use a block
+  initialize :activator, :account do
+    map_roles(:third_party => get_some_other_object)
+  end
+  # but remember to set the extra accessors:
+  private_attr_reader :third_party
+
   # initialize with keyword arguments
   keyword_initialize(:activator, :account)
   # this makes the following instance method signature with required keyword arguments
