@@ -659,8 +659,8 @@ class ExpensiveCalculation
 
   initialize :leader, :members
 
-  def send_to_background
-    background_arguments = initializer_arguments.merge(trigger: :do_expensive_calculation)
+  def send_to_background(trigger_method)
+    background_arguments = initializer_arguments.merge(trigger: trigger_method)
     BackgroundProcessor.enqueue(self.class.name, **background_arguments)
   end
 
@@ -671,7 +671,10 @@ class ExpensiveCalculation
     end
   end
 end
+ExpensiveCalculation.new(some_object, some_collection).send_to_background(:do_expensive_calculation)
 ```
+
+The above example is merely pseudo-code to show how `initializer_arguments` can be used. Customize it according to your own needs.
 
 ## Overview in code
 
