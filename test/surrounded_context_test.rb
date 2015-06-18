@@ -97,18 +97,10 @@ describe Surrounded::Context, '#role?' do
   end
 end
 
-require 'casting'
-class CastingUser < User
-  include Casting::Client
-  delegate_missing_methods
-end
-
 class RoleAssignmentContext
   extend Surrounded::Context
 
-  initialize(:user, :other_user) do
-    self.instance_variable_set(:@defined_by_initializer_block, 'yup')
-  end
+  initialize(:user, :other_user)
 
   def user_ancestors
     user.singleton_class.ancestors
@@ -149,12 +141,6 @@ class IgnoreExternalConstantsContext
 
   trigger :check_special do
     special.class
-  end
-end
-
-describe Surrounded::Context, '.initialize' do
-  it 'defines an initialize method accepting the same arguments' do
-    assert_equal 2, RoleAssignmentContext.instance_method(:initialize).arity
   end
 end
 
@@ -209,134 +195,4 @@ describe Surrounded::Context, 'assigning roles' do
     context = IgnoreExternalConstantsContext.new(user, special, other)
     assert_equal User, context.check_special
   end
-
-  it 'applies a provided block to the instance' do
-    assert_equal 'yup', context.instance_variable_get(:@defined_by_initializer_block)
-  end
-end
-
-class BareObjectContext
-  extend Surrounded::Context
-
-  def initialize(number, string, user)
-    map_roles(:number => number, :string => string, :user => user)
-  end
-  private_attr_reader :number, :string, :user
-
-  role :user do
-    def output
-      [number.to_s, string, name].join(' - ')
-    end
-  end
-
-  trigger :output do
-    user.output
-  end
-end
-
-describe Surrounded::Context, 'skips affecting non-surrounded objects' do
-  it 'works with non-surrounded objects' do
-    context = BareObjectContext.new(123,'hello', User.new('Jim'))
-    assert_equal '123 - hello - Jim', context.output
-  end
-end
-
-class CollectionContext
-  extend Surrounded::Context
-
-  initialize :members, :others
-
-  trigger :get_members_count do
-    members.member_count
-  end
-
-  trigger :get_member_show do
-    members.map(&:show).join(', ')
-  end
-
-  role :members do
-    def member_count
-      size
-    end
-  end
-
-  role :member do
-    def show
-      "member show"
-    end
-  end
-
-  role :others do; end
-  role :other do; end
-
-end
-
-describe Surrounded::Context, 'auto-assigning roles for collections' do
-  let(:member_one){ User.new('Jim') }
-  let(:member_two){ User.new('Amy') }
-  let(:members){ [member_one, member_two] }
-
-  let(:other_one){ User.new('Guille') }
-  let(:other_two){ User.new('Jason') }
-  let(:others){ [other_one, other_two] }
-
-  let(:context){ CollectionContext.new(members, others) }
-
-  it 'assigns the collection role to collections' do
-    assert_equal members.size, context.get_members_count
-  end
-
-  it 'assigns a defined role to each item in a role player collection' do
-    assert_equal "member show, member show", context.get_member_show
-  end
-end
-
-describe Surrounded::Context, 'reusing context object' do
-  let(:user){ User.new("Jim") }
-  let(:other_user){ User.new("Guille") }
-  let(:context){ TestContext.new(user, other_user) }
-
-  it 'allows rebinding new players' do
-    expect(context.access_other_object).must_equal 'Guille'
-    context.rebind(user: User.new('Amy'), other_user: User.new('Elizabeth'))
-    expect(context.access_other_object).must_equal 'Elizabeth'
-  end
-
-  it 'clears internal storage when rebinding' do
-    originals = context.instance_variables.map{|var| context.instance_variable_get(var) }
-    context.rebind(user: User.new('Amy'), other_user: User.new('Elizabeth'))
-    new_ivars = context.instance_variables.map{|var| context.instance_variable_get(var) }
-    originals.zip(new_ivars).each do |original_ivar, new_ivar|
-      expect(original_ivar).wont_equal new_ivar
-    end
-  end
-end
-
-begin
-  class Keyworder
-    extend Surrounded::Context
-
-    keyword_initialize :this, :that do
-      self.instance_variable_set(:@defined_by_initializer_block, 'yes')
-    end
-  end
-
-  describe Surrounded::Context, 'keyword initializers' do
-    it 'works with keyword arguments' do
-      assert Keyworder.new(this: User.new('Jim'), that: User.new('Guille'))
-    end
-
-    it 'raises errors with missing keywords' do
-      err = assert_raises(ArgumentError){
-        Keyworder.new(this: User.new('Amy'))
-      }
-      assert_match(/missing keyword: that/, err.message)
-    end
-
-    it 'evaluates a given block' do
-      assert_equal 'yes', Keyworder.new(this: User.new('Jim'), that: User.new('Guille')).instance_variable_get(:@defined_by_initializer_block)
-    end
-  end
-rescue SyntaxError
-  STDOUT.puts "No support for keywords"
 end
