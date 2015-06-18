@@ -36,12 +36,14 @@ module Surrounded
         line = __LINE__; mod.class_eval %{
           def initialize(#{params})
             @role_map = role_mapper_class.new
-            map_roles(#{setup_args.to_s}.zip([#{setup_args.join(',')}]))
+            @initializer_arguments = Hash[#{setup_args.to_s}.zip([#{setup_args.join(',')}])]
+            map_roles(@initializer_arguments)
             self.class.apply_initializer_block(self)
           end
         }, __FILE__, line
         const_set("ContextInitializer", mod)
         include mod
+        private_attr_reader :initializer_arguments
       end
     end
   end

@@ -17,6 +17,15 @@ describe Surrounded::Context, '.initialize' do
     context = InitContext.new(User.new('Jim'), User.new('Amy'))
     assert_equal 'yup', context.instance_variable_get(:@defined_by_initializer_block)
   end
+
+  it 'keeps track of the original initialize arguments' do
+    jim = User.new('Jim')
+    amy = User.new('Amy')
+    context = InitContext.new(jim, amy)
+    tracked = context.send(:initializer_arguments)
+    assert_equal jim, tracked[:user]
+    assert_equal amy, tracked[:other_user]
+  end
 end
 
 begin
