@@ -475,7 +475,7 @@ This will allow you to write methods like you normally would. They are aliased i
 
 This works like Ruby's `public`,`protected`, and `private` keywords in that you can send symbols of method names to it. But `trigger` does not alter the parsing of the document like those core keywords do. In other words, you can't merely type `trigger` on one line, and have methods added afterward be treated as trigger methods.
 
-## Access Control for Triggers
+## Access Control / Permissions for Triggers
 
 If you decide to build a user interface from the available triggers, you'll find you need to know what triggers are available.
 
@@ -645,6 +645,32 @@ If you create a context object and need to use the same type of object with new 
 ```ruby
 context = Employment.new(current_user, the_boss)
 context.rebind(employee: another_user, boss: someone_else) # same context, new players
+```
+
+## Background Processing
+
+While there's no specific support for background processing, your context objects make it easy for you to add your own by remembering what arguments were provided during initialization.
+
+When you initialize a context, it will keep track of the parameters and their matching arguments in a private hash called `initializer_arguments`. This allows you to write methods to create a context object and have itself sent to a background processor.
+
+```ruby
+class ExpensiveCalculation
+  extend Surrounded::Context
+
+  initialize :leader, :members
+
+  def send_to_background
+    background_arguments = initializer_arguments.merge(trigger: :do_expensive_calculation)
+    BackgroundProcessor.enqueue(self.class.name, **background_arguments)
+  end
+
+  class BackgroundProcessor
+    def perform(**args)
+      trigger_name = args.delete(:trigger)
+      job_class.new(args).send(trigger_name)
+    end
+  end
+end
 ```
 
 ## Overview in code
