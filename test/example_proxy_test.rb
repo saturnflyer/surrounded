@@ -13,6 +13,10 @@ class ProxyContext
     def talking_to_others
       task.name
     end
+
+    def combined_methods
+      some_admin_method
+    end
   end
 
   wrap :task do
@@ -40,6 +44,10 @@ class ProxyContext
 
   trigger :get_admin_method do
     admin.method(:talking_to_others)
+  end
+
+  trigger :combined_interface_methods do
+    admin.combined_methods
   end
 end
 
@@ -81,6 +89,15 @@ describe ProxyContext do
 
   it 'sets roles to respond to role methods' do
     assert context.admin_responds?
+  end
+
+  # A Negotiator object merely applies methods to another object
+  # so that once the method is called, the object has no knowledge
+  # of the module from which the method was applied.
+  it 'does not find other interface methods' do
+    assert_raises(NameError){
+      context.combined_interface_methods
+    }
   end
 
   it 'is able to grab methods from the object' do
