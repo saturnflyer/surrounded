@@ -7,6 +7,7 @@ require 'surrounded/context/trigger_controls'
 require 'surrounded/access_control'
 require 'surrounded/shortcuts'
 require 'surrounded/east_oriented'
+require 'surrounded/context/name_collision_detector'
 
 # Extend your classes with Surrounded::Context to handle their
 # initialization and application of behaviors to the role players
@@ -50,7 +51,7 @@ module Surrounded
     def default_role_type=(type)
       @default_role_type = type
     end
-    
+
     # Provide the ability to create access control methods for your triggers.
     def protect_triggers;  self.extend(::Surrounded::AccessControl); end
 
@@ -65,7 +66,7 @@ module Surrounded
     def role_const_defined?(name)
       const_defined?(name, false)
     end
-    
+
     # Set a named constant and make it private
     def private_const_set(name, const)
       unless role_const_defined?(name)
@@ -135,6 +136,7 @@ module Surrounded
       end
 
       def map_roles(role_object_array)
+        NameCollisionDetector.new(role_object_array).detect_collisions
         role_object_array.to_a.each do |role, object|
           if self.respond_to?("map_role_#{role}")
             self.send("map_role_#{role}", object)
@@ -144,6 +146,7 @@ module Surrounded
           end
         end
       end
+
 
       def map_role_collection(role, mod_name, collection)
         singular_role_name = singularize_name(role)
@@ -163,12 +166,12 @@ module Surrounded
       def apply_behavior(role, behavior, object)
         if behavior && role_const_defined?(behavior)
           applicator = if self.respond_to?("apply_behavior_#{role}")
-                          method("apply_behavior_#{role}")
-                        elsif role_const(behavior).is_a?(Class)
-                          method(:apply_class_behavior)
-                        else
-                          method(:apply_module_behavior)
-                        end
+            method("apply_behavior_#{role}")
+          elsif role_const(behavior).is_a?(Class)
+            method(:apply_class_behavior)
+          else
+            method(:apply_module_behavior)
+          end
 
           role_player = applicator.call(role_const(behavior), object)
           map_role(role, behavior, role_player)
@@ -189,7 +192,7 @@ module Surrounded
         return obj if !wrapper_name
         klass.method(wrapper_name).call(obj)
       end
-      
+
       def remove_behavior(role, behavior, object)
         if behavior && role_const_defined?(behavior)
           remover_name = (module_removal_methods + unwrap_methods).find do |meth|
@@ -198,10 +201,10 @@ module Surrounded
         end
 
         role_player = if self.respond_to?("remove_behavior_#{role}")
-                        self.send("remove_behavior_#{role}", role_const(behavior), object)
-                      elsif remover_name
-                        object.send(remover_name)
-                      end
+          self.send("remove_behavior_#{role}", role_const(behavior), object)
+        elsif remover_name
+          object.send(remover_name)
+        end
 
         role_player || object
       end
@@ -283,13 +286,13 @@ module Surrounded
     class RoleName
       def initialize(string, suffix=nil)
         @string = string.
-                    to_s.
-                    split(/_/).
-                    map{|part|
-                      part.capitalize
-                    }.
-                    join.
-                    sub(/_\d+/,'') + suffix.to_s
+        to_s.
+        split(/_/).
+        map{|part|
+          part.capitalize
+        }.
+        join.
+        sub(/_\d+/,'') + suffix.to_s
       end
 
       def to_str

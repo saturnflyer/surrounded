@@ -6,16 +6,16 @@ module Surrounded
         base.const_set(:AccessError, Class.new(::Surrounded::Context::AccessError))
       end
     end
-    
+
     private
-    
+
     def disallow(*names, &block)
       names.map do |name|
         define_access_method(name, &block)
       end
     end
     alias guard disallow
-    
+
     def trigger_return_content(name, *args, &block)
       %{
 
@@ -27,7 +27,7 @@ module Surrounded
       #{super}
       }
     end
-    
+
     def define_access_method(name, &block)
       mod = Module.new
       mod.class_eval {
@@ -43,13 +43,13 @@ module Surrounded
       const_set("SurroundedAccess#{name}", mod)
       include mod
     end
-    
+
     module AccessMethods
       # Return a Set of all defined triggers regardless of any disallow blocks
       def all_triggers
         self.class.triggers
       end
-    
+
       # Return a Set of triggers which may be run according to any restrictions defined
       # in disallow blocks.
       def triggers

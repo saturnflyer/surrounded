@@ -7,19 +7,19 @@ module Surrounded
           self.send(receiver).public_send(message,*args, &block)
         end
       end
-      
+
       def forward_triggers(receiver, *messages)
         messages.each do |message|
           forward_trigger(receiver, message)
         end
       end
-      
+
       def forwarding(hash)
         hash.each { |messages, receiver|
           forward_triggers(receiver, *messages)
         }
       end
-      
+
       alias forward forward_trigger
       alias forwards forward_triggers
     end
