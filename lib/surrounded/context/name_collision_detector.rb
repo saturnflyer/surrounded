@@ -16,10 +16,7 @@ module NameCollisionDetector
 
 
   def detect_collisions(role_object_map)
-    # for each role name, we need to check that its mapped object does not
-    # respond to the other role names.
-    # Map an empty array to each role
-    collision_map = prepare_role_map_for role_object_map.keys
+    collision_map = prepare_role_map role_object_map.keys
     collisions = check_for_collisions role_object_map, 0, collision_map
     collisions.each_pair do |role, array|
       @handler.call(role, array) if @handler
@@ -42,7 +39,7 @@ module NameCollisionDetector
     check_for_collisions role_map, index, collisions
   end
 
-  def prepare_role_map_for(roles)
+  def prepare_role_map(roles)
     collision_map = {}
     roles.each {|role| collision_map[role] = []}
     collision_map
