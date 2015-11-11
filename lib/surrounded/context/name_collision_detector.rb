@@ -1,18 +1,28 @@
-class NameCollisionDetector
+module NameCollisionDetector
 
-  def initialize(role_map)
-    @role_object_array = role_map
+
+  def on_name_collision(handler)
+    case handler
+    when :nothing
+      @handler = lambda {|role, array| }
+    when :raise_exception
+      @handler = lambda {|role, array| raise Surrounded::Context::NameCollisionError.new "#{role} has name collisions with #{array}"}
+    when :warn
+      @handler = lambda {|role, array| puts "#{role} has name collisions with #{array}" if array.length > 0}
+    else
+      @handler = handler
+    end
   end
 
-  def detect_collisions
+
+  def detect_collisions(role_object_map)
     # for each role name, we need to check that its mapped object does not
     # respond to the other role names.
-    collision_map = {}
     # Map an empty array to each role
-    map_roles_to_empty_arrays collision_map, @role_object_array.keys
-    collisions = check_for_collisions(@role_object_array, 0, collision_map)
+    collision_map = prepare_role_map_for role_object_map.keys
+    collisions = check_for_collisions role_object_map, 0, collision_map
     collisions.each_pair do |role, array|
-      yield role, array if block_given?
+      @handler.call(role, array) if @handler
     end
   end
 
@@ -32,7 +42,9 @@ class NameCollisionDetector
     check_for_collisions role_map, index, collisions
   end
 
-  def map_roles_to_empty_arrays(collision_map, roles)
+  def prepare_role_map_for(roles)
+    collision_map = {}
     roles.each {|role| collision_map[role] = []}
+    collision_map
   end
 end

@@ -1,5 +1,5 @@
 require 'test_helper'
-require 'byebug'
+$VERBOSE=nil #otherwise we get lots of C:/gems/surrounded/lib/surrounded/context/name_collision_detector.rb:25: warning: instance variable @handler not initialized
 
 ##
 # The problem is as follows: When an object already contains a method
@@ -40,6 +40,7 @@ class ContextOverridesName
   # has the same name as another role, then when that method is called strange
   # things happen.
   keyword_initialize :base, :will_collide
+  on_name_collision :nothing
 
   trigger :check_setup do
     base.assert_has_role
@@ -58,6 +59,41 @@ class ContextOverridesName
       true
     end
   end
+end
+
+class ContextWithMultipleCollisions
+  extend Surrounded::Context
+
+    on_name_collision :warn
+
+    keyword_initialize :first, :second, :third
+
+end
+
+class First
+  def second
+  end
+
+  def third
+  end
+end
+
+class Second
+
+  def first
+  end
+
+  def third
+  end
+end
+
+class Third
+
+  def first
+  end
+
+  def second
+  end
 
 end
 
@@ -65,19 +101,60 @@ end
 # Just check that the basic context is properly set up first
 describe Surrounded::Context, 'context correctly set up' do
 
-    let(:has_collision){
-      ContextOverridesName.new(base: HasNameCollision.new, will_collide: ShouldCollide.new)
+  let(:has_collision){
+    ContextOverridesName.new(base: HasNameCollision.new, will_collide: ShouldCollide.new)
+  }
+
+  let(:multiple_collisions){
+    ContextWithMultipleCollisions.new(first: First.new, second: Second.new, third: Third.new)
+  }
+
+  after do
+    ContextOverridesName.instance_eval{
+      on_name_collision :nothing
     }
+  end
 
-    it 'is surrounded' do
-      assert has_collision.check_setup
-    end
+  it 'is surrounded' do
+    assert has_collision.check_setup
+  end
 
-    it 'has a name collision' do
-      begin
+  it 'has a name collision' do
+    begin
       assert_match 'Method in the role class',has_collision.induce_collision, "Was: #{has_collision.induce_collision || 'nil'}"
-      rescue NoMethodError => ex
-        assert 'NoMethodError called'
-      end
+    rescue NoMethodError => ex
+      ex.message
+      assert 'NoMethodError called'
     end
+  end
+
+  it 'can raise an exception' do
+    set_handler :raise_exception
+    assert_raises(Surrounded::Context::NameCollisionError){
+      has_collision
+    }
+  end
+
+  it 'can print a warning' do
+    set_handler :warn
+    assert_output(stdout = "base has name collisions with [:will_collide]\n") {has_collision}
+  end
+
+  it 'can take a lambda' do
+    has_worked = false
+    set_handler lambda {|role, array| has_worked = true}
+    has_collision
+    assert has_worked
+  end
+
+  it 'can handle multiple collisions' do
+    assert_output(stdout = "first has name collisions with [:second, :third]\nsecond has name collisions with [:first, :third]\nthird has name collisions with [:first, :second]\n"){multiple_collisions}
+  end
+
+  def set_handler(handler)
+    ContextOverridesName.instance_eval{
+      on_name_collision handler
+    }
+  end
+
 end

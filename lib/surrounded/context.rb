@@ -17,6 +17,7 @@ require 'surrounded/context/name_collision_detector'
 # which encapsulate the interaction and behavior of objects inside.
 module Surrounded
   module Context
+
     def self.extended(base)
       base.class_eval {
         extend RoleBuilders, Initializing, Forwarding
@@ -29,8 +30,14 @@ module Surrounded
         include trigger_mod
 
         extend TriggerControls
+
+        extend Forwardable
+
+        extend NameCollisionDetector
       }
     end
+
+
 
     private
 
@@ -136,7 +143,7 @@ module Surrounded
       end
 
       def map_roles(role_object_array)
-        NameCollisionDetector.new(role_object_array).detect_collisions
+        self.class.detect_collisions role_object_array
         role_object_array.to_a.each do |role, object|
           if self.respond_to?("map_role_#{role}")
             self.send("map_role_#{role}", object)
