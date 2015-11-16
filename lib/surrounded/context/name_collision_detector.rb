@@ -16,7 +16,9 @@ module NameCollisionDetector
 
 
   def detect_collisions(role_object_map)
-    collision_map = prepare_role_map role_object_map.keys
+    collision_map = Hash.new do |map, role|
+      map[role] = []
+    end
     collisions = check_for_collisions role_object_map, 0, collision_map
     collisions.each_pair do |role, array|
       @handler.call(role, array) if @handler
@@ -37,11 +39,5 @@ module NameCollisionDetector
     end
     index += 1
     check_for_collisions role_map, index, collisions
-  end
-
-  def prepare_role_map(roles)
-    collision_map = {}
-    roles.each {|role| collision_map[role] = []}
-    collision_map
   end
 end
