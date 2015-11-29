@@ -973,8 +973,23 @@ end
 
 ```
 
-Which in this case will print tweet, though one imagines you'll do something less insane.
+_Which in this case will print tweet, though one imagines you'll do something
+less insane_
 
+or even a class method:
+
+```ruby
+  class SendAParcel
+    extend Surrounded::Context
+
+    def tweet_collisions(role, collisions)
+      puts "#{role} collides with #{collisions}"
+    end
+  end
+```
+note that when the handler is called it passes ``role`` which is the symbol that
+represents the role with name collisions, and ``collisions``, which is an array
+of symbols referring to the names that collide. 
 
 ## How to read this code
 
