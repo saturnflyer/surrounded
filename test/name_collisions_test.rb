@@ -1,6 +1,4 @@
 require 'test_helper'
-$VERBOSE=nil #otherwise we get lots of C:/gems/surrounded/lib/surrounded/context/name_collision_detector.rb:25: warning: instance variable @handler not initialized
-
 ##
 # The problem is as follows: When an object already contains a method
 # that has the same name as an actor in the context, then the object
@@ -64,9 +62,9 @@ end
 class ContextWithMultipleCollisions
   extend Surrounded::Context
 
-    on_name_collision :warn
+  on_name_collision :warn
 
-    keyword_initialize :first, :second, :third
+  keyword_initialize :first, :second, :third
 
 end
 
@@ -149,6 +147,16 @@ describe Surrounded::Context, 'context correctly set up' do
 
   it 'can handle multiple collisions' do
     assert_output(stdout = "first has name collisions with [:second, :third]\nsecond has name collisions with [:first, :third]\nthird has name collisions with [:first, :second]\n"){multiple_collisions}
+  end
+
+  it 'can use a class method' do
+    class ContextOverridesName
+      def class_method_handler(role, colliders)
+        puts "class method called"
+      end
+    end
+    set_handler :class_method_handler
+    assert_output(stdout = "class method called\n"){has_collision}
   end
 
   def set_handler(handler)

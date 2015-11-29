@@ -249,7 +249,6 @@ By adding `Surrounded::Context` you can shortcut all this work.
 ```ruby
 class Employment
   extend Surrounded::Context
-
   initialize(:employee, :boss)
 
   module Employee
@@ -271,7 +270,6 @@ class Employment
   extend Surrounded::Context
 
   initialize(:employee, :boss)
-
   class Employee < SimpleDelegator
     # extra behavior here...
   end
@@ -287,7 +285,6 @@ class Employment
   extend Surrounded::Context
 
   initialize(:employee, :boss)
-
   role :employee do
     # extra behavior here...
   end
@@ -299,7 +296,6 @@ By default, this code will create a module for you named `Employee`. If you want
 ```ruby
 class Employment
   extend Surrounded::Context
-
   initialize(:employee, :boss)
 
   wrap :employee do
@@ -313,7 +309,6 @@ But if you're making changes and you decide to move from a module to a wrapper o
 ```ruby
 class Employment
   extend Surrounded::Context
-
   initialize(:employee, :boss)
 
   role :employee, :wrapper do
@@ -945,7 +940,7 @@ Lets say that you wish to create a context as below, intending to use instances 
     role :postcode do
       def send
         # do things...
-        country_code = country.country_code # raises an exception!
+        country_code = country.country_code # name collision...probably raises an exception!
       end
     end
   end
@@ -978,7 +973,7 @@ end
 
 ```
 
-Which in this case will print tweet, though one imagines you'll do something less insane. 
+Which in this case will print tweet, though one imagines you'll do something less insane.
 
 
 ## How to read this code

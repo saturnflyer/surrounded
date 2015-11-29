@@ -20,7 +20,7 @@ module Surrounded
 
     def self.extended(base)
       base.class_eval {
-        extend RoleBuilders, Initializing, Forwarding
+        extend RoleBuilders, Initializing, Forwarding, NameCollisionDetector
 
         @triggers = Set.new
         include InstanceMethods
@@ -30,10 +30,6 @@ module Surrounded
         include trigger_mod
 
         extend TriggerControls
-
-        extend Forwardable
-
-        extend NameCollisionDetector
       }
     end
 
@@ -143,7 +139,7 @@ module Surrounded
       end
 
       def map_roles(role_object_array)
-        self.class.detect_collisions role_object_array
+        detect_collisions role_object_array
         role_object_array.to_a.each do |role, object|
           if self.respond_to?("map_role_#{role}")
             self.send("map_role_#{role}", object)
