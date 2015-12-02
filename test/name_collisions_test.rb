@@ -69,29 +69,23 @@ class ContextWithMultipleCollisions
 end
 
 class First
-  def second
-  end
+  def second;end
 
-  def third
-  end
+  def third;end
 end
 
 class Second
 
-  def first
-  end
+  def first;end
 
-  def third
-  end
+  def third;end
 end
 
 class Third
 
-  def first
-  end
+  def first;end
 
-  def second
-  end
+  def second;end
 
 end
 
@@ -99,11 +93,11 @@ end
 # Just check that the basic context is properly set up first
 describe Surrounded::Context, 'context correctly set up' do
 
-  let(:has_collision){
+  let(:create_context_with_collision){
     ContextOverridesName.new(base: HasNameCollision.new, will_collide: ShouldCollide.new)
   }
 
-  let(:multiple_collisions){
+  let(:create_context_with_multiple_collisions){
     ContextWithMultipleCollisions.new(first: First.new, second: Second.new, third: Third.new)
   }
 
@@ -114,12 +108,12 @@ describe Surrounded::Context, 'context correctly set up' do
   end
 
   it 'is surrounded' do
-    assert has_collision.check_setup
+    assert create_context_with_collision.check_setup
   end
 
   it 'has a name collision' do
     begin
-      assert_match 'Method in the role class',has_collision.induce_collision, "Was: #{has_collision.induce_collision || 'nil'}"
+      assert_match 'Method in the role class',create_context_with_collision.induce_collision, "Was: #{create_context_with_collision.induce_collision || 'nil'}"
     rescue NoMethodError => ex
       ex.message
       assert 'NoMethodError called'
@@ -129,24 +123,24 @@ describe Surrounded::Context, 'context correctly set up' do
   it 'can raise an exception' do
     set_handler :raise_exception
     assert_raises(Surrounded::Context::NameCollisionError){
-      has_collision
+      create_context_with_collision
     }
   end
 
   it 'can print a warning' do
     set_handler :warn
-    assert_output(stdout = "base has name collisions with [:will_collide]\n") {has_collision}
+    assert_output(stdout = "base has name collisions with [:will_collide]\n") {create_context_with_collision}
   end
 
   it 'can take a lambda' do
     has_worked = false
     set_handler lambda {|role, array| has_worked = true}
-    has_collision
+    create_context_with_collision
     assert has_worked
   end
 
   it 'can handle multiple collisions' do
-    assert_output(stdout = "first has name collisions with [:second, :third]\nsecond has name collisions with [:first, :third]\nthird has name collisions with [:first, :second]\n"){multiple_collisions}
+    assert_output(stdout = "first has name collisions with [:second, :third]\nsecond has name collisions with [:first, :third]\nthird has name collisions with [:first, :second]\n"){create_context_with_multiple_collisions}
   end
 
   it 'can use a class method' do
@@ -156,7 +150,7 @@ describe Surrounded::Context, 'context correctly set up' do
       end
     end
     set_handler :class_method_handler
-    assert_output(stdout = "class method called\n"){has_collision}
+    assert_output(stdout = "class method called\n"){create_context_with_collision}
   end
 
   def set_handler(handler)
