@@ -28,7 +28,7 @@ module NameCollisionDetector
         map[role] = []
       end
       
-      collisions = check_for_collisions role_object_map, collision_map, 0
+      collisions = check_for_collisions role_object_map, collision_map
       
       collisions.each_pair do |role, colliders|
         if handler = self.class.handler
@@ -41,7 +41,7 @@ module NameCollisionDetector
       end
     end
 
-    def check_for_collisions(role_map, collisions, index)
+    def check_for_collisions(role_map, collisions, index=0)
       role_names = role_map.keys.dup
       if index.eql? role_names.length
         return collisions
