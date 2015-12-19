@@ -6,7 +6,7 @@ module NameCollisionDetector
     when :nothing
       @handler = nil
     when :raise_exception
-      @handler = lambda {|role, array| raise Surrounded::Context::NameCollisionError.new "#{role} has name collisions with #{array}"}
+      @handler = lambda {|role, array| raise Surrounded::Context::NameCollisionError.new(role, array)}
     when :warn
       @handler = lambda {|role, array| puts "#{role} has name collisions with #{array}" if array.length > 0}
     else
@@ -27,7 +27,9 @@ module NameCollisionDetector
       collision_map = Hash.new do |map, role|
         map[role] = []
       end
-      collisions = check_for_collisions role_object_map, 0, collision_map
+      
+      collisions = check_for_collisions role_object_map, collision_map
+      
       collisions.each_pair do |role, colliders|
         if handler = self.class.handler
           if handler.respond_to? :call
@@ -39,7 +41,7 @@ module NameCollisionDetector
       end
     end
 
-    def check_for_collisions(role_map, index, collisions)
+    def check_for_collisions(role_map, collisions, index=0)
       role_names = role_map.keys.dup
       if index.eql? role_names.length
         return collisions
@@ -52,7 +54,7 @@ module NameCollisionDetector
         collisions[candidate_role_name] << role if actor.respond_to? role
       end
       index += 1
-      check_for_collisions role_map, index, collisions
+      check_for_collisions role_map, collisions, index
     end
   end
 end

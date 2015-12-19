@@ -12,6 +12,10 @@ module Surrounded
       end
     end
     class AccessError < ::StandardError; end
-    class NameCollisionError <::StandardError; end
+    class NameCollisionError <::StandardError; 
+      def initialize(role, array)
+        super("#{role} has name collisions with #{array}")
+      end
+    end
   end
 end

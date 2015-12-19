@@ -93,7 +93,7 @@ end
 # Just check that the basic context is properly set up first
 describe Surrounded::Context, 'context correctly set up' do
 
-  let(:create_context_with_collision){
+  let(:new_context_with_collision){
     ContextOverridesName.new(base: HasNameCollision.new, will_collide: ShouldCollide.new)
   }
 
@@ -108,12 +108,12 @@ describe Surrounded::Context, 'context correctly set up' do
   end
 
   it 'is surrounded' do
-    assert create_context_with_collision.check_setup
+    assert new_context_with_collision.check_setup
   end
 
   it 'has a name collision' do
     begin
-      assert_match 'Method in the role class',create_context_with_collision.induce_collision, "Was: #{create_context_with_collision.induce_collision || 'nil'}"
+      assert_match 'Method in the role class',new_context_with_collision.induce_collision, "Was: #{new_context_with_collision.induce_collision || 'nil'}"
     rescue NoMethodError => ex
       ex.message
       assert 'NoMethodError called'
@@ -123,19 +123,19 @@ describe Surrounded::Context, 'context correctly set up' do
   it 'can raise an exception' do
     set_handler :raise_exception
     assert_raises(Surrounded::Context::NameCollisionError){
-      create_context_with_collision
+      new_context_with_collision
     }
   end
 
   it 'can print a warning' do
     set_handler :warn
-    assert_output(stdout = "base has name collisions with [:will_collide]\n") {create_context_with_collision}
+    assert_output(stdout = "base has name collisions with [:will_collide]\n") {new_context_with_collision}
   end
 
   it 'can take a lambda' do
     has_worked = false
     set_handler lambda {|role, array| has_worked = true}
-    create_context_with_collision
+    new_context_with_collision
     assert has_worked
   end
 
@@ -150,7 +150,7 @@ describe Surrounded::Context, 'context correctly set up' do
       end
     end
     set_handler :class_method_handler
-    assert_output(stdout = "class method called\n"){create_context_with_collision}
+    assert_output(stdout = "class method called\n"){new_context_with_collision}
   end
 
   def set_handler(handler)
