@@ -1,25 +1,12 @@
 module NameCollisionDetector
   attr_reader :handler
 
-  def on_name_collision(handler)
-    case handler
-    when :nothing
-      @handler = nil
-    when :raise_exception
-      @handler = lambda {|role, array| raise Surrounded::Context::NameCollisionError.new(role, array)}
-    when :warn
-      @handler = lambda {|role, array| puts "#{role} has name collisions with #{array}" if array.length > 0}
-    else
-      if handler.respond_to? :call
-        @handler = handler
-      else
-        @handler = instance_method handler
-      end
-    end
-  end
-  
   def self.extended(base)
     base.include NameCollisionHandler
+  end
+  
+  def on_name_collision(method_name)
+    @handler = method_name
   end
 
   module NameCollisionHandler
@@ -29,15 +16,12 @@ module NameCollisionDetector
       end
       
       collisions = check_for_collisions role_object_map, collision_map
-      
+      handle_collisions(collisions)
+    end
+    
+    def handle_collisions(collisions)
       collisions.each_pair do |role, colliders|
-        if handler = self.class.handler
-          if handler.respond_to? :call
-            handler.call(role, colliders)
-          else
-            handler.bind(self).call(role, colliders)
-          end
-        end
+        self.send(self.class.handler, role, colliders) if self.class.handler
       end
     end
 
@@ -55,6 +39,17 @@ module NameCollisionDetector
       end
       index += 1
       check_for_collisions role_map, collisions, index
+    end
+    
+    
+    def nothing(role, array); end;
+      
+    def raise_exception(role, array)
+      raise Surrounded::Context::NameCollisionError.new(role, array)
+    end
+    
+    def warn(role, array)
+      puts "#{role} has name collisions with #{array}" if array.length > 0
     end
   end
 end

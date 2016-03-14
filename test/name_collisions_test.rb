@@ -132,13 +132,6 @@ describe Surrounded::Context, 'context correctly set up' do
     assert_output(stdout = "base has name collisions with [:will_collide]\n") {new_context_with_collision}
   end
 
-  it 'can take a lambda' do
-    has_worked = false
-    set_handler lambda {|role, array| has_worked = true}
-    new_context_with_collision
-    assert has_worked
-  end
-
   it 'can handle multiple collisions' do
     assert_output(stdout = "first has name collisions with [:second, :third]\nsecond has name collisions with [:first, :third]\nthird has name collisions with [:first, :second]\n"){create_context_with_multiple_collisions}
   end
