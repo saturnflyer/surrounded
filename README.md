@@ -249,7 +249,6 @@ By adding `Surrounded::Context` you can shortcut all this work.
 ```ruby
 class Employment
   extend Surrounded::Context
-  
   initialize(:employee, :boss)
 
   module Employee
@@ -269,9 +268,8 @@ Well, it just so happens that you can. This code will work just fine:
 ```ruby
 class Employment
   extend Surrounded::Context
-  
-  initialize(:employee, :boss)
 
+  initialize(:employee, :boss)
   class Employee < SimpleDelegator
     # extra behavior here...
   end
@@ -285,9 +283,8 @@ But the syntax can be even simpler than that if you want.
 ```ruby
 class Employment
   extend Surrounded::Context
-  
-  initialize(:employee, :boss)
 
+  initialize(:employee, :boss)
   role :employee do
     # extra behavior here...
   end
@@ -299,7 +296,6 @@ By default, this code will create a module for you named `Employee`. If you want
 ```ruby
 class Employment
   extend Surrounded::Context
-  
   initialize(:employee, :boss)
 
   wrap :employee do
@@ -313,7 +309,6 @@ But if you're making changes and you decide to move from a module to a wrapper o
 ```ruby
 class Employment
   extend Surrounded::Context
-  
   initialize(:employee, :boss)
 
   role :employee, :wrapper do
@@ -346,7 +341,7 @@ end
 
 Now the `User` instances will be able to implicitly access objects in their environment.
 
-Via `method_missing` those `User` instances can access a `context` object it stores in an internal collection. 
+Via `method_missing` those `User` instances can access a `context` object it stores in an internal collection.
 
 Inside of the `Employment` context we saw above, the `employee` and `boss` objects are instances of `User` for this example.
 
@@ -442,7 +437,7 @@ context.triggers #=> [:plan_weekend_work]
 
 You might find that useful for dynamically defining user interfaces.
 
-Sometimes I'd rather not use this DSL, however. I want to just write regular methods. 
+Sometimes I'd rather not use this DSL, however. I want to just write regular methods.
 
 We can do that too. You'll need to opt in to this by specifying `trigger :your_method_name` for the methods you want to use.
 
@@ -454,7 +449,7 @@ class Employment
     employee.quit
   end
   trigger :plan_weekend_work
-  
+
   # or in Ruby 2.x
   trigger def plan_weekend_work
     employee.quit
@@ -487,12 +482,12 @@ By running `protect_triggers` you'll be able to define when triggers may or may 
 class Employment
   extend Surrounded::Context
   protect_triggers
-  
+
   def plan_weekend_work
     employee.quit
   end
   trigger :plan_weekend_work
-  
+
   disallow :plan_weekend_work do
     employee.bank_balance > 1000000
   end
@@ -627,11 +622,11 @@ class Organization
   extend Surrounded::Context
 
   initialize_without_keywords :leader, :members
-  
+
   role :members do
     # special behavior for the collection
   end
-  
+
   role :member do
     # special behavior to be applied to each member in the collection
   end  
@@ -686,7 +681,7 @@ Surrounded::Context.default_role_type = :module # also :wrap, :wrapper, or :inte
 
 class ActiviatingAccount
   extend Surrounded::Context
-  
+
   # set the default role type only for this class
   self.default_role_type = :module # also :wrap, :wrapper, or :interface
 
@@ -707,7 +702,7 @@ class ActiviatingAccount
   # these also must be done if you create your own initialize method.
   # this is a shortcut for using attr_reader and private
   private_attr_reader :activator, :account
-  
+
   # If you need to mix default initialzation and extra work use a block
   initialize :activator, :account do
     map_roles(:third_party => get_some_other_object)
@@ -747,7 +742,7 @@ class ActiviatingAccount
   #   end
   # end
 
-  # if you use a regular method and want to use context-specific behavior, 
+  # if you use a regular method and want to use context-specific behavior,
   # you must handle storing the context yourself:
   def regular_method
     apply_behaviors # handles the adding of all the roles and behaviors
@@ -762,30 +757,30 @@ class ActiviatingAccount
   trigger :some_trigger_method do
     activator.some_behavior # behavior always available
   end
-  
+
   trigger def some_other_trigger
     activator.some_behavior # behavior always available
   end
-  
+
   def regular_non_trigger
     activator.some_behavior # behavior always available with the following line
   end
   trigger :regular_non_trigger # turns the method into a trigger
-  
+
   # create restrictions on what triggers may be used
   protect_triggers # <-- this is required if you want to protect your triggers this way.
   disallow :some_trigger_method do
     # whatever conditional code for the instance of the context
   end
   # you could also use `guard` instead of `disallow`
-  
+
   # or define your own method without the `disallow` keyword
   def disallow_some_trigger_method?
     # whatever conditional code for the instance of the context
   end
   # Prefer using `disallow` because it will wrap role players in their roles for you;
   # the `disallow_some_trigger_method?` defined above, does not.
-  
+
   # Create shortcuts for triggers as class methods
   # so you can do ActiviatingAccount.some_trigger_method(activator, account)
   # This will make all triggers shortcuts.
@@ -795,11 +790,11 @@ class ActiviatingAccount
     instance = self.new(activator, account)
     instance.some_trigger_method
   end
-  
+
   # Set triggers to always return the context object
   # so you can enforce East-oriented style or Tell, Don't Ask
   east_oriented_triggers
-  
+
   # Forward context instance methods as triggers to role players
   forward_trigger :role_name, :method_name
   forward_trigger :role_name, :method_name, :alternative_trigger_name_for_method_name
@@ -910,6 +905,92 @@ end
 
 You can remember the method name by the convention that `remove` or `apply` describes it's function, `behavior` refers to the first argument (thet contsant holding the behaviors), and then the name of the role which refers to the role playing object: `remove_behavior_role`.
 
+##Name collisions between methods and roles
+Lets say that you wish to create a context as below, intending to use instances of the following two classes as actors:
+
+```ruby
+  class Postcode
+    # other methods...
+    def code
+      @code
+    end
+
+    def country
+      @country
+    end
+  end
+
+  class Country
+    # other methods...
+    def country_code
+      @code
+    end
+  end
+
+  class SendAParcel
+    extend Surrounded::Context
+
+    keyword_initialize :postcode, :country
+
+    trigger :send do
+      postcode.send
+    end
+
+    end
+    role :postcode do
+      def send
+        # do things...
+        country_code = country.country_code # name collision...probably raises an exception!
+      end
+    end
+  end
+```
+When you call the ``:send`` trigger you are likely to be greeted with an ``NoMethodError`` exception. The reason for this is that there is a name collision between ``Postcode#country``, and the ``:country`` role in the ``SendAParcel`` context. Where a name collision exists, the method in the actor overrides that of the calling class and you get unexpected results.
+
+To address this issue, use the ``on_name_collision`` method like so:
+
+```ruby
+
+  class SendAParcel
+    extend Surrounded::Context
+
+    on_name_collision :raise_exception
+  end
+
+```
+
+This option will raise an exception (obviously). Other defaults include ``:nothing``, and ``:warn``. Warn prints a warning to the console.
+
+You can also use a lambda as follows:
+
+```ruby
+
+class SendAParcel
+  extend Surrounded::Context
+
+  on_name_collision ->(role, collisions) {|role, collision| puts "Tweet!"}
+end
+
+```
+
+_Which in this case will print tweet, though one imagines you'll do something
+less insane_
+
+or even a class method:
+
+```ruby
+  class SendAParcel
+    extend Surrounded::Context
+
+    def tweet_collisions(role, collisions)
+      puts "#{role} collides with #{collisions}"
+    end
+  end
+```
+note that when the handler is called it passes ``role`` which is the symbol that
+represents the role with name collisions, and ``collisions``, which is an array
+of symbols referring to the names that collide. 
+
 ## How to read this code
 
 If you use this library, it's important to understand it.
@@ -982,7 +1063,7 @@ And then execute:
 Or install it yourself as:
 
     $ gem install surrounded
-    
+
 ## Installation for Rails
 
 See [surrounded-rails](https://github.com/saturnflyer/surrounded-rails)

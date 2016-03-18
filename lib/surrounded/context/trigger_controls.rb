@@ -8,17 +8,17 @@ module Surrounded
       def triggers
         @triggers.dup
       end
-          
+
       def store_trigger(*names)
         @triggers.merge(names)
       end
-      
+
       # Creates a context instance method which will apply behaviors to role players
       # before execution and remove the behaviors after execution.
       #
       # Alternatively you may define your own methods then declare them as triggers
       # afterward.
-      # 
+      #
       # Example:
       #   trigger :some_event do
       #     # code here
@@ -41,7 +41,7 @@ module Surrounded
           store_trigger(name)
         end
       end
-      
+
       def convert_method_to_trigger(name)
         unless triggers.include?(name) || name.nil?
           alias_method :"__trigger_#{name}", :"#{name}"
@@ -66,7 +66,7 @@ module Surrounded
           end
         }, __FILE__, line
       end
-    
+
       def trigger_return_content(name)
         if method_defined?(name)
           %{super}
@@ -74,12 +74,12 @@ module Surrounded
           %{self.send("__trigger_#{name}", *args, &block)}
         end
       end
-      
-      
+
+
       def define_trigger_action(*name_and_args, &block)
         trigger_action_module.send(:define_method, *name_and_args, &block)
       end
-      
+
       def trigger_action_module
         self.const_get('TriggerMethods', false)
       end

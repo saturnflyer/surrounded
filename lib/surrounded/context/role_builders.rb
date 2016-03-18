@@ -53,7 +53,7 @@ module Surrounded
         # Admin
         private_const_set(RoleName(name), Negotiator.for_role(behavior))
       end
-      
+
       private
       def RoleName(text, suffix=nil)
         RoleName.new(text, suffix)
