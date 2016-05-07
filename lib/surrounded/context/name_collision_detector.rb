@@ -23,7 +23,7 @@ module NameCollisionDetector
       role_object_map.select{|role, object|
         ![object.methods & role_object_map.keys].flatten.empty?
       }.map{|role, object|
-        role_collision_message(role,(object.methods & role_object_map.keys))
+        role_collision_message(role,(object.methods & role_object_map.keys).sort)
       }.join("\n")
     end
     
