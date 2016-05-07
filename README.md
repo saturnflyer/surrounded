@@ -910,6 +910,87 @@ end
 
 You can remember the method name by the convention that `remove` or `apply` describes it's function, `behavior` refers to the first argument (thet contsant holding the behaviors), and then the name of the role which refers to the role playing object: `remove_behavior_role`.
 
+##Name collisions between methods and roles
+
+Lets say that you wish to create a context as below, intending to use instances of the following two classes as role players:
+
+```ruby
+  class Postcode
+    # other methods...
+    def code
+      @code
+    end
+
+    def country
+      @country
+    end
+  end
+
+  class Country
+    # other methods...
+    def country_code
+      @code
+    end
+  end
+
+  class SendAParcel
+    extend Surrounded::Context
+
+    keyword_initialize :postcode, :country
+
+    trigger :send do
+      postcode.send
+    end
+
+    end
+    role :postcode do
+      def send
+        # do things...
+        country_code = country.country_code # name collision...probably raises an exception!
+      end
+    end
+  end
+```
+When you call the `:send` trigger you are likely to be greeted with an `NoMethodError` exception. The reason for this is that there is a name collision between `Postcode#country`, and the `:country` role in the `SendAParcel` context. Where a name collision exists, the method in the role player overrides that of the calling class and you get unexpected results.
+
+To address this issue, use `on_name_collision` to specify the name of a method to use when collisions are found:
+
+```ruby
+
+  class SendAParcel
+    extend Surrounded::Context
+
+    on_name_collision :raise
+  end
+
+```
+
+This option will raise an exception (obviously). You may use any method which is available to the context but it must accept a single message as the argument.
+
+You can also use a lambda:
+
+```ruby
+
+class SendAParcel
+  extend Surrounded::Context
+
+  on_name_collision ->(message){ puts "Here's the message: #{message}"}
+end
+
+```
+
+You may also user a class method:
+
+```ruby
+  class SendAParcel
+    extend Surrounded::Context
+
+    def self.handle_collisions(message)
+      Logger.debug "#{Time.now}: #{message}"
+    end
+  end
+```
+
 ## How to read this code
 
 If you use this library, it's important to understand it.

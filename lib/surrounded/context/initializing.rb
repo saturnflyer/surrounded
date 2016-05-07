@@ -29,8 +29,6 @@ module Surrounded
 
       def default_initializer(params, setup_args, &block)
         private_attr_reader(*setup_args)
-
-        parameters = setup_args.map{|a| "#{a}:"}.join(',')
         @initializer_block = block || nil
         mod = Module.new
         line = __LINE__; mod.class_eval %{

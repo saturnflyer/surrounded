@@ -7,6 +7,7 @@ require 'surrounded/context/trigger_controls'
 require 'surrounded/access_control'
 require 'surrounded/shortcuts'
 require 'surrounded/east_oriented'
+require 'surrounded/context/name_collision_detector'
 
 # Extend your classes with Surrounded::Context to handle their
 # initialization and application of behaviors to the role players
@@ -18,7 +19,7 @@ module Surrounded
   module Context
     def self.extended(base)
       base.class_eval {
-        extend RoleBuilders, Initializing, Forwarding
+        extend RoleBuilders, Initializing, Forwarding, NameCollisionDetector
 
         @triggers = Set.new
         include InstanceMethods
@@ -135,6 +136,7 @@ module Surrounded
       end
 
       def map_roles(role_object_array)
+        detect_collisions role_object_array
         role_object_array.to_a.each do |role, object|
           if self.respond_to?("map_role_#{role}")
             self.send("map_role_#{role}", object)

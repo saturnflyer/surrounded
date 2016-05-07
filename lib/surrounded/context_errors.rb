@@ -12,5 +12,6 @@ module Surrounded
       end
     end
     class AccessError < ::StandardError; end
+    class NameCollisionError <::StandardError; end
   end
 end
