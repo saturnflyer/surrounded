@@ -2,7 +2,7 @@ module NameCollisionDetector
   attr_reader :handler
 
   def self.extended(base)
-    base.include NameCollisionHandler
+    base.send :include, NameCollisionHandler
   end
   
   def on_name_collision(method_name)
