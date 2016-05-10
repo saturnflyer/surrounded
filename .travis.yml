@@ -8,11 +8,9 @@ rvm:
   - 2.1.10
   - ruby-head
   - jruby-head
-  - rbx
 env:
 - COVERALLS=true
 matrix:
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
-    - rvm: rbx
