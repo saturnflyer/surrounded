@@ -722,6 +722,15 @@ class ActiviatingAccount
     # ...
   end
 
+  # Handle method name collisions on role players against role names in the context
+  on_name_collision :raise # will raise your context namespaced error: ActiviatingAccount::NameCollisionError
+  on_name_collision :warn
+  on_name_collision ->(message){ puts "Here's the message! #{message}" }
+  on_name_collision :my_custom_handler
+  def my_custom_handler(message)
+    # do something with the message here
+  end
+
   role :activator do # module by default
     def some_behavior; end
   end
