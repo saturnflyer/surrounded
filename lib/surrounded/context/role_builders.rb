@@ -1,5 +1,15 @@
 module Surrounded
   module Context
+    class InvalidRoleType < ::StandardError
+      unless method_defined?(:cause)
+        def initialize(msg=nil)
+          super
+          @cause = $!
+        end
+        attr_reader :cause
+      end
+    end
+
     module RoleBuilders
 
       # Define behaviors for your role players
@@ -13,7 +23,7 @@ module Surrounded
           meth.call(name, &block)
         end
       rescue NameError => e
-        raise InvalidRoleType, e.message
+        raise self::InvalidRoleType, e.message
       end
       alias_method :role_methods, :role
 

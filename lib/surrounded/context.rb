@@ -29,10 +29,22 @@ module Surrounded
         include trigger_mod
 
         extend TriggerControls
+
       }
+      define_exceptions(base)
     end
 
     private
+
+    def self.define_exceptions(klass)
+      self.constants.select{|const|
+        self.const_get(const) < ::StandardError
+      }.map{|exception|
+        unless klass.const_defined?(exception)
+          klass.const_set(exception, Class.new(self.const_get(exception)))
+        end
+      }
+    end
 
     # Set the default type of implementation for role methods for all contexts.
     def self.default_role_type

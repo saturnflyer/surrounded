@@ -2,6 +2,8 @@ require 'triad'
 require 'surrounded/context_errors'
 module Surrounded
   module Context
+    class InvalidRole < ::Triad::ItemNotPresent; end
+
     class RoleMap
 
       class << self

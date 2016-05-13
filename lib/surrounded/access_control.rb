@@ -1,4 +1,7 @@
 module Surrounded
+  module Context
+    class AccessError < ::StandardError; end
+  end
   module AccessControl
     def self.extended(base)
       base.send(:include, AccessMethods)

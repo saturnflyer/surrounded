@@ -19,8 +19,7 @@ class HasNameCollision
     true
   end
 
-  def will_collide=(val); end
-
+  def will_collide=(_); end
 end
 
 class ShouldCollide
@@ -28,7 +27,6 @@ class ShouldCollide
   def collide
     return 'Method called in ShouldCollide'
   end
-
 end
 
 class ContextOverridesName
@@ -65,7 +63,6 @@ class ContextWithMultipleCollisions
   on_name_collision :warn
 
   keyword_initialize :first, :second, :third
-
 end
 
 class First
@@ -112,12 +109,12 @@ describe 'handling name collisions' do
     err = assert_raises(NoMethodError){
       new_context_with_collision.induce_collision
     }
-    assert_match /undefined method \`collide' for nil:NilClass/, err.message
+    assert_match(/undefined method \`collide' for nil:NilClass/, err.message)
   end
 
   it 'can raise an exception' do
     set_handler :raise
-    assert_raises(Surrounded::Context::NameCollisionError){
+    assert_raises(ContextOverridesName::NameCollisionError){
       new_context_with_collision
     }
   end
@@ -162,5 +159,4 @@ ERR
       new_context_with_collision
     }
   end
-
 end
