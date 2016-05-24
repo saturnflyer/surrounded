@@ -143,7 +143,7 @@ ERR
 
   it 'can use a class method' do
     class ContextOverridesName
-      def class_method_handler(message)
+      def self.class_method_handler(message)
         puts message
       end
     end
