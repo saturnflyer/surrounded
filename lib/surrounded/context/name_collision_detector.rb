@@ -7,9 +7,7 @@ module Surrounded
 
       def self.extended(base)
         base.send :include, NameCollisionHandler
-        unless defined?(base::NameCollisionError)
-          base.const_set(:NameCollinionError, Class.new(::Surrounded::Context::NameCollisionError))
-        end
+        Surrounded::Exceptions.define(base, exceptions: :NameCollisionError)
       end
   
       def on_name_collision(method_name)

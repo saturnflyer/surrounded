@@ -5,9 +5,7 @@ module Surrounded
   module AccessControl
     def self.extended(base)
       base.send(:include, AccessMethods)
-      unless defined?(base::AccessError)
-        base.const_set(:AccessError, Class.new(::Surrounded::Context::AccessError))
-      end
+      Surrounded::Exceptions.define(base, exceptions: :AccessError)
     end
     
     private

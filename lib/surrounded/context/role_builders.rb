@@ -12,6 +12,10 @@ module Surrounded
 
     module RoleBuilders
 
+      def self.extended(base)
+        Surrounded::Exceptions.define(base, exceptions: :InvalidRoleType)
+      end
+
       # Define behaviors for your role players
       def role(name, type=default_role_type, &block)
         if type == :module
