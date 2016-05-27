@@ -8,6 +8,7 @@ module Surrounded
       class << self
         def from_base(klass=::Triad)
           role_mapper = Class.new(self)
+          Surrounded::Exceptions.define(role_mapper, exceptions: :ItemNotPresent, namespace: klass)
           num = __LINE__; role_mapper.class_eval %{
             def container
               @container ||= #{klass}.new
