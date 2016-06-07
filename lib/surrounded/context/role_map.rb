@@ -1,28 +1,28 @@
 require 'triad'
+require 'forwardable'
 module Surrounded
   module Context
     class InvalidRole < ::Triad::ItemNotPresent; end
 
     class RoleMap
+      extend Forwardable
 
       class << self
         def from_base(klass=::Triad)
           role_mapper = Class.new(self)
           Surrounded::Exceptions.define(role_mapper, exceptions: :ItemNotPresent, namespace: klass)
-          num = __LINE__; role_mapper.class_eval %{
-            def container
-              @container ||= #{klass}.new
-            end
-          }, __FILE__, num
-          %w{ update each values keys }.each do |meth|
-            num = __LINE__; role_mapper.class_eval %{
-              def #{meth}(*args, &block)
-                container.send(:#{meth}, *args, &block)
-              end
-            }, __FILE__, num
-          end
+          role_mapper.container_class=(klass)
+          role_mapper.def_delegators :container, :update, :each, :values, :keys
           role_mapper
         end
+
+        def container_class=(klass)
+          @container_class = klass
+        end
+      end
+
+      def container
+        @container ||= self.class.instance_variable_get(:@container_class).new
       end
 
       def role?(role)
