@@ -5,7 +5,7 @@ require 'surrounded/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "surrounded"
-  spec.version       = Surrounded::VERSION
+  spec.version       = Surrounded.version
   spec.authors       = ["'Jim Gay'"]
   spec.email         = ["jim@saturnflyer.com"]
   spec.description   = %q{Gives an object implicit access to other objects in it's environment.}
