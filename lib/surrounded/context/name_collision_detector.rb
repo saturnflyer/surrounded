@@ -59,7 +59,7 @@ module Surrounded
           elsif self.class.respond_to?(handler, true)
             self.class.method(handler)
           else
-            method(:nothing)
+            raise ArgumentError, %{your name collision handler was set to `#{handler}' but there is no instance nor class method of that name}
           end
         end
       end

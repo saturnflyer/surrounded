@@ -126,6 +126,21 @@ describe 'handling name collisions' do
     }
   end
 
+  it 'can ignore collisions' do
+    set_handler :nothing
+    assert_output(nil, nil) {
+      new_context_with_collision
+    }
+  end
+
+  it 'raises an error with an unknown handler' do
+    set_handler :barf
+    err = assert_raises(ArgumentError) {
+      new_context_with_collision
+    }
+    expect(err.message).must_match(/your name collision handler was set to \`barf' but there is no instance nor class method of that name/)
+  end
+
   let(:create_context_with_multiple_collisions){
     ContextWithMultipleCollisions.new(first: First.new, second: Second.new, third: Third.new)
   }
