@@ -31,7 +31,7 @@ module Surrounded
 
       def role_player?(object)
         !values(object).empty?
-      rescue ::Triad::ItemNotPresent
+      rescue ::StandardError
         false
       end
 
