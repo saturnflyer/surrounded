@@ -97,6 +97,21 @@ describe Surrounded::Context, '#role?' do
   end
 end
 
+describe Surrounded::Context, '#role_player?' do
+  let(:player){ User.new("Jim") }
+  let(:other_player){ User.new("Amy") }
+  let(:non_player){ User.new("Guille") }
+  let(:context){ TestContext.new(player, other_player) }
+
+  it 'is true if the given object is a role player' do
+    expect(context.role_player?(player)).must_equal true
+  end
+
+  it 'is false if the given oject is not a role player' do
+    expect(context.role_player?(non_player)).must_equal false
+  end
+end
+
 class RoleAssignmentContext
   extend Surrounded::Context
 
