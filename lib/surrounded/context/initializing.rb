@@ -29,7 +29,7 @@ module Surrounded
 
       def default_initializer(params, setup_args, &block)
         private_attr_reader(*setup_args)
-        @initializer_block = block || nil
+        @initializer_block = block
         mod = Module.new
         line = __LINE__; mod.class_eval %{
           def initialize(#{params})
