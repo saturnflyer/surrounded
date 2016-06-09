@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - Rely on the standard library Forwardable to setup how the RoleMap forwards messages to the container.
 - Update RoleMap role_player? method to rescue from StandardError, a non-implementation-specific exception.
+- Move to using triad 0.3.0 which relies on concurrent-ruby 0.9+ and moves off of thread_safe 0.3.5
 
 ## [0.9.10]
 
