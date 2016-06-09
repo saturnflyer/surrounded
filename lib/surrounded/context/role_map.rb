@@ -2,8 +2,6 @@ require 'triad'
 require 'forwardable'
 module Surrounded
   module Context
-    class InvalidRole < ::Triad::ItemNotPresent; end
-
     class RoleMap
       extend Forwardable
 
