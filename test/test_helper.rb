@@ -1,10 +1,6 @@
 require 'simplecov'
-require 'minitest/autorun' unless ENV['MUTANT']
-require 'coveralls'
-
-if ENV['COVERALLS']
-  Coveralls.wear!
-end
+require 'minitest/autorun'
+SimpleCov.start
 
 require 'surrounded'
 require 'surrounded/context'

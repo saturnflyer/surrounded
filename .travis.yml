@@ -8,9 +8,12 @@ rvm:
   - 2.2.7
   - ruby-head
   - jruby-head
-env:
-- COVERALLS=true
 matrix:
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
+addons:
+  code_climate:
+    repo_token: 7488b157e7b7f48eac865a9f830fe90a39e6ac10b17f854e17b9529e1854762c
+after_success:
+  - bundle exec codeclimate-test-reporter
