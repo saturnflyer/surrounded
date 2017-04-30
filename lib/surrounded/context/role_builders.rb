@@ -1,14 +1,6 @@
 module Surrounded
   module Context
-    class InvalidRoleType < ::StandardError
-      unless method_defined?(:cause)
-        def initialize(msg=nil)
-          super
-          @cause = $!
-        end
-        attr_reader :cause
-      end
-    end
+    class InvalidRoleType < ::StandardError; end
 
     module RoleBuilders
 
@@ -67,7 +59,7 @@ module Surrounded
         # Admin
         private_const_set(RoleName(name), Negotiator.for_role(behavior))
       end
-      
+
       private
       def RoleName(text, suffix=nil)
         RoleName.new(text, suffix)

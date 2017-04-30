@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.0.0]
 
 - Drop deprecations around Context initialize method. It now requires keyword arguments. Non-keyword argumennts may be used with initialize_without_keywords
+- Remove code supporting exception cause it InvalidRoleType prior to ruby 2.1
 
 ## [0.9.11]
 
