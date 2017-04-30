@@ -3,8 +3,6 @@
 
 [![Build Status](https://travis-ci.org/saturnflyer/surrounded.png?branch=master)](https://travis-ci.org/saturnflyer/surrounded)
 [![Code Climate](https://codeclimate.com/github/saturnflyer/surrounded.png)](https://codeclimate.com/github/saturnflyer/surrounded)
-[![Coverage Status](https://coveralls.io/repos/saturnflyer/surrounded/badge.png)](https://coveralls.io/r/saturnflyer/surrounded)
-[![Gem Version](https://badge.fury.io/rb/surrounded.png)](http://badge.fury.io/rb/surrounded)
 
 Surrounded is designed to help you better manage your business logic by keeping cohesive behaviors together. Bring objects together to implement your use cases and gain behavior only when necessary.
 
@@ -43,7 +41,7 @@ Here, you've specified the order when initializing so you can use it like this:
 ```ruby
 user1 = User.find(1)
 user2 = User.find(2)
-context = Employment.new(user1, user2)
+context = Employment.new(employee: user1, boss: user2)
 ```
 
 That ensures that `user1` will become (and have all the features of) the `employee` and `user2` will become (and have all the features of) the `boss`.
@@ -53,20 +51,20 @@ There are 2 things left to do:
 1. define behaviors for each role and
 2. define how you can trigger their actions
 
-Currently initializing contexts does not require the use of keyword arguments, _but it will in the future_.
+Initializing contexts does not require the use of keyword arguments, but you may opt out.
 
-You should consider using explicit names when initialize now by using `keyword_initialize`:
+You should consider using explicit names when initialize now by using `initialize_without_keywords`:
 
 ```ruby
 class Employment
   extend Surrounded::Context
 
-  keyword_initialize :employee, :boss
+  initialize_withou_keywords :employee, :boss
 end
 
 user1 = User.find(1)
 user2 = User.find(2)
-context = Employment.new(employee: user1, boss: user2)
+context = Employment.new(user1, user2)
 ```
 
 This will allow you to prepare your accessing code to use keywords.
@@ -135,7 +133,7 @@ end
 You'll need to define way to trigger these behaviors to occur so that you can use them.
 
 ```ruby
-context = Employment.new(user1, user2)
+context = Employment.new(employee: user1, boss: user2)
 
 context.plan_weekend_work
 ```
@@ -249,7 +247,7 @@ By adding `Surrounded::Context` you can shortcut all this work.
 ```ruby
 class Employment
   extend Surrounded::Context
-  
+
   initialize(:employee, :boss)
 
   module Employee
@@ -269,7 +267,7 @@ Well, it just so happens that you can. This code will work just fine:
 ```ruby
 class Employment
   extend Surrounded::Context
-  
+
   initialize(:employee, :boss)
 
   class Employee < SimpleDelegator
@@ -285,7 +283,7 @@ But the syntax can be even simpler than that if you want.
 ```ruby
 class Employment
   extend Surrounded::Context
-  
+
   initialize(:employee, :boss)
 
   role :employee do
@@ -299,7 +297,7 @@ By default, this code will create a module for you named `Employee`. If you want
 ```ruby
 class Employment
   extend Surrounded::Context
-  
+
   initialize(:employee, :boss)
 
   wrap :employee do
@@ -313,7 +311,7 @@ But if you're making changes and you decide to move from a module to a wrapper o
 ```ruby
 class Employment
   extend Surrounded::Context
-  
+
   initialize(:employee, :boss)
 
   role :employee, :wrapper do
@@ -346,7 +344,7 @@ end
 
 Now the `User` instances will be able to implicitly access objects in their environment.
 
-Via `method_missing` those `User` instances can access a `context` object it stores in an internal collection. 
+Via `method_missing` those `User` instances can access a `context` object it stores in an internal collection.
 
 Inside of the `Employment` context we saw above, the `employee` and `boss` objects are instances of `User` for this example.
 
@@ -442,7 +440,7 @@ context.triggers #=> [:plan_weekend_work]
 
 You might find that useful for dynamically defining user interfaces.
 
-Sometimes I'd rather not use this DSL, however. I want to just write regular methods. 
+Sometimes I'd rather not use this DSL, however. I want to just write regular methods.
 
 We can do that too. You'll need to opt in to this by specifying `trigger :your_method_name` for the methods you want to use.
 
@@ -454,7 +452,7 @@ class Employment
     employee.quit
   end
   trigger :plan_weekend_work
-  
+
   # or in Ruby 2.x
   trigger def plan_weekend_work
     employee.quit
@@ -487,12 +485,12 @@ By running `protect_triggers` you'll be able to define when triggers may or may 
 class Employment
   extend Surrounded::Context
   protect_triggers
-  
+
   def plan_weekend_work
     employee.quit
   end
   trigger :plan_weekend_work
-  
+
   disallow :plan_weekend_work do
     employee.bank_balance > 1000000
   end
@@ -627,14 +625,14 @@ class Organization
   extend Surrounded::Context
 
   initialize_without_keywords :leader, :members
-  
+
   role :members do
     # special behavior for the collection
   end
-  
+
   role :member do
     # special behavior to be applied to each member in the collection
-  end  
+  end
 end
 ```
 
@@ -643,7 +641,7 @@ end
 If you create a context object and need to use the same type of object with new role players, you may use the `rebind` method. It will clear any instance_variables from your context object and map the given objects to their names:
 
 ```ruby
-context = Employment.new(current_user, the_boss)
+context = Employment.new(employee: current_user, boss: the_boss)
 context.rebind(employee: another_user, boss: someone_else) # same context, new players
 ```
 
@@ -671,7 +669,7 @@ class ExpensiveCalculation
     end
   end
 end
-ExpensiveCalculation.new(some_object, some_collection).send_to_background(:do_expensive_calculation)
+ExpensiveCalculation.new(leader: some_object, members: some_collection).send_to_background(:do_expensive_calculation)
 ```
 
 The above example is merely pseudo-code to show how `initializer_arguments` can be used. Customize it according to your own needs.
@@ -686,14 +684,14 @@ Surrounded::Context.default_role_type = :module # also :wrap, :wrapper, or :inte
 
 class ActiviatingAccount
   extend Surrounded::Context
-  
+
   # set the default role type only for this class
   self.default_role_type = :module # also :wrap, :wrapper, or :interface
 
   # shortcut initialization code
   initialize(:activator, :account)
   # or handle it yourself
-  def initialize(activator, account)
+  def initialize(activator:, account:)
     # this must be done to handle the mapping of roles to objects
     # pass an array of arrays with role name symbol and the object for that role
     map_roles([[:activator, activator],[:account, account]])
@@ -707,18 +705,21 @@ class ActiviatingAccount
   # these also must be done if you create your own initialize method.
   # this is a shortcut for using attr_reader and private
   private_attr_reader :activator, :account
-  
+
   # If you need to mix default initialzation and extra work use a block
   initialize :activator, :account do
     map_roles(:third_party => get_some_other_object)
+    # explicitly set a single role
+    map_role(:something_new, 'SomeRoleConstant', object_to_play_the_role)
   end
-  # but remember to set the extra accessors:
-  private_attr_reader :third_party
 
-  # initialize with keyword arguments
-  keyword_initialize(:activator, :account)
-  # this makes the following instance method signature with required keyword arguments
-  def initialize(activator:, account:)
+  # but remember to set the extra accessors:
+  private_attr_reader :third_party, :something_new
+
+  # initialize without keyword arguments
+  initialize_without_keywords(:activator, :account)
+  # this makes the following instance method signature with positional arguments
+  def initialize(activator, account)
     # ...
   end
 
@@ -756,7 +757,7 @@ class ActiviatingAccount
   #   end
   # end
 
-  # if you use a regular method and want to use context-specific behavior, 
+  # if you use a regular method and want to use context-specific behavior,
   # you must handle storing the context yourself:
   def regular_method
     apply_behaviors # handles the adding of all the roles and behaviors
@@ -771,30 +772,30 @@ class ActiviatingAccount
   trigger :some_trigger_method do
     activator.some_behavior # behavior always available
   end
-  
+
   trigger def some_other_trigger
     activator.some_behavior # behavior always available
   end
-  
+
   def regular_non_trigger
     activator.some_behavior # behavior always available with the following line
   end
   trigger :regular_non_trigger # turns the method into a trigger
-  
+
   # create restrictions on what triggers may be used
   protect_triggers # <-- this is required if you want to protect your triggers this way.
   disallow :some_trigger_method do
     # whatever conditional code for the instance of the context
   end
   # you could also use `guard` instead of `disallow`
-  
+
   # or define your own method without the `disallow` keyword
   def disallow_some_trigger_method?
     # whatever conditional code for the instance of the context
   end
   # Prefer using `disallow` because it will wrap role players in their roles for you;
   # the `disallow_some_trigger_method?` defined above, does not.
-  
+
   # Create shortcuts for triggers as class methods
   # so you can do ActiviatingAccount.some_trigger_method(activator, account)
   # This will make all triggers shortcuts.
@@ -804,11 +805,11 @@ class ActiviatingAccount
     instance = self.new(activator, account)
     instance.some_trigger_method
   end
-  
+
   # Set triggers to always return the context object
   # so you can enforce East-oriented style or Tell, Don't Ask
   east_oriented_triggers
-  
+
   # Forward context instance methods as triggers to role players
   forward_trigger :role_name, :method_name
   forward_trigger :role_name, :method_name, :alternative_trigger_name_for_method_name
@@ -816,7 +817,7 @@ class ActiviatingAccount
   forwarding [:list, :of, :methods, :to, :forward] => :role_name
 end
 
-# with keyword_initialize (will be changed to initialize)
+# with initialize (also keyword_initialize)
 context = ActiviatingAccount.new(activator: some_object, account: some_account)
 # with initialize (this will be moved to initialize_without_keywords)
 context = ActiviatingAccount.new(some_object, some_account)
@@ -1072,7 +1073,7 @@ And then execute:
 Or install it yourself as:
 
     $ gem install surrounded
-    
+
 ## Installation for Rails
 
 See [surrounded-rails](https://github.com/saturnflyer/surrounded-rails)
