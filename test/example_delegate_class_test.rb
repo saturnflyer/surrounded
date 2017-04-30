@@ -21,7 +21,7 @@ end
 
 describe DelegateClassContext do
   let(:context){
-    DelegateClassContext.new(User.new('jim'), Object.new)
+    DelegateClassContext.new(user: User.new('jim'), task: Object.new)
   }
   it 'wraps objects using DelegateClass' do
     assert_equal 'hello from the admin DelegateClass wrapper!', context.do_something

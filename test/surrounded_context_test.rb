@@ -3,7 +3,7 @@ require 'test_helper'
 describe Surrounded::Context, '#triggers' do
   let(:user){ User.new("Jim") }
   let(:other_user){ User.new("Guille") }
-  let(:context){ TestContext.new(user, other_user) }
+  let(:context){ TestContext.new(user: user, other_user: other_user) }
 
   it 'lists the externally accessible trigger methods' do
     assert context.triggers.include?(:access_other_object)
@@ -31,7 +31,7 @@ end
 describe Surrounded::Context, '.trigger' do
   let(:user){ User.new("Jim") }
   let(:other_user){ User.new("Guille") }
-  let(:context){ TestContext.new(user, other_user) }
+  let(:context){ TestContext.new(user: user, other_user: other_user) }
 
   it 'defines a public method on the context' do
     assert context.respond_to?(:access_other_object)
@@ -78,7 +78,7 @@ describe Surrounded::Context, '#role?' do
     end
     external_object
   }
-  let(:context){ TestContext.new(user, other_user) }
+  let(:context){ TestContext.new(user: user, other_user: other_user) }
 
   it 'returns the object assigned to the named role' do
     assert_equal user, user.get_role(:user, context)
@@ -101,7 +101,7 @@ describe Surrounded::Context, '#role_player?' do
   let(:player){ User.new("Jim") }
   let(:other_player){ User.new("Amy") }
   let(:non_player){ User.new("Guille") }
-  let(:context){ TestContext.new(player, other_player) }
+  let(:context){ TestContext.new(user: player, other_user: other_player) }
 
   it 'is true if the given object is a role player' do
     expect(context.role_player?(player)).must_equal true
@@ -181,7 +181,7 @@ describe Surrounded::Context, 'assigning roles' do
 
   let(:user){ User.new("Jim") }
   let(:other_user){ CastingUser.new("Guille") }
-  let(:context){ RoleAssignmentContext.new(user, other_user) }
+  let(:context){ RoleAssignmentContext.new(user: user, other_user: other_user) }
 
   it 'tries to use casting to add roles' do
     refute_includes(context.other_user_ancestors, RoleAssignmentContext::OtherUser)
@@ -199,7 +199,7 @@ describe Surrounded::Context, 'assigning roles' do
   it 'will use classes as roles' do
     user = User.new('Jim')
 
-    context = ClassRoleAssignmentContext.new(user, self)
+    context = ClassRoleAssignmentContext.new(thing: user, the_test: self)
 
     assert context.check_user_response
   end
@@ -207,7 +207,7 @@ describe Surrounded::Context, 'assigning roles' do
   it 'does not use constants defined outside the context class' do
     special = User.new('Special')
     other = User.new('Other')
-    context = IgnoreExternalConstantsContext.new(user, special, other)
+    context = IgnoreExternalConstantsContext.new(user: user, special: special, other: other)
     assert_equal User, context.check_special
   end
 end

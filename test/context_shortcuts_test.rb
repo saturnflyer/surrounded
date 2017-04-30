@@ -21,6 +21,6 @@ describe Surrounded::Context, 'shortcuts' do
   let(:user){ User.new("Jim") }
   let(:other){ User.new("Guille") }
   it 'creates shortcut class methods for triggers' do
-    assert_equal 'it works, shorty!', ShortcutContext.shorty(user, other)
+    assert_equal 'it works, shorty!', ShortcutContext.shorty(user: user, other: other)
   end
 end

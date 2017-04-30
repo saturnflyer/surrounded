@@ -49,7 +49,7 @@ describe Surrounded::Context, 'custom role application' do
   let(:user){ User.new('Jim') }
   let(:other){ User.new('Amy') }
 
-  let(:context){ PrependedRoles.new(user, other) }
+  let(:context){ PrependedRoles.new(user: user, other: other) }
 
   it 'allows you to override existing methods on a role player' do
     assert_equal "Not what you thought, Jim", context.get_name

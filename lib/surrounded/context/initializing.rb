@@ -7,16 +7,12 @@ module Surrounded
         parameters = setup_args.join(',')
         default_initializer(parameters, setup_args, &block)
       end
-      def initialize(*setup_args, &block)
-        warn "Deprecated: The behavior of 'initialize' will require keywords in the future
-            Consider using keyword arguments or switching to 'initialize_without_keywords'\n\n"
-        initialize_without_keywords(*setup_args, &block)
-      end
 
-      def keyword_initialize(*setup_args, &block)
+      def initialize(*setup_args, &block)
         parameters = setup_args.map{|a| "#{a}:"}.join(',')
         default_initializer(parameters, setup_args, &block)
       end
+      alias keyword_initialize initialize
       alias initialize_with_keywords keyword_initialize
 
       def initializer_block

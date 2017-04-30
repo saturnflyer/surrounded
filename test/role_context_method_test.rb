@@ -69,7 +69,7 @@ describe Surrounded::Context, '.role' do
  
   describe 'interfaces' do
     let(:context){
-      InterfaceContext.new(Hello.new, Hello.new)
+      InterfaceContext.new(admin: Hello.new, other: Hello.new)
     }
     it 'sets interface objects to use interface methods before singleton methods' do
       assert_equal 'hello from admin', context.admin_hello
@@ -121,7 +121,7 @@ describe Surrounded::Context, '.role' do
           the_test.assert_kind_of SimpleDelegator, admin
         end
       end
-      context = CustomDefaultWrap.new(Object.new, self)
+      context = CustomDefaultWrap.new(admin: Object.new, the_test: self)
       context.check_admin_type
     end
  
@@ -142,7 +142,7 @@ describe Surrounded::Context, '.role' do
           end
         end
  
-        context = CustomGlobalDefault.new(Object.new, self)
+        context = CustomGlobalDefault.new(admin: Object.new, the_test: self)
         context.check_admin_type
       ensure
         Surrounded::Context.default_role_type = old_default

@@ -39,7 +39,7 @@ describe Surrounded::Context, 'auto-assigning roles for collections' do
   let(:other_two){ User.new('Jason') }
   let(:others){ [other_one, other_two] }
 
-  let(:context){ CollectionContext.new(members, others) }
+  let(:context){ CollectionContext.new(members: members, others: others) }
 
   it 'assigns the collection role to collections' do
     assert_equal members.size, context.get_members_count

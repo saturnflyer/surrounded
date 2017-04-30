@@ -16,7 +16,7 @@ describe "Surrounded" do
   let(:external_user){ User.new("External User") }
 
   let(:context){
-    TestContext.new(jim, guille)
+    TestContext.new(user: jim, other_user: guille)
   }
 
   it "has access to objects in the context" do
@@ -46,7 +46,7 @@ describe "Surrounded", "added to an existing object" do
 
     other = User.new('Guille')
 
-    context = TestContext.new(thing, other)
+    context = TestContext.new(user: thing, other_user: other)
     assert context.access_other_object
   end
 end

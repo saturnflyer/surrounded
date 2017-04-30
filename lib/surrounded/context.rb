@@ -53,7 +53,7 @@ module Surrounded
     def default_role_type=(type)
       @default_role_type = type
     end
-    
+
     # Provide the ability to create access control methods for your triggers.
     def protect_triggers;  self.extend(::Surrounded::AccessControl); end
 
@@ -68,7 +68,7 @@ module Surrounded
     def role_const_defined?(name)
       const_defined?(name, false)
     end
-    
+
     # Set a named constant and make it private
     def private_const_set(name, const)
       unless role_const_defined?(name)
@@ -119,11 +119,13 @@ module Surrounded
         self.class.triggers
       end
 
-      def rebind(options_hash)
+      def rebind(**options_hash)
         clear_instance_variables
-        initialize(**options_hash)
-      rescue ArgumentError
-        initialize(*options_hash.values)
+        begin
+          initialize(options_hash)
+        rescue ArgumentError
+          initialize(*options_hash.values)
+        end
         self
       end
 
@@ -193,7 +195,7 @@ module Surrounded
         return obj if !wrapper_name
         klass.method(wrapper_name).call(obj)
       end
-      
+
       def remove_behavior(role, behavior, object)
         if behavior && role_const_defined?(behavior)
           remover_name = (module_removal_methods + unwrap_methods).find do |meth|

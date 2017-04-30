@@ -3,7 +3,7 @@ require 'test_helper'
 describe Surrounded::Context, 'reusing context object' do
   let(:user){ User.new("Jim") }
   let(:other_user){ User.new("Guille") }
-  let(:context){ TestContext.new(user, other_user) }
+  let(:context){ TestContext.new(user: user, other_user: other_user) }
 
   it 'allows rebinding new players' do
     expect(context.access_other_object).must_equal 'Guille'

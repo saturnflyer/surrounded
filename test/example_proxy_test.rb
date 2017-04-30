@@ -66,7 +66,7 @@ describe ProxyContext do
     OpenStruct.new(name: 'GTD')
   }
   let(:context){
-    ProxyContext.new(user, task)
+    ProxyContext.new(admin: user, task: task)
   }
   it 'proxys methods between objects and its interface' do
     assert_equal 'hello from Jim, the admin interface!', context.do_something
@@ -105,7 +105,7 @@ describe ProxyContext do
   end
 
   it 'allows Surrounded objects to interact with others' do
-    assert context.rebind(user: User.new('Surrounded'), task: task).talking
+    assert context.rebind(admin: User.new('Surrounded'), task: task).talking
   end
 
   it 'works with frozen and primitive objects' do

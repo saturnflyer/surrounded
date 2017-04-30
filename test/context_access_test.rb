@@ -37,7 +37,7 @@ end
 describe Surrounded::Context, 'access control' do
   let(:user){ User.new("Jim") }
   let(:other_user){ User.new("Guille") }
-  let(:context){ FilteredContext.new(user, other_user) }
+  let(:context){ FilteredContext.new(user: user, other_user: other_user) }
   
   it 'includes triggers when allowed' do
     context.stub(:disallow_if_ready?, false) do

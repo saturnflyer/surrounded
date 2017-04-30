@@ -54,7 +54,7 @@ describe ThreadedContext do
   let(:members){ [amy, guille, jason, dave] }
 
   it 'works in multi-threaded environments' do
-    meeting = ThreadedContext.new(jim, members)
+    meeting = ThreadedContext.new(leader: jim, members: members)
 
     result = meeting.meet
 

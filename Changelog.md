@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0]
+
+- Drop deprecations around Context initialize method. It now requires keyword arguments. Non-keyword argumennts may be used with initialize_without_keywords
+
 ## [0.9.11]
 
 - Rely on the standard library Forwardable to setup how the RoleMap forwards messages to the container.

@@ -38,7 +38,7 @@ end
 describe Surrounded::Context, 'forwarding triggers' do
   let(:user){ User.new("Jim") }
   let(:other_user){ User.new("Guille") }
-  let(:context){ Sending.new(user, other_user) }
+  let(:context){ Sending.new(one: user, two: other_user) }
   
   it 'forwards multiple configured instance methods as triggers' do
     assert_equal 'hello', context.hello
