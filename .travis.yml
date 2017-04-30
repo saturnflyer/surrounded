@@ -3,9 +3,9 @@ before_install:
 language: ruby
 cache: bundler
 rvm:
-  - 2.3.1
-  - 2.2.5
-  - 2.1.10
+  - 2.4.1
+  - 2.3.4
+  - 2.2.7
   - ruby-head
   - jruby-head
 env:
