@@ -819,7 +819,7 @@ end
 
 # with initialize (also keyword_initialize)
 context = ActiviatingAccount.new(activator: some_object, account: some_account)
-# with initialize (this will be moved to initialize_without_keywords)
+# with initialize_without_keywords
 context = ActiviatingAccount.new(some_object, some_account)
 context.triggers # => lists a Set of triggers
 # when using protect_triggers
