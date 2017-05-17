@@ -53,13 +53,13 @@ There are 2 things left to do:
 
 Initializing contexts does not require the use of keyword arguments, but you may opt out.
 
-You should consider using explicit names when initialize now by using `initialize_without_keywords`:
+You should consider using explicit names when initializing now by using `initialize_without_keywords`:
 
 ```ruby
 class Employment
   extend Surrounded::Context
 
-  initialize_withou_keywords :employee, :boss
+  initialize_without_keywords :employee, :boss
 end
 
 user1 = User.find(1)
