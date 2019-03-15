@@ -918,9 +918,9 @@ class MyCustomContext
 end
 ```
 
-You can remember the method name by the convention that `remove` or `apply` describes it's function, `behavior` refers to the first argument (thet contsant holding the behaviors), and then the name of the role which refers to the role playing object: `remove_behavior_role`.
+You can remember the method name by the convention that `remove` or `apply` describes it's function, `behavior` refers to the first argument (the constant holding the behaviors), and then the name of the role which refers to the role playing object: `remove_behavior_role`.
 
-##Name collisions between methods and roles
+## Name collisions between methods and roles
 
 Lets say that you wish to create a context as below, intending to use instances of the following two classes as role players:
 
