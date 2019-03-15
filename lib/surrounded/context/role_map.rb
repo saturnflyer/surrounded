@@ -27,16 +27,19 @@ module Surrounded
         @container ||= self.class.instance_variable_get(:@container_class).new
       end
 
+      # Check if a role exists in the map
       def role?(role)
         keys.include?(role)
       end
 
+      # Check if an object is playing a role in this map
       def role_player?(object)
         !values(object).empty?
       rescue self.container.class::ItemNotPresent
         false
       end
 
+      # Get the object playing the given role
       def assigned_player(role)
         values(role).first
       end

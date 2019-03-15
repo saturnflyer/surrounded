@@ -636,6 +636,22 @@ class Organization
 end
 ```
 
+If you want to change the way the singular verson of a role is used, override `singularize_name`:
+
+```ruby
+class Organization
+  extend Surrounded::Context
+
+  def singularize_name(name)
+    if name == "my special rule"
+      # do your thing
+    else
+      super # use the default
+    end
+  end
+end
+```
+
 ## Reusing context objects
 
 If you create a context object and need to use the same type of object with new role players, you may use the `rebind` method. It will clear any instance_variables from your context object and map the given objects to their names:
@@ -834,6 +850,20 @@ context.rebind(activator: another_object, account: another_account)
 ## Dependencies
 
 The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need. The [Triad](http://github.com/saturnflyer/triad) project was written specifically to manage the mapping of roles and objects to the modules which contain the behaviors. It is used in Surrounded to keep track of role player, roles, and role constant names but it is not a hard requirement. You may implement your own but presently you'll need to dive into the implementation to fully understand how. Future updates may provide better support and guidance.
+
+If you want to override the class used for mapping roles to behaviors, override the `role_map` method.
+
+```ruby
+class MyContext
+  extend Surrounded::Context
+
+  def role_map
+    @container ||= role_mapper_class.new(base: MySpecialDataContainer)
+  end
+end
+```
+
+The class you provide will be initialized with `new` and is expected to implement the methods: `:update`, `:each`, `:values`, and `:keys`.
 
 If you're using [Casting](http://github.com/saturnflyer/casting), for example, Surrounded will attempt to use that before extending an object, but it will still work without it.
 
