@@ -122,7 +122,7 @@ module Surrounded
       def rebind(**options_hash)
         clear_instance_variables
         begin
-          initialize(options_hash)
+          initialize(**options_hash)
         rescue ArgumentError
           initialize(*options_hash.values)
         end
