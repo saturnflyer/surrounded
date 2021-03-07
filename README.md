@@ -1,7 +1,7 @@
 # ![Surrounded](http://saturnflyer.github.io/surrounded/images/surrounded.png "Surrounded")
 ## Be in control of business logic.
 
-[![Build Status](https://travis-ci.org/saturnflyer/surrounded.png?branch=master)](https://travis-ci.org/saturnflyer/surrounded)
+[![Build Status](https://github.com/saturnflyer/surrounded/actions/workflows/test.yml/badge.svg)
 [![Code Climate](https://codeclimate.com/github/saturnflyer/surrounded.png)](https://codeclimate.com/github/saturnflyer/surrounded)
 
 Surrounded is designed to help you better manage your business logic by keeping cohesive behaviors together. Bring objects together to implement your use cases and gain behavior only when necessary.
