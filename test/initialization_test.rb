@@ -28,7 +28,7 @@ describe Surrounded::Context, '.initialize' do
     err = assert_raises(ArgumentError){
       KeywordContext.new(other_user: User.new('Amy'))
     }
-    assert_match(/missing keyword: user/, err.message)
+    assert_match(/missing keyword: :?user/, err.message)
   end
 end
 
