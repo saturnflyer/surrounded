@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1]
+
+- Fix a bug where shortcut_triggers would not work with keyword initialize
+
 ## [1.0.0]
 
 - Drop deprecations around Context initialize method. It now requires keyword arguments. Non-keyword argumennts may be used with initialize_without_keywords
