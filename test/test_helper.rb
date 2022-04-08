@@ -1,6 +1,6 @@
 require 'simplecov'
 require 'minitest/autorun'
-SimpleCov.start
+SimpleCov.start unless defined?(Coverage)
 
 require 'surrounded'
 require 'surrounded/context'
