@@ -54,7 +54,7 @@ module Surrounded
 
       def define_trigger(name)
         line = __LINE__; self.class_eval %{
-          def #{name}(*args, &block)
+          def #{name}(...)
             begin
               apply_behaviors
 
@@ -71,7 +71,7 @@ module Surrounded
         if method_defined?(name)
           %{super}
         else
-          %{self.send("__trigger_#{name}", *args, &block)}
+          %{self.send("__trigger_#{name}", ...)}
         end
       end
       
