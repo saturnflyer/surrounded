@@ -33,12 +33,10 @@ module Surrounded
       mod = Module.new
       mod.class_eval {
         define_method "disallow_#{name}?" do
-          begin
-            apply_behaviors
-            instance_exec(&block)
-          ensure
-            remove_behaviors
-          end
+          apply_behaviors
+          instance_exec(&block)
+        ensure
+          remove_behaviors
         end
       }
       const_set("SurroundedAccess#{name}", mod)
@@ -55,21 +53,15 @@ module Surrounded
       # in disallow blocks.
       def triggers
         all_triggers.select {|name|
-          method_restrictor = "disallow_#{name}?"
-          !self.respond_to?(method_restrictor, true) || !self.send(method_restrictor)
+          allow?(name)
         }.to_set
       end
 
       # Ask if the context will allow access to a trigger given the current players.
       def allow?(name)
-        unless self.respond_to?(name)
-          raise NoMethodError, %{undefined method `#{name}' for #{self.inspect}}
-        end
-        if self.respond_to?("disallow_#{name}?")
-          !self.public_send("disallow_#{name}?")
-        else
-          true
-        end
+        raise NoMethodError, %{undefined method `#{name}' for #{self.inspect}} unless self.respond_to?(name)
+        predicate = "disallow_#{name}?"
+        !self.respond_to?(predicate) || !self.public_send(predicate)
       end
     end
   end

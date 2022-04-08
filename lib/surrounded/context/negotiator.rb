@@ -15,8 +15,8 @@ module Surrounded
           # circumvent method_missing
           mod.instance_methods(false).each do |meth|
             num = __LINE__; klass.class_eval %{
-              def #{meth}(*args, &block)
-                __behaviors__.instance_method(:#{meth}).bind(@object).call(*args, &block)
+              def #{meth}(...)
+                __behaviors__.instance_method(:#{meth}).bind(@object).call(...)
               end
             }, __FILE__, num
           end
@@ -57,8 +57,8 @@ module Surrounded
         @object = object
       end
 
-      def method_missing(meth, *args, &block)
-        @object.send(meth, *args, &block)
+      def method_missing(meth, ...)
+        @object.send(meth, ...)
       end
 
       def respond_to_missing?(meth, include_private=false)

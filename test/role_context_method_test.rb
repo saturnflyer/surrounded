@@ -53,10 +53,34 @@ describe Surrounded::Context, '.role' do
       def hello
         'hello from admin'
       end
+
+      def splat_args(*args)
+        args
+      end
+
+      def keyword_args(**kwargs)
+        kwargs
+      end
+
+      def mixed_args(*args, **kwargs)
+        [args, kwargs]
+      end
     end
  
     trigger :admin_hello do
       admin.hello
+    end
+
+    trigger :splat_args do |*args|
+      admin.splat_args(*args)
+    end
+
+    trigger :keyword_args do |**kwargs|
+      admin.keyword_args(**kwargs)
+    end
+
+    trigger :mixed_args do |*args, **kwargs|
+      admin.mixed_args(*args, **kwargs)
     end
   end
  
@@ -84,6 +108,18 @@ describe Surrounded::Context, '.role' do
  
     it 'creates a private accessor method' do
       assert context.respond_to?(:admin, true)
+    end
+
+    it 'works with multiple args' do
+      assert_equal context.splat_args("one", "two"), %w[ one two ]
+    end
+
+    it 'works with multiple keyword args' do
+      assert_equal context.keyword_args(one: "one", two: "two"), { one: "one", two: "two" }
+    end
+
+    it 'works with multiple mixed args' do
+      assert_equal context.mixed_args("one", :two, three: "three", four: "four"), [["one", :two], { three: "three", four: "four" }]
     end
   end
  

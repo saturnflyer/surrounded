@@ -6,6 +6,8 @@ module Surrounded
       extend Forwardable
 
       class << self
+        # Get the role map container and provide an alternative if desired
+        # Ex: RoleMap.from_base(SomeCustomContainer)
         def from_base(klass=::Triad)
           unless const_defined?(:Container)
             role_mapper = Class.new(self)
