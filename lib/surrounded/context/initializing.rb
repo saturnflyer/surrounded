@@ -1,6 +1,7 @@
 module Surrounded
   module Context
     module Initializing
+      extend Seclusion
       # Shorthand for creating an instance level initialize method which
       # handles the mapping of the given arguments to their named role.
       def initialize_without_keywords(*setup_args, &block)

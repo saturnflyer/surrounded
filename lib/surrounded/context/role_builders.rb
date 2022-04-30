@@ -3,6 +3,7 @@ module Surrounded
     class InvalidRoleType < ::StandardError; end
 
     module RoleBuilders
+      extend Seclusion
 
       def self.extended(base)
         Surrounded::Exceptions.define(base, exceptions: :InvalidRoleType)

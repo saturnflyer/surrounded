@@ -1,6 +1,7 @@
 require 'set'
 require 'surrounded/exceptions'
 require 'surrounded/context/role_map'
+require 'surrounded/context/seclusion'
 require 'surrounded/context/role_builders'
 require 'surrounded/context/initializing'
 require 'surrounded/context/forwarding'
@@ -20,7 +21,7 @@ module Surrounded
   module Context
     def self.extended(base)
       base.class_eval {
-        extend RoleBuilders, Initializing, Forwarding, NameCollisionDetector
+        extend Seclusion, RoleBuilders, Initializing, Forwarding, NameCollisionDetector
 
         @triggers = Set.new
         include InstanceMethods
@@ -67,21 +68,6 @@ module Surrounded
 
     def role_const_defined?(name)
       const_defined?(name, false)
-    end
-
-    # Set a named constant and make it private
-    def private_const_set(name, const)
-      unless role_const_defined?(name)
-        const = const_set(name, const)
-        private_constant name.to_sym
-      end
-      const
-    end
-
-    # Create attr_reader for the named methods and make them private
-    def private_attr_reader(*method_names)
-      attr_reader(*method_names)
-      private(*method_names)
     end
 
     # Conditional const_get for a named role behavior
