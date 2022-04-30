@@ -105,6 +105,7 @@ module Surrounded
         self.class.triggers
       end
 
+      # Reuse the same context object but pass new values
       def rebind(**options_hash)
         clear_instance_variables
         begin
