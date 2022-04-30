@@ -52,7 +52,7 @@ class Countdown
     end
     
     def next_part
-      context.class.new(singer, number.pred, location)
+      context.class.new(singer: singer, number: number.pred, location: location)
     end
   end
   
@@ -141,5 +141,5 @@ class Sheet
   end
 end
 
-Countdown.new(Chorus.new, 3, Wall.new).start
-# Countdown.new(Sheet.new, 3, Box.new).start
+Countdown.new(singer: Chorus.new, number: 3, location: Wall.new).start
+# Countdown.new(singer: Sheet.new, number: 3, location: Box.new).start
