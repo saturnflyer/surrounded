@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0]
+
+- Dropped support for Ruby below 2.7 to take advantage of the ellipsis for argument forwarding
+
 ## [1.0.1]
 
 - Fix a bug where shortcut_triggers would not work with keyword initialize
