@@ -34,6 +34,10 @@ class BottleVerse
   end
 
   role :bottle_number, :wrapper do
+    def self.handles(number)
+      BottleVerse.register_bottle_role(number, self)
+    end
+
     def to_s
       "#{quantity} #{container}"
     end
@@ -59,25 +63,6 @@ class BottleVerse
     end
   end
 
-  def map_role_bottle_number(num)
-    map_role(:bottle_number, bottle_role_for(num), num)
-  end
-
-  def bottle_role_for(number)
-    case number
-    when 0
-      BottleNumber0
-    when 1
-      BottleNumber1
-    else
-      BottleNumber
-    end
-  end
-
-  def bottle_role_player(number)
-    bottle_role_for(number).new(number)
-  end
-
   # Inherit from existing role
   def self.bottle_role(name, &block)
     mod_name = RoleName(name)
@@ -85,7 +70,26 @@ class BottleVerse
     const_set(mod_name, klass)
   end
 
+  def self.register_bottle_role(number, klass)
+    @@registry ||= Hash.new { BottleNumber }
+    @@registry[number] = klass
+  end
+
+  def bottle_role_for(number)
+    @@registry[number]
+  end
+
+  def map_role_bottle_number(num)
+    map_role(:bottle_number, bottle_role_for(num), num)
+  end
+
+  def bottle_role_player(number)
+    bottle_role_for(number).new(number)
+  end
+
   role :bottle_number_0, :bottle_role do
+    handles 0
+
     def quantity
       "no more"
     end
@@ -100,6 +104,8 @@ class BottleVerse
   end
 
   role :bottle_number_1, :bottle_role do
+    handles 1
+
     def container
       "bottle"
     end
