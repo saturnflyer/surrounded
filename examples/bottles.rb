@@ -1,5 +1,4 @@
-require 'surrounded'
-require "debug"
+require "surrounded"
 class CountdownSong
   extend Surrounded::Context
 
@@ -60,8 +59,8 @@ class BottleVerse
     end
   end
 
-  def bottle_role_player(number)
-    bottle_role_for(number).new(number)
+  def map_role_bottle_number(num)
+    map_role(:bottle_number, bottle_role_for(num), num)
   end
 
   def bottle_role_for(number)
@@ -75,8 +74,8 @@ class BottleVerse
     end
   end
 
-  def map_role_bottle_number(num)
-    map_role(:bottle_number, bottle_role_for(num), num)
+  def bottle_role_player(number)
+    bottle_role_for(number).new(number)
   end
 
   # Inherit from existing role
@@ -118,15 +117,15 @@ class Bottles
     CountdownSong.new(max: upper, min: lower)
   end
 
-  trigger :song do
+  def song
     song_template.sing_with(BottleVerse)
   end
 
-  trigger :verses do |upper, lower|
+  def verses(upper, lower)
     song_template(upper: upper, lower: lower).sing_with(BottleVerse)
   end
 
-  trigger :verse do |number|
+  def verse(number)
     song_template.verse(number, BottleVerse)
   end
 end
