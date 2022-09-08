@@ -1,7 +1,5 @@
 require "surrounded"
 class CountdownSong
-  extend Surrounded::Context
-
   def initialize(max:, min:)
     @max = max
     @min = min
@@ -117,8 +115,6 @@ class BottleVerse
 end
 
 class Bottles
-  extend Surrounded::Context
-
   def song_template(upper: 99, lower: 0)
     CountdownSong.new(max: upper, min: lower)
   end
