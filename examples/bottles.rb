@@ -1,145 +1,134 @@
 require 'surrounded'
-
-class Countdown
+require "debug"
+class CountdownSong
   extend Surrounded::Context
-  
-  initialize :singer, :number, :location
-  
-  trigger :start do
-    singer.start
+
+  def initialize(max:, min:)
+    @max = max
+    @min = min
   end
-  
-  trigger :continue do
-    singer.continue
+  attr_reader :max, :min
+
+  def sing_with(verse_template)
+    max.downto(min).map { |num| verse(num, verse_template) }
   end
-  
-  trigger :finish do
-    singer.announce_status
+
+  def verse(number, verse_template)
+    verse_template.lyrics(number)
   end
-  
-  role :singer do
-    def start
-      announce_full_status
-      take_action
-    end
-    
-    def continue
-      announce_status
-      pause
-      start
-    end
-    
-    def announce_full_status
-      output %{#{location.status}, #{location.inventory}}.capitalize
-    end
-    
-    def announce_status
-      output %{#{location.status}}.capitalize
-    end
-    
-    def take_action
-      if location.empty?
-        output %{Go to the store and get some more}
-        next_part.finish
-      else
-        output %{#{location.subtraction}, pass it around}.capitalize
-        next_part.continue
-      end
-    end
-    
-    def pause
-      output ""
-    end
-    
-    def next_part
-      context.class.new(singer: singer, number: number.pred, location: location)
-    end
+end
+
+class BottleVerse
+  def self.lyrics(number)
+    new(bottle_number: number).lyrics
   end
-  
-  role :number, :wrap do
-    def name
-      self.zero? ? 'no more' : to_i
+
+  extend Surrounded::Context
+
+  initialize :bottle_number
+
+  trigger :lyrics do
+    "#{bottle_number} of beer on the wall, ".capitalize +
+    "#{bottle_number} of beer.\n" +
+    "#{bottle_number.action}, " +
+    "#{bottle_number.successor} of beer on the wall.\n"
+  end
+
+  role :bottle_number, :wrapper do
+    def to_s
+      "#{quantity} #{container}"
     end
-    
-    def pronoun
-      self == 1 ? 'it' : 'one'
+
+    def quantity
+      __getobj__.to_s
     end
-    
+
     def container
-      self == 1 ? 'bottle' : 'bottles'
+      "bottles"
     end
-    
-    def pred
-      self.zero? ? 99 : super
+
+    def action
+      "Take #{pronoun} down and pass it around"
+    end
+
+    def pronoun
+      "one"
+    end
+
+    def successor
+      context.bottle_role_player(pred)
     end
   end
-  
-  role :location do
-    def empty?
-      number.zero?
+
+  def bottle_role_player(number)
+    bottle_role_for(number).new(number)
+  end
+
+  def bottle_role_for(number)
+    case number
+    when 0
+      BottleNumber0
+    when 1
+      BottleNumber1
+    else
+      BottleNumber
     end
-    
-    def inventory
-      %{#{number.name} #{number.container} of beer}
+  end
+
+  def map_role_bottle_number(num)
+    map_role(:bottle_number, bottle_role_for(num), num)
+  end
+
+  # Inherit from existing role
+  def self.bottle_role(name, &block)
+    mod_name = RoleName(name)
+    klass = Class.new(BottleNumber, &block)
+    const_set(mod_name, klass)
+  end
+
+  role :bottle_number_0, :bottle_role do
+    def quantity
+      "no more"
     end
-    
-    def status
-      %{#{inventory} #{placement} #{name}}
+
+    def action
+      "Go to the store and buy some more"
     end
-    
-    def subtraction
-      %{take #{number.pronoun} #{removal_strategy}}
+
+    def successor
+      context.bottle_role_player(99)
+    end
+  end
+
+  role :bottle_number_1, :bottle_role do
+    def container
+      "bottle"
+    end
+
+    def pronoun
+      "it"
     end
   end
 end
 
-class Location
-  include Surrounded
-  
-  def placement
-    'on'
+class Bottles
+  extend Surrounded::Context
+
+  def song_template(upper: 99, lower: 0)
+    CountdownSong.new(max: upper, min: lower)
   end
-  
-  def removal_strategy
-    'off'
+
+  trigger :song do
+    song_template.sing_with(BottleVerse)
   end
-  
-  def name
-    "the " + self.class.to_s.downcase
+
+  trigger :verses do |upper, lower|
+    song_template(upper: upper, lower: lower).sing_with(BottleVerse)
+  end
+
+  trigger :verse do |number|
+    song_template.verse(number, BottleVerse)
   end
 end
 
-class Wall < Location
-  def removal_strategy
-    'down'
-  end
-end
-
-class Box < Location
-  def placement
-    'in'
-  end
-  
-  def removal_strategy
-    'out'
-  end
-end
-
-class Chorus
-  include Surrounded
-  def output(value)
-    STDOUT.puts(value)
-  end
-end
-
-class Sheet
-  include Surrounded
-  def output(value)
-    File.open('bottles.txt', 'a') do |f|
-      f.puts(value)
-    end
-  end
-end
-
-Countdown.new(singer: Chorus.new, number: 3, location: Wall.new).start
-# Countdown.new(singer: Sheet.new, number: 3, location: Box.new).start
+puts Bottles.new.song
