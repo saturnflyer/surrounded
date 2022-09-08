@@ -840,7 +840,7 @@ context = ActiviatingAccount.new(some_object, some_account)
 context.triggers # => lists a Set of triggers
 # when using protect_triggers
 context.triggers # => lists a Set of triggers which may currently be called
-context.triggers # => lists a Set of all triggers (the same as if protect_triggers was _not_ used)
+context.all_triggers # => lists a Set of all triggers (the same as if protect_triggers was _not_ used)
 context.allow?(:trigger_name) # => returns a boolean if the trigger may be run
 
 # reuse the context object with new role players
