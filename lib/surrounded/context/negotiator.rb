@@ -16,7 +16,8 @@ module Surrounded
           mod.instance_methods(false).each do |meth|
             num = __LINE__; klass.class_eval %{
               def #{meth}(...)
-                __behaviors__.instance_method(:#{meth}).bind(@object).call(...)
+                @#{meth}_method ||= __behaviors__.instance_method(:#{meth}).bind(@object)
+                @#{meth}_method.call(...)
               end
             }, __FILE__, num
           end
