@@ -53,7 +53,7 @@ module Surrounded
       end
 
       def define_trigger(name)
-        line = __LINE__; self.class_eval %{
+        class_eval <<~MOD, __FILE__, __LINE__ + 1
           def #{name}(...)
             begin
               apply_behaviors
@@ -64,9 +64,9 @@ module Surrounded
               remove_behaviors
             end
           end
-        }, __FILE__, line
+        MOD
       end
-    
+
       def trigger_return_content(name)
         if method_defined?(name)
           %{super}
