@@ -35,8 +35,6 @@ module Surrounded
       }
     end
 
-    private
-
     # Set the default type of implementation for role methods for all contexts.
     def self.default_role_type
       @default_role_type ||= :module
@@ -45,6 +43,8 @@ module Surrounded
     class << self
       attr_writer :default_role_type
     end
+
+    private
 
     def default_role_type
       @default_role_type ||= Surrounded::Context.default_role_type

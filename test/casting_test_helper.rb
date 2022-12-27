@@ -1,6 +1,6 @@
-require 'test_helper'
+require "test_helper"
 
-require 'casting'
+require "casting"
 class CastingUser < User
   include Casting::Client
   delegate_missing_methods

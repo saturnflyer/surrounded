@@ -14,12 +14,12 @@ module Surrounded
           # For each method in the module, directly forward to the wrapped object to
           # circumvent method_missing
           mod.instance_methods(false).each do |meth|
-            num = __LINE__; klass.class_eval %{
+            klass.class_eval <<~MOD, __FILE__, __LINE__ + 1
               def #{meth}(...)
                 @#{meth}_method ||= __behaviors__.instance_method(:#{meth}).bind(@object)
                 @#{meth}_method.call(...)
               end
-            }, __FILE__, num
+            MOD
           end
           klass
         end

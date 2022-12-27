@@ -1,4 +1,5 @@
-require 'test_helper'
+require "test_helper"
+require "casting_test_helper"
 
 class CollectionContext
   extend Surrounded::Context
