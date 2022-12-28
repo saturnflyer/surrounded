@@ -1,5 +1,5 @@
-require 'triad'
-require 'forwardable'
+require "triad"
+require "forwardable"
 module Surrounded
   module Context
     class RoleMap
@@ -8,19 +8,17 @@ module Surrounded
       class << self
         # Get the role map container and provide an alternative if desired
         # Ex: RoleMap.from_base(SomeCustomContainer)
-        def from_base(klass=::Triad)
+        def from_base(klass = ::Triad)
           unless const_defined?(:Container)
             role_mapper = Class.new(self)
-            role_mapper.container_class=(klass)
+            role_mapper.container_class = (klass)
             Surrounded::Exceptions.define(role_mapper, exceptions: :ItemNotPresent, namespace: klass)
             const_set(:Container, role_mapper)
           end
           const_get(:Container)
         end
 
-        def container_class=(klass)
-          @container_class = klass
-        end
+        attr_writer :container_class
       end
 
       def_delegators :container, :update, :each, :values, :keys
@@ -37,7 +35,7 @@ module Surrounded
       # Check if an object is playing a role in this map
       def role_player?(object)
         !values(object).empty?
-      rescue self.container.class::ItemNotPresent
+      rescue container.class::ItemNotPresent
         false
       end
 

@@ -3,23 +3,22 @@ require "surrounded/context"
 require "singleton"
 
 # This module should be added to objects which will enter
-# into context objects. 
+# into context objects.
 #
 # Its main purpose is to keep a reference to the context
 # and to implement method_missing to handle the relationship
 # to other objects in the context.
 module Surrounded
-
   private
 
   def store_context(&block)
-    accessor = block.binding.eval('self')
+    accessor = block.binding.eval("self")
     surroundings.unshift(accessor)
     self
   end
 
   def remove_context(&block)
-    accessor = block.binding.eval('self')
+    accessor = block.binding.eval("self")
     surroundings.shift if surroundings.include?(accessor)
     self
   end
@@ -33,11 +32,11 @@ module Surrounded
   end
 
   def method_missing(meth, *args, &block)
-    context.role?(meth){} || super
+    (context.role?(meth) {}) || super
   end
 
-  def respond_to_missing?(meth, include_private=false)
-    !!context.role?(meth){} || super
+  def respond_to_missing?(meth, include_private = false)
+    !!context.role?(meth) {} || super
   end
 
   class NullContext

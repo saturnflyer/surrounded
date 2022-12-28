@@ -1,11 +1,11 @@
-require 'simplecov'
-require 'minitest/autorun'
+require "simplecov"
+require "minitest/autorun"
 SimpleCov.enable_coverage :branch
 SimpleCov.add_filter %r{version.rb}
 SimpleCov.start unless defined?(Coverage)
 
-require 'surrounded'
-require 'surrounded/context'
+require "surrounded"
+require "surrounded/context"
 
 class User
   include Surrounded

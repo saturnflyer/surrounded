@@ -1,4 +1,4 @@
-require 'test_helper'
+require "test_helper"
 
 class ProxyContext
   extend Surrounded::Context
@@ -59,56 +59,56 @@ ProxyUser = Class.new do
 end
 
 describe ProxyContext do
-  let(:user){
-    ProxyUser.new('Jim')
+  let(:user) {
+    ProxyUser.new("Jim")
   }
-  let(:task){
-    OpenStruct.new(name: 'GTD')
+  let(:task) {
+    OpenStruct.new(name: "GTD")
   }
-  let(:context){
+  let(:context) {
     ProxyContext.new(admin: user, task: task)
   }
-  it 'proxys methods between objects and its interface' do
-    assert_equal 'hello from Jim, the admin interface!', context.do_something
+  it "proxys methods between objects and its interface" do
+    assert_equal "hello from Jim, the admin interface!", context.do_something
   end
 
-  it 'forwards methods that the object responds to' do
-    assert_equal 'Jim', context.admin_name
+  it "forwards methods that the object responds to" do
+    assert_equal "Jim", context.admin_name
   end
 
-  it 'passes missing methods up the ancestry of the object' do
-    err = _{ context.admin_missing_method }.must_raise(NoMethodError)
+  it "passes missing methods up the ancestry of the object" do
+    err = _ { context.admin_missing_method }.must_raise(NoMethodError)
 
     assert_match(/ProxyUser.*name="Jim"/, err.message)
   end
 
-  it 'fails access to other objects in the context' do
-    err = _{ context.talking }.must_raise NameError
+  it "fails access to other objects in the context" do
+    err = _ { context.talking }.must_raise NameError
     assert_match(%r{undefined local variable or method `task'}, err.message)
   end
 
-  it 'sets roles to respond to role methods' do
+  it "sets roles to respond to role methods" do
     assert context.admin_responds?
   end
 
   # A Negotiator object merely applies methods to another object
   # so that once the method is called, the object has no knowledge
   # of the module from which the method was applied.
-  it 'does not find other interface methods' do
-    assert_raises(NameError){
+  it "does not find other interface methods" do
+    assert_raises(NameError) {
       context.combined_interface_methods
     }
   end
 
-  it 'is able to grab methods from the object' do
+  it "is able to grab methods from the object" do
     assert_equal :talking_to_others, context.get_admin_method.name
   end
 
-  it 'allows Surrounded objects to interact with others' do
-    assert context.rebind(admin: User.new('Surrounded'), task: task).talking
+  it "allows Surrounded objects to interact with others" do
+    assert context.rebind(admin: User.new("Surrounded"), task: task).talking
   end
 
-  it 'works with frozen and primitive objects' do
+  it "works with frozen and primitive objects" do
     context.rebind(admin: "brrr".freeze, task: task)
     assert context.get_admin_method
     context.rebind(admin: nil, task: task)

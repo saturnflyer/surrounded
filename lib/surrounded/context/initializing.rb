@@ -5,16 +5,16 @@ module Surrounded
       # Shorthand for creating an instance level initialize method which
       # handles the mapping of the given arguments to their named role.
       def initialize_without_keywords(*setup_args, &block)
-        parameters = setup_args.join(',')
+        parameters = setup_args.join(",")
         default_initializer(parameters, setup_args, &block)
       end
 
       def initialize(*setup_args, &block)
-        parameters = setup_args.map{|a| "#{a}:"}.join(',')
+        parameters = setup_args.map { |a| "#{a}:" }.join(",")
         default_initializer(parameters, setup_args, &block)
       end
-      alias keyword_initialize initialize
-      alias initialize_with_keywords keyword_initialize
+      alias_method :keyword_initialize, :initialize
+      alias_method :initialize_with_keywords, :keyword_initialize
 
       def initializer_block
         @initializer_block
@@ -28,15 +28,16 @@ module Surrounded
         private_attr_reader(*setup_args)
         @initializer_block = block
         mod = Module.new
-        line = __LINE__; mod.class_eval %{
+        line = __LINE__
+        mod.class_eval %{
           def initialize(#{params})
             @role_map = role_mapper_class.new
-            @initializer_arguments = Hash[#{setup_args.to_s}.zip([#{setup_args.join(',')}])]
+            @initializer_arguments = Hash[#{setup_args}.zip([#{setup_args.join(",")}])]
             map_roles(@initializer_arguments)
             self.class.apply_initializer_block(self)
           end
-        }, __FILE__, line
-        const_set("ContextInitializer", mod)
+        }, __FILE__, __LINE__ - 7
+        const_set(:ContextInitializer, mod)
         include mod
         private_attr_reader :initializer_arguments
       end

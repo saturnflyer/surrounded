@@ -26,9 +26,9 @@ class BottleVerse
 
   trigger :lyrics do
     "#{bottle_number} of beer on the wall, ".capitalize +
-    "#{bottle_number} of beer.\n" +
-    "#{bottle_number.action}, " +
-    "#{bottle_number.successor} of beer on the wall.\n"
+      "#{bottle_number} of beer.\n" \
+      "#{bottle_number.action}, " \
+      "#{bottle_number.successor} of beer on the wall.\n"
   end
 
   role :bottle_number, :wrapper do

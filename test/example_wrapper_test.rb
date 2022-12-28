@@ -1,4 +1,4 @@
-require 'test_helper'
+require "test_helper"
 
 # If you want to use wrappers, here's how you could
 class WrapperContext
@@ -8,7 +8,7 @@ class WrapperContext
 
   wrap :admin do
     def some_admin_method
-      'hello from the admin wrapper!'
+      "hello from the admin wrapper!"
     end
   end
   wrap :task do; end
@@ -19,10 +19,10 @@ class WrapperContext
 end
 
 describe WrapperContext do
-  let(:context){
+  let(:context) {
     WrapperContext.new(admin: Object.new, task: Object.new)
   }
-  it 'wraps objects and allows them to respond to new methods' do
-    assert_equal 'hello from the admin wrapper!', context.do_something
+  it "wraps objects and allows them to respond to new methods" do
+    assert_equal "hello from the admin wrapper!", context.do_something
   end
 end

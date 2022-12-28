@@ -11,7 +11,7 @@ class CollectionContext
   end
 
   trigger :get_member_show do
-    members.map(&:show).join(', ')
+    members.map(&:show).join(", ")
   end
 
   role :members do
@@ -28,25 +28,24 @@ class CollectionContext
 
   role :others do; end
   role :other do; end
-
 end
 
-describe Surrounded::Context, 'auto-assigning roles for collections' do
-  let(:member_one){ User.new('Jim') }
-  let(:member_two){ User.new('Amy') }
-  let(:members){ [member_one, member_two] }
+describe Surrounded::Context, "auto-assigning roles for collections" do
+  let(:member_one) { User.new("Jim") }
+  let(:member_two) { User.new("Amy") }
+  let(:members) { [member_one, member_two] }
 
-  let(:other_one){ User.new('Guille') }
-  let(:other_two){ User.new('Jason') }
-  let(:others){ [other_one, other_two] }
+  let(:other_one) { User.new("Guille") }
+  let(:other_two) { User.new("Jason") }
+  let(:others) { [other_one, other_two] }
 
-  let(:context){ CollectionContext.new(members: members, others: others) }
+  let(:context) { CollectionContext.new(members: members, others: others) }
 
-  it 'assigns the collection role to collections' do
+  it "assigns the collection role to collections" do
     assert_equal members.size, context.get_members_count
   end
 
-  it 'assigns a defined role to each item in a role player collection' do
+  it "assigns a defined role to each item in a role player collection" do
     assert_equal "member show, member show", context.get_member_show
   end
 end

@@ -25,14 +25,13 @@ module Surrounded
         end
       end
 
-
       identity = %w[__send__ object_id equal?]
       method_access = %w[respond_to? method __behaviors__]
 
-      reserved_methods = (identity + method_access).join('|')
+      reserved_methods = (identity + method_access).join("|")
 
       # Remove all methods except the reserved methods
-      instance_methods.reject{ |m|
+      instance_methods.reject { |m|
         m.to_s =~ /#{reserved_methods}/
       }.each do |meth|
         undef_method meth
@@ -52,7 +51,7 @@ module Surrounded
         self
       end
       # These only differ in the message they send
-      alias remove_context store_context
+      alias_method :remove_context, :store_context
 
       def initialize(object)
         @object = object
@@ -62,7 +61,7 @@ module Surrounded
         @object.send(meth, ...)
       end
 
-      def respond_to_missing?(meth, include_private=false)
+      def respond_to_missing?(meth, include_private = false)
         @object.respond_to?(meth, include_private)
       end
     end

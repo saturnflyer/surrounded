@@ -1,4 +1,4 @@
-require 'test_helper'
+require "test_helper"
 
 class ThreadedContext
   extend Surrounded::Context
@@ -16,7 +16,7 @@ class ThreadedContext
       result << members.concurrent_map do |member|
         result << member.greet
       end
-      result.flatten.join(' ')
+      result.flatten.join(" ")
     end
 
     def greet
@@ -44,21 +44,21 @@ class ThreadedContext
 end
 
 describe ThreadedContext do
-  let(:jim){ User.new('Jim') }
-  let(:amy){ User.new('Amy') }
-  let(:guille){ User.new('Guille') }
-  let(:jason){ User.new('Jason') }
-  let(:dave){ User.new('Dave') }
+  let(:jim) { User.new("Jim") }
+  let(:amy) { User.new("Amy") }
+  let(:guille) { User.new("Guille") }
+  let(:jason) { User.new("Jason") }
+  let(:dave) { User.new("Dave") }
 
-  let(:greeter){ jim }
-  let(:members){ [amy, guille, jason, dave] }
+  let(:greeter) { jim }
+  let(:members) { [amy, guille, jason, dave] }
 
-  it 'works in multi-threaded environments' do
+  it "works in multi-threaded environments" do
     meeting = ThreadedContext.new(leader: jim, members: members)
 
     result = meeting.meet
 
-    assert_includes result, 'Hello everyone. I am Jim'
-    assert_includes result, 'Hello Jim, I am Amy'
+    assert_includes result, "Hello everyone. I am Jim"
+    assert_includes result, "Hello Jim, I am Amy"
   end
 end

@@ -1,9 +1,9 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
-
-gem 'minitest'
-gem 'simplecov'
-gem 'casting'
-gem 'async'
+gem "minitest"
+gem "simplecov"
+gem "casting"
+gem "async"
+gem "standard"
 
 gemspec

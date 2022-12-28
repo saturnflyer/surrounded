@@ -10,7 +10,7 @@ module Surrounded
       end
 
       # Define behaviors for your role players
-      def role(name, type=default_role_type, &block)
+      def role(name, type = default_role_type, &block)
         if type == :module
           mod_name = RoleName(name)
           mod = Module.new(&block).send(:include, ::Surrounded)
@@ -26,7 +26,7 @@ module Surrounded
 
       # Create a named behavior for a role using the standard library SimpleDelegator.
       def wrap(name, &block)
-        require 'delegate'
+        require "delegate"
         wrapper_name = RoleName(name)
         klass = private_const_set(wrapper_name, Class.new(SimpleDelegator, &block))
         klass.send(:include, Surrounded)
@@ -36,7 +36,7 @@ module Surrounded
       # Create a named behavior for a role using the standard library DelegateClass.
       # This ties the implementation of the role to a specific class or module API.
       def delegate_class(name, class_name, &block)
-        require 'delegate'
+        require "delegate"
         wrapper_name = RoleName(name)
         klass = private_const_set(wrapper_name, DelegateClass(Object.const_get(class_name.to_s)))
         klass.class_eval(&block)
@@ -53,19 +53,19 @@ module Surrounded
       # access them from any of its methods.
       def interface(name, &block)
         # AdminInterface
-        interface_name = RoleName(name, 'Interface')
+        interface_name = RoleName(name, "Interface")
         behavior = private_const_set(interface_name, Module.new(&block))
 
-        require 'surrounded/context/negotiator'
+        require "surrounded/context/negotiator"
         # Admin
         private_const_set(RoleName(name), Negotiator.for_role(behavior))
       end
 
       private
-      def RoleName(text, suffix=nil)
+
+      def RoleName(text, suffix = nil)
         RoleName.new(text, suffix)
       end
-
     end
   end
 end

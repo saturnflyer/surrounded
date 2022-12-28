@@ -1,4 +1,4 @@
-require 'test_helper'
+require "test_helper"
 
 class PrependedRoles
   extend Surrounded::Context
@@ -45,18 +45,18 @@ class PrependedRoles
   end
 end
 
-describe Surrounded::Context, 'custom role application' do
-  let(:user){ User.new('Jim') }
-  let(:other){ User.new('Amy') }
+describe Surrounded::Context, "custom role application" do
+  let(:user) { User.new("Jim") }
+  let(:other) { User.new("Amy") }
 
-  let(:context){ PrependedRoles.new(user: user, other: other) }
+  let(:context) { PrependedRoles.new(user: user, other: other) }
 
-  it 'allows you to override existing methods on a role player' do
+  it "allows you to override existing methods on a role player" do
     assert_equal "Not what you thought, Jim", context.get_name
     assert_equal "Jim", user.name
   end
 
-  it 'allows you to override the way a role is mapped' do
-    assert_equal 'OtherStuff Amy', context.other_title
+  it "allows you to override the way a role is mapped" do
+    assert_equal "OtherStuff Amy", context.other_title
   end
 end

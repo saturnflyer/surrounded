@@ -31,13 +31,13 @@ class SomeUseCase
   module Admin
     def something
       puts "Hello, #{other_user}"
-      listener.redirect_to('/')
+      listener.redirect_to("/")
     end
   end
 
   class OtherUser < ::User
     def special_feature
-      #....
+      # ....
     end
   end
 

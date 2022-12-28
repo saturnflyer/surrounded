@@ -1,21 +1,19 @@
-require 'test_helper'
+require "test_helper"
 
-describe "Surrounded", 'without context' do
-
-  let(:jim){ User.new("Jim") }
+describe "Surrounded", "without context" do
+  let(:jim) { User.new("Jim") }
 
   it "never has context roles" do
-    assert_nil jim.send(:context).role?('anything')
+    assert_nil jim.send(:context).role?("anything")
   end
-
 end
 
 describe "Surrounded" do
-  let(:jim){ User.new("Jim") }
-  let(:guille){ User.new("Guille") }
-  let(:external_user){ User.new("External User") }
+  let(:jim) { User.new("Jim") }
+  let(:guille) { User.new("Guille") }
+  let(:external_user) { User.new("External User") }
 
-  let(:context){
+  let(:context) {
     TestContext.new(user: jim, other_user: guille)
   }
 
@@ -24,7 +22,7 @@ describe "Surrounded" do
   end
 
   it "prevents access to context objects for external objects" do
-    assert_raises(NoMethodError){
+    assert_raises(NoMethodError) {
       external_user.user
     }
   end
@@ -37,14 +35,14 @@ end
 describe "Surrounded", "added to an existing object" do
   it "allows the object to store its context" do
     thing = UnsurroundedObject.new
-    thing.name = 'Jim'
+    thing.name = "Jim"
 
-    assert_raises(NoMethodError){
+    assert_raises(NoMethodError) {
       thing.__send__(:store_context)
     }
     thing.extend(Surrounded)
 
-    other = User.new('Guille')
+    other = User.new("Guille")
 
     context = TestContext.new(user: thing, other_user: other)
     assert context.access_other_object
@@ -57,7 +55,7 @@ end
 
 describe "Surrounded", "added to an object through another module" do
   it "allows the object to store its context" do
-    object = Array.new
+    object = []
     object.extend(SpecialSurrounding)
     assert object.respond_to?(:context, true)
   end
