@@ -982,7 +982,6 @@ Lets say that you wish to create a context as below, intending to use instances 
       postcode.send
     end
 
-    end
     role :postcode do
       def send
         # do things...
