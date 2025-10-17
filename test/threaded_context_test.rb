@@ -1,7 +1,7 @@
 require "test_helper"
 require "async"
 
-class ThreadedContext
+class AsyncThreadedContext
   extend Surrounded::Context
 
   def initialize(leader:, members:)
@@ -49,7 +49,7 @@ class ThreadedContext
   end
 end
 
-describe ThreadedContext do
+describe AsyncThreadedContext do
   let(:jim) { User.new("Jim") }
   let(:amy) { User.new("Amy") }
   let(:guille) { User.new("Guille") }
@@ -59,8 +59,8 @@ describe ThreadedContext do
   let(:greeter) { jim }
   let(:members) { [amy, guille, jason, dave] }
 
-  it "works in multi-threaded environments" do
-    meeting = ThreadedContext.new(leader: jim, members: members)
+  it "works in multi-threaded environments with async" do
+    meeting = AsyncThreadedContext.new(leader: jim, members: members)
 
     result = meeting.meet
 
