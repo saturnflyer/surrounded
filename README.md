@@ -1,8 +1,8 @@
 # ![Surrounded](http://saturnflyer.github.io/surrounded/images/surrounded.png "Surrounded")
+
 ## Be in control of business logic.
 
 [![Build Status](https://github.com/saturnflyer/surrounded/actions/workflows/test.yml/badge.svg)](https://github.com/saturnflyer/surrounded/actions)
-[![Code Climate](https://codeclimate.com/github/saturnflyer/surrounded.png)](https://codeclimate.com/github/saturnflyer/surrounded)
 
 Surrounded is designed to help you better manage your business logic by keeping cohesive behaviors together. Bring objects together to implement your use cases and gain behavior only when necessary.
 
@@ -920,7 +920,7 @@ end
 
 If you'd like to use a special approach for just a single role, you may do that too.
 
-When applying behaviors from a role to your role players, your Surrounded context will first look for a method named  `"apply_behavior_#{role}"`. Define your own method and set it to accept 2 arguments: the role constant and the role player.
+When applying behaviors from a role to your role players, your Surrounded context will first look for a method named `"apply_behavior_#{role}"`. Define your own method and set it to accept 2 arguments: the role constant and the role player.
 
 ```ruby
 class MyCustomContext
@@ -990,6 +990,7 @@ Lets say that you wish to create a context as below, intending to use instances 
     end
   end
 ```
+
 When you call the `:send` trigger you are likely to be greeted with an `NoMethodError` exception. The reason for this is that there is a name collision between `Postcode#country`, and the `:country` role in the `SendAParcel` context. Where a name collision exists, the method in the role player overrides that of the calling class and you get unexpected results.
 
 To address this issue, use `on_name_collision` to specify the name of a method to use when collisions are found:
