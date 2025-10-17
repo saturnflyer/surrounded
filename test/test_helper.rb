@@ -4,7 +4,6 @@ SimpleCov.enable_coverage :branch
 SimpleCov.add_filter %r{version.rb}
 SimpleCov.start unless defined?(Coverage)
 
-require "ostruct"
 require "surrounded"
 require "surrounded/context"
 

@@ -5,7 +5,6 @@ gem "simplecov"
 gem "casting"
 gem "async"
 gem "standard"
-gem "ostruct"
 gem "debug"
 
 gemspec

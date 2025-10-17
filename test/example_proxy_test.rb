@@ -58,12 +58,14 @@ ProxyUser = Class.new do
   attr_reader :name
 end
 
+ProxyTask = Data.define(:name)
+
 describe ProxyContext do
   let(:user) {
     ProxyUser.new("Jim")
   }
   let(:task) {
-    OpenStruct.new(name: "GTD")
+    ProxyTask.new(name: "GTD")
   }
   let(:context) {
     ProxyContext.new(admin: user, task: task)
