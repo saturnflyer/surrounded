@@ -11,7 +11,7 @@ class WrapperContext
       "hello from the admin wrapper!"
     end
   end
-  wrap :task do; end
+  wrap :task, &proc {}
 
   trigger :do_something do
     admin.some_admin_method

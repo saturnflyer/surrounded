@@ -26,8 +26,8 @@ class CollectionContext
     end
   end
 
-  role :others do; end
-  role :other do; end
+  role :others, &proc {}
+  role :other, &proc {}
 end
 
 describe Surrounded::Context, "auto-assigning roles for collections" do

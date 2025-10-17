@@ -79,12 +79,12 @@ describe ProxyContext do
   it "passes missing methods up the ancestry of the object" do
     err = _ { context.admin_missing_method }.must_raise(NoMethodError)
 
-    assert_match(/ProxyUser.*name="Jim"/, err.message)
+    assert_match(/ProxyUser/, err.message)
   end
 
   it "fails access to other objects in the context" do
     err = _ { context.talking }.must_raise NameError
-    assert_match(%r{undefined local variable or method `task'}, err.message)
+    assert_match(/undefined local variable or method [`']task['`]/, err.message)
   end
 
   it "sets roles to respond to role methods" do

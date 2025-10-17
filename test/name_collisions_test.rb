@@ -13,18 +13,20 @@ require "test_helper"
 class HasNameCollision
   include Surrounded
 
-  attr_accessor :will_collide # should always return nil
+  attr_reader :will_collide # should always return nil
 
   def assert_has_role
     true
   end
 
   def will_collide=(_)
+    @will_collide = nil
   end
 end
 
 class ShouldCollide
   include Surrounded
+
   def collide
     "Method called in ShouldCollide"
   end
@@ -115,7 +117,7 @@ describe "handling name collisions" do
     err = assert_raises(NoMethodError) {
       new_context_with_collision.induce_collision
     }
-    assert_match(/undefined method `collide' for nil:NilClass/, err.message)
+    assert_match(/undefined method [`']collide['`] for nil/, err.message)
   end
 
   it "can raise an exception" do
@@ -163,10 +165,8 @@ describe "handling name collisions" do
   end
 
   it "can use a class method" do
-    class ContextOverridesName
-      def self.class_method_handler(message)
-        puts message
-      end
+    ContextOverridesName.define_singleton_method(:class_method_handler) do |message|
+      puts message
     end
     set_handler :class_method_handler
     assert_output("base has name collisions with [:will_collide]\n") {

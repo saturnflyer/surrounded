@@ -2,6 +2,7 @@ module Surrounded
   module Context
     module Initializing
       extend Seclusion
+
       # Shorthand for creating an instance level initialize method which
       # handles the mapping of the given arguments to their named role.
       def initialize_without_keywords(*setup_args, &block)
@@ -28,17 +29,17 @@ module Surrounded
         private_attr_reader(*setup_args)
         @initializer_block = block
         mod = Module.new
-        line = __LINE__
-        mod.class_eval %{
+        line = __LINE__; mod.class_eval %{
           def initialize(#{params})
             @role_map = role_mapper_class.new
             @initializer_arguments = Hash[#{setup_args}.zip([#{setup_args.join(",")}])]
             map_roles(@initializer_arguments)
             self.class.apply_initializer_block(self)
           end
-        }, __FILE__, __LINE__ - 7
+        }, __FILE__, line
         const_set(:ContextInitializer, mod)
         include mod
+
         private_attr_reader :initializer_arguments
       end
     end

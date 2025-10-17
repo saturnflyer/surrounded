@@ -3,6 +3,7 @@ require "minitest/mock"
 
 class FilteredContext
   extend Surrounded::Context
+
   protect_triggers
 
   initialize :user, :other_user

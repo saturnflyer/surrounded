@@ -1,4 +1,3 @@
-require "set"
 require "surrounded/exceptions"
 require "surrounded/context/role_map"
 require "surrounded/context/seclusion"

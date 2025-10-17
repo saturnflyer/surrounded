@@ -2,6 +2,7 @@ require "test_helper"
 
 class EastTestContext
   extend Surrounded::Context
+
   east_oriented_triggers
 
   initialize :user, :other_user

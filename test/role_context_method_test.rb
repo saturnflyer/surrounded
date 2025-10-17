@@ -1,13 +1,13 @@
 require "test_helper"
 
-describe Surrounded::Context, ".role" do
-  class RoleContextTester
-    extend Surrounded::Context
+class RoleContextTester
+  extend Surrounded::Context
 
-    role_methods :admin do
-    end
+  role_methods :admin do
   end
+end
 
+describe Surrounded::Context, ".role" do
   describe "modules" do
     it "creates a module" do
       role = RoleContextTester.const_get(:Admin)
@@ -22,14 +22,16 @@ describe Surrounded::Context, ".role" do
       assert_match(/private constant/i, error.message)
     end
   end
+end
 
-  class WrapperRoleContext
-    extend Surrounded::Context
+class WrapperRoleContext
+  extend Surrounded::Context
 
-    role :admin, :wrap do
-    end
+  role :admin, :wrap do
   end
+end
 
+describe Surrounded::Context, ".role" do
   describe "wrappers" do
     it "creates a wrapper" do
       role = WrapperRoleContext.const_get(:Admin)
@@ -43,53 +45,57 @@ describe Surrounded::Context, ".role" do
       assert_match(/private constant/i, error.message)
     end
   end
-  class InterfaceContext
-    extend Surrounded::Context
+end
 
-    initialize(:admin, :other)
+class InterfaceContext
+  extend Surrounded::Context
 
-    role :admin, :interface do
-      def hello
-        "hello from admin"
-      end
+  initialize(:admin, :other)
 
-      def splat_args(*args)
-        args
-      end
-
-      def keyword_args(**kwargs)
-        kwargs
-      end
-
-      def mixed_args(*args, **kwargs)
-        [args, kwargs]
-      end
-    end
-
-    trigger :admin_hello do
-      admin.hello
-    end
-
-    trigger :splat_args do |*args|
-      admin.splat_args(*args)
-    end
-
-    trigger :keyword_args do |**kwargs|
-      admin.keyword_args(**kwargs)
-    end
-
-    trigger :mixed_args do |*args, **kwargs|
-      admin.mixed_args(*args, **kwargs)
-    end
-  end
-
-  class Hello
-    include Surrounded
+  role :admin, :interface do
     def hello
-      "hello"
+      "hello from admin"
+    end
+
+    def splat_args(*args)
+      args
+    end
+
+    def keyword_args(**kwargs)
+      kwargs
+    end
+
+    def mixed_args(*args, **kwargs)
+      [args, kwargs]
     end
   end
 
+  trigger :admin_hello do
+    admin.hello
+  end
+
+  trigger :splat_args do |*args|
+    admin.splat_args(*args)
+  end
+
+  trigger :keyword_args do |**kwargs|
+    admin.keyword_args(**kwargs)
+  end
+
+  trigger :mixed_args do |*args, **kwargs|
+    admin.mixed_args(*args, **kwargs)
+  end
+end
+
+class Hello
+  include Surrounded
+
+  def hello
+    "hello"
+  end
+end
+
+describe Surrounded::Context, ".role" do
   describe "interfaces" do
     let(:context) {
       InterfaceContext.new(admin: Hello.new, other: Hello.new)
@@ -121,13 +127,15 @@ describe Surrounded::Context, ".role" do
       assert_equal context.mixed_args("one", :two, three: "three", four: "four"), [["one", :two], {three: "three", four: "four"}]
     end
   end
+end
 
+class UnknownRole
+  extend Surrounded::Context
+end
+
+describe Surrounded::Context, ".role" do
   describe "unknown" do
     it "raises an error" do
-      class UnknownRole
-        extend Surrounded::Context
-      end
-
       err = _ {
         UnknownRole.instance_eval do
           role :admin, :unknown do
@@ -137,25 +145,28 @@ describe Surrounded::Context, ".role" do
       _(err.cause).must_be_kind_of NameError
     end
   end
+end
 
+class CustomDefaultWrap
+  extend Surrounded::Context
+
+  self.default_role_type = :wrap
+
+  initialize(:admin, :the_test)
+
+  role :admin do
+  end
+
+  trigger :check_admin_type do
+    the_test.assert_kind_of SimpleDelegator, admin
+  end
+end
+
+describe Surrounded::Context, ".role" do
   describe "custom default" do
     include Surrounded # the test is a role player here
 
     it "allows the use of custom default role types" do
-      class CustomDefaultWrap
-        extend Surrounded::Context
-
-        self.default_role_type = :wrap
-
-        initialize(:admin, :the_test)
-
-        role :admin do
-        end
-
-        trigger :check_admin_type do
-          the_test.assert_kind_of SimpleDelegator, admin
-        end
-      end
       context = CustomDefaultWrap.new(admin: Object.new, the_test: self)
       context.check_admin_type
     end
@@ -163,7 +174,9 @@ describe Surrounded::Context, ".role" do
     it "allows the setting of custom default role type for all Surrounded::Contexts" do
       old_default = Surrounded::Context.default_role_type
       Surrounded::Context.default_role_type = :wrap
-      class CustomGlobalDefault
+
+      # Define the class after setting the global default so it picks up the new default
+      custom_global_default_class = Class.new do
         extend Surrounded::Context
 
         initialize(:admin, :the_test)
@@ -176,7 +189,7 @@ describe Surrounded::Context, ".role" do
         end
       end
 
-      context = CustomGlobalDefault.new(admin: Object.new, the_test: self)
+      context = custom_global_default_class.new(admin: Object.new, the_test: self)
       context.check_admin_type
     ensure
       Surrounded::Context.default_role_type = old_default

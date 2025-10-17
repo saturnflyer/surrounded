@@ -2,6 +2,7 @@ require "test_helper"
 
 class ShortcutContext
   extend Surrounded::Context
+
   shortcut_triggers
 
   initialize :user, :other
@@ -19,6 +20,7 @@ end
 
 class ShortcutContextNoKeywords
   extend Surrounded::Context
+
   shortcut_triggers
 
   initialize_without_keywords :user, :other

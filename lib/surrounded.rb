@@ -32,7 +32,7 @@ module Surrounded
   end
 
   def method_missing(meth, *args, &block)
-    (context.role?(meth) {}) || super
+    context.role?(meth) {} || super
   end
 
   def respond_to_missing?(meth, include_private = false)
@@ -41,6 +41,7 @@ module Surrounded
 
   class NullContext
     include Singleton
+
     def role?(*args)
       nil
     end
