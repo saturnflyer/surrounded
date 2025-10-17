@@ -6,5 +6,6 @@ gem "casting"
 gem "async"
 gem "standard"
 gem "debug"
+gem "reissue"
 
 gemspec

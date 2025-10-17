@@ -10,6 +10,13 @@ Rake::TestTask.new do |t|
 end
 task default: :test
 
+require "reissue/gem"
+
+Reissue::Task.create :reissue do |task|
+  task.version_file = "lib/surrounded/version.rb"
+  task.fragment = :git
+end
+
 # task :mutant, [:class] do |task, args|
 #   klass = args[:class] || 'Surrounded'
 #   sh "bundle exec mutant --include lib --require surrounded --use minitest #{klass}"
