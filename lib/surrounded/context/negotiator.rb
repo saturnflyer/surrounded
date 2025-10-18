@@ -25,7 +25,7 @@ module Surrounded
         end
       end
 
-      identity = %w[__send__ object_id equal?]
+      identity = %w[__send__ __id__ object_id equal?]
       method_access = %w[respond_to? method __behaviors__]
 
       reserved_methods = (identity + method_access).join("|")
