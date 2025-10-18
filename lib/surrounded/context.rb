@@ -266,12 +266,13 @@ module Surrounded
           name.singularize
         else
           # good enough for now but should be updated with better rules
-          name.to_s.tap do |string|
-            if string.end_with?("ies")
-              string.sub!(/ies\z/, "y")
-            elsif string.end_with?("s")
-              string.sub!(/s\z/, "")
-            end
+          string = name.to_s.dup
+          if string.end_with?("ies")
+            string.sub(/ies\z/, "y")
+          elsif string.end_with?("s")
+            string.sub(/s\z/, "")
+          else
+            string
           end
         end
       end
