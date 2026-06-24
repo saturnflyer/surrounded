@@ -32,16 +32,40 @@ module Surrounded
         keys.include?(role)
       end
 
-      # Check if an object is playing a role in this map
-      def role_player?(object)
-        !values(object).empty?
-      rescue container.class::ItemNotPresent
-        false
+      # Record the behaviored player applied to a role for the duration of a
+      # trigger. The assigned domain object stays in the container; the player
+      # (a wrapper, or the same object for cast roles) is tracked here.
+      def apply(role, player)
+        applied[role] = player
       end
 
-      # Get the object playing the given role
+      # The player a role currently presents: the applied player while a trigger
+      # is running, otherwise the assigned domain object.
+      def current_player(role)
+        applied.fetch(role) { assigned_player(role) }
+      end
+
+      # Forget all applied players, e.g. after a trigger removes behaviors.
+      def reset_applied
+        applied.clear
+      end
+
+      # Check if an object is playing a role in this map, by identity — whether
+      # it is the assigned domain object or the applied player wrapping it.
+      def role_player?(object)
+        values.any? { |player| player.equal?(object) } ||
+          applied.values.any? { |player| player.equal?(object) }
+      end
+
+      # Get the domain object assigned to the given role
       def assigned_player(role)
         values(role).first
+      end
+
+      private
+
+      def applied
+        @applied ||= {}
       end
     end
   end

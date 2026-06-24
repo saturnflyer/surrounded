@@ -10,10 +10,16 @@ module Surrounded
         const
       end
 
-      # Create attr_reader for the named methods and make them private
+      # Create readers for the named methods and make them private. Role names
+      # resolve to the current player (original object, or its applied wrapper
+      # during a trigger); any other name reads its instance variable.
       def private_attr_reader(*method_names)
-        attr_reader(*method_names)
-        private(*method_names)
+        method_names.each do |name|
+          define_method(name) do
+            role_map.role?(name) ? role_map.current_player(name) : instance_variable_get(:"@#{name}")
+          end
+          private(name)
+        end
       end
     end
   end

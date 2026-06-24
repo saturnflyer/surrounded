@@ -96,7 +96,7 @@ module Surrounded
       def role?(name, &block)
         return false unless role_map.role?(name)
         accessor = block.binding.eval("self")
-        role_map.role_player?(accessor) && role_map.assigned_player(name)
+        role_map.role_player?(accessor) && role_map.current_player(name)
       end
 
       # Check if a given object is a role player in the context.
@@ -153,7 +153,6 @@ module Surrounded
       end
 
       def map_role(role, mod_name, object)
-        instance_variable_set("@#{role}", object)
         role_map.update(role, role_module_basename(mod_name), object)
       end
 
@@ -168,7 +167,6 @@ module Surrounded
           end
 
           role_player = applicator.call(role_const(behavior), object)
-          map_role(role, behavior, role_player)
         end
         role_player || object
       end
@@ -206,6 +204,7 @@ module Surrounded
       def apply_behaviors
         role_map.each do |role, mod_name, object|
           player = apply_behavior(role, mod_name, object)
+          role_map.apply(role, player)
           if player.respond_to?(:store_context, true)
             player.__send__(:store_context) {}
           end
@@ -213,12 +212,14 @@ module Surrounded
       end
 
       def remove_behaviors
-        role_map.each do |role, mod_name, player|
+        role_map.each do |role, mod_name, object|
+          player = role_map.current_player(role)
           if player.respond_to?(:remove_context, true)
             player.__send__(:remove_context) {}
           end
           remove_behavior(role, mod_name, player)
         end
+        role_map.reset_applied
       end
 
       # List of possible methods to use to add behavior to an object from a module.
@@ -284,8 +285,8 @@ module Surrounded
           .to_s
           .split("_")
           .map { |part|
-          part.capitalize
-        }
+            part.capitalize
+          }
           .join
           .sub(/_\d+/, "") + suffix.to_s
       end

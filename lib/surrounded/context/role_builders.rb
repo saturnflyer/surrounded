@@ -46,11 +46,8 @@ module Surrounded
       # Create an object which will bind methods to the role player.
       #
       # This object will behave differently that a wrapper or delegate_class.
-      # The interface object should only be used for objects whose methods
-      # _will not_ call to the other objects in the context.
-      # Because the interface methods are applied individually to an object,
-      # that object is unaware of the other objects in the context and cannot
-      # access them from any of its methods.
+      # Interface methods run as the wrapped object itself, so they can access
+      # the other objects in the context only if that object includes Surrounded.
       def interface(name, &block)
         # AdminInterface
         interface_name = RoleName(name, "Interface")
