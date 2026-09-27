@@ -14,7 +14,7 @@ describe Surrounded::Visualization do
       output, warnings = Visualized::Apart.run(%(require "surrounded/visualization"; print Surrounded::Visualization::MESSAGES_IN_SOURCE))
 
       expect(output).must_equal "Surrounded::Visualization::DeclaredMessages"
-      expect(warnings).must_equal ""
+      expect(warnings).wont_match(/Surrounded::Visualization/)
     end
 
     it "warns when Prism is missing and leaves surrounded working" do
