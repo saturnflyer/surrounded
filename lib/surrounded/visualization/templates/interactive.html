@@ -677,10 +677,16 @@
     const from = message.from === "context" ? null : roleNamed(message.from);
     const call = `${message.method}(${(message.args || []).join(", ")})`;
     log("step",
-      html("span", {className: "who", textContent: from ? from.name : DATA.context}),
+      html("span", {className: "who", textContent: message.from === "context" ? DATA.context : message.from}),
       " tells ",
-      html("span", {className: "who", textContent: to.name}),
+      html("span", {className: "who", textContent: message.to}),
       " ", html("code", {textContent: call}));
+
+    // a role such as one player in a collection is not drawn on the stage
+    if (!to) {
+      await wait(450);
+      return;
+    }
 
     const [a, b] = between(from || C, to, from ? ROLE_R + 6 : 14, ROLE_R + 6);
     const wire = make("line", {class: "wire", x1: a.x, y1: a.y, x2: a.x, y2: a.y}, wireLayer);
