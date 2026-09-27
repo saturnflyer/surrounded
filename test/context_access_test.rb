@@ -82,3 +82,110 @@ describe Surrounded::Context, "access control" do
     assert_match(/undefined method `not_a_defined_method' for #<#{context.class}/, error.message)
   end
 end
+
+class GuardedWrapperContext
+  extend Surrounded::Context
+
+  protect_triggers
+
+  initialize :sender, :wrapped, :negotiated
+
+  trigger :reach_wrapper do
+    sender.ask_wrapped
+  end
+
+  trigger :reach_interface do
+    sender.ask_negotiated
+  end
+
+  disallow :reach_wrapper, :reach_interface do
+    sender.name == "Amy"
+  end
+
+  role :sender do
+    def ask_wrapped
+      wrapped.wrapped_answer
+    end
+
+    def ask_negotiated
+      negotiated.negotiated_answer
+    end
+  end
+
+  role :wrapped, :wrap do
+    def wrapped_answer
+      "wrapped #{name}"
+    end
+  end
+
+  role :negotiated, :interface do
+    def negotiated_answer
+      "negotiated #{name}"
+    end
+  end
+end
+
+describe Surrounded::Context, "access control with wrapped role players" do
+  let(:sender) { User.new("Jim") }
+  let(:wrapped) { User.new("Guille") }
+  let(:negotiated) { User.new("Jason") }
+  let(:context) {
+    GuardedWrapperContext.new(sender: sender, wrapped: wrapped, negotiated: negotiated)
+  }
+
+  it "keeps wrapper behavior available in a guarded trigger" do
+    expect(context.reach_wrapper).must_equal "wrapped Guille"
+  end
+
+  it "keeps interface behavior available in a guarded trigger" do
+    expect(context.reach_interface).must_equal "negotiated Jason"
+  end
+
+  it "runs a guarded trigger after asking which triggers are allowed" do
+    expect(context.triggers).must_include :reach_wrapper
+    expect(context.reach_wrapper).must_equal "wrapped Guille"
+  end
+
+  it "removes wrapper behavior after a guarded trigger" do
+    context.reach_wrapper
+
+    expect(wrapped).wont_respond_to :wrapped_answer
+    expect(negotiated).wont_respond_to :negotiated_answer
+  end
+
+  it "still prevents a disallowed trigger" do
+    blocked = GuardedWrapperContext.new(sender: User.new("Amy"), wrapped: wrapped, negotiated: negotiated)
+
+    expect { blocked.reach_wrapper }.must_raise GuardedWrapperContext::AccessError
+  end
+end
+
+describe Surrounded::Context, "access control in a context class without a name" do
+  let(:context_class) {
+    Class.new do
+      extend Surrounded::Context
+
+      protect_triggers
+
+      initialize :user
+
+      trigger :go do
+        "went"
+      end
+
+      disallow :go do
+        user.name == "Amy"
+      end
+    end
+  }
+
+  it "runs an allowed trigger" do
+    expect(context_class.new(user: User.new("Jim")).go).must_equal "went"
+  end
+
+  it "raises an access error for a disallowed trigger" do
+    error = expect { context_class.new(user: User.new("Amy")).go }.must_raise Surrounded::Context::AccessError
+
+    expect(error.message).must_match(/access to .*#go is not allowed/)
+  end
+end

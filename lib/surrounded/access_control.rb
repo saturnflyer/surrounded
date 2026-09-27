@@ -23,7 +23,7 @@ module Surrounded
 
         method_restrictor = "disallow_#{name}?"
         if self.respond_to?(method_restrictor, true) && self.send(method_restrictor)
-          raise ::#{self}::AccessError.new("access to #{self.name}##{name} is not allowed")
+          raise self.class::AccessError.new("access to \#{self.class.name || self.class.inspect}##{name} is not allowed")
         end
 
       #{super}
