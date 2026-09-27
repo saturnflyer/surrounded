@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surrounded context</title>
+<style>
+  :root {
+    --outside: #E4E7ED;
+    --ink: #11131A;
+    --floor: #FFFFFF;
+    --lit: #FFF3B8;
+    --spot: #F2B200;
+    --muted: #565C6B;
+    --plain: #3B404D;
+    --rule: #C3C8D2;
+    --fail: #B3261E;
+    --display: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+    --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--outside);
+    color: var(--ink);
+    font: 400 15px/1.45 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    min-height: 100vh;
+  }
+  .stage-wrap { padding: 28px 32px 20px; display: flex; flex-direction: column; min-width: 0; }
+  .eyebrow {
+    margin: 0 0 6px;
+    font: 600 11px/1 var(--mono);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    margin: 0;
+    font: 700 clamp(26px, 3.4vw, 42px)/1.05 var(--display);
+    letter-spacing: -.02em;
+  }
+  .provenance { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+  .provenance code { font: 400 12px var(--mono); color: var(--ink); }
+  #stage {
+    display: block;
+    width: 100%;
+    max-height: calc(100vh - 190px);
+    min-height: 420px;
+    flex: 1;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .hint { margin: 6px 0 0; min-height: 2.9em; color: var(--muted); font-size: 14px; max-width: 70ch; }
+
+  /* stage */
+  .floor { fill: var(--floor); transition: fill .45s ease; }
+  .lit .floor { fill: var(--lit); }
+  .wall { fill: none; stroke: var(--ink); }
+  .gate { fill: none; stroke: var(--outside); stroke-linecap: butt; }
+  .context-name { font: 500 13px var(--display); fill: var(--ink); opacity: .32; text-anchor: middle; }
+  .lit .context-name { opacity: .9; }
+  .declared { stroke: var(--ink); stroke-width: 1.5; opacity: .16; stroke-dasharray: 2 7; stroke-linecap: round; }
+  .declared.own-method { stroke-dasharray: 1 12; }
+
+  .role, .obj { cursor: grab; }
+  .dragging, .dragging .role, .dragging .obj { cursor: grabbing; }
+  .glide { transition: transform .45s cubic-bezier(.2, .8, .2, 1); }
+  .role .ring {
+    fill: var(--floor);
+    stroke: var(--hue);
+    stroke-width: 5;
+    stroke-dasharray: 2 11;
+    stroke-linecap: round;
+  }
+  .role.filled .ring { stroke-dasharray: none; }
+  .role.failed .ring { stroke: var(--fail); }
+  .role-name { font: 600 15px var(--body); fill: var(--hue); }
+  .role-type { font: 400 10.5px var(--mono); fill: var(--muted); }
+  .method { font: 400 12.5px var(--mono); fill: var(--ink); opacity: .34; transition: opacity .3s; }
+  .role.filled .method { opacity: .58; }
+  .role.applied .method { opacity: 1; }
+  .method.called { fill: var(--hue); font-weight: 600; }
+
+  .obj circle { fill: var(--plain); transition: fill .25s; }
+  .obj.docked circle { fill: var(--hue); }
+  .obj.near circle { fill: var(--hue); opacity: .85; }
+  .obj-name { font: 600 14px var(--body); fill: #fff; text-anchor: middle; pointer-events: none; }
+  .obj-class { font: 400 10px var(--mono); fill: #fff; opacity: .78; text-anchor: middle; pointer-events: none; }
+  .obj:focus { outline: none; }
+  .obj:focus-visible circle, .obj.selected circle { stroke: var(--spot); stroke-width: 4; }
+
+  .wire { stroke: var(--ink); stroke-width: 2.5; fill: none; stroke-linecap: round; }
+  .wire.spent { opacity: .22; transition: opacity .3s; }
+  .wire.failed { stroke: var(--fail); }
+  .pulse { fill: var(--spot); stroke: var(--ink); stroke-width: 2; }
+  .wire-label {
+    font: 600 12.5px var(--mono);
+    fill: var(--ink);
+    text-anchor: middle;
+    paint-order: stroke;
+    stroke: var(--lit);
+    stroke-width: 6px;
+    stroke-linejoin: round;
+  }
+
+  /* panel */
+  .panel {
+    background: #F3F4F7;
+    border-left: 2px solid var(--ink);
+    padding: 28px 26px 40px;
+    overflow-y: auto;
+    max-height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+  .panel section + section { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--rule); }
+  h2 {
+    margin: 0 0 12px;
+    font: 600 11px/1 var(--mono);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h3 { margin: 14px 0 6px; font: 600 13px var(--body); }
+  button {
+    font: 600 14px var(--body);
+    color: var(--ink);
+    background: transparent;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    padding: 7px 16px;
+    cursor: pointer;
+  }
+  button:hover:not(:disabled) { background: var(--ink); color: #fff; }
+  button:focus-visible { outline: 3px solid var(--spot); outline-offset: 2px; }
+  button:disabled { border-color: var(--rule); color: #8B90A0; cursor: not-allowed; }
+  button.trigger { background: var(--ink); color: #fff; font-family: var(--mono); font-size: 13px; }
+  button.trigger:hover:not(:disabled) { background: var(--spot); border-color: var(--ink); color: var(--ink); }
+  button.trigger:disabled { background: transparent; color: #8B90A0; }
+  .trigger-row { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: center; margin-bottom: 10px; }
+  .trigger-row p { margin: 0; font-size: 13px; color: var(--muted); }
+  .cast-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .cast-actions button { font-size: 13px; padding: 5px 13px; border-width: 1.5px; }
+  #log { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+  #log li { padding: 6px 0; border-bottom: 1px dashed var(--rule); font-size: 13.5px; }
+  #log li.step { counter-increment: step; padding-left: 26px; position: relative; }
+  #log li.step::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 7px;
+    font: 600 11px var(--mono); color: var(--muted);
+  }
+  #log li.head { font-weight: 600; }
+  #log li.fail { color: var(--fail); }
+  #log .who { font-weight: 600; }
+  code { font: 400 12.5px var(--mono); }
+  .empty { margin: 0; color: var(--muted); font-size: 13.5px; }
+  .where { margin: 0; color: var(--muted); font-size: 13.5px; }
+  .inspector-name { margin: 0 0 2px; font: 700 18px var(--display); letter-spacing: -.01em; }
+  .methods { margin: 0; padding: 0; list-style: none; }
+  .methods li { padding: 3px 0; font-size: 13px; color: var(--muted); }
+  .methods li code { color: var(--ink); font-weight: 600; }
+  .methods li.role-method code { color: var(--hue); }
+  .methods li.applied code { background: var(--lit); padding: 1px 4px; border-radius: 3px; }
+  .methods li.leftover code { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+  dl.state { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 13px; }
+  dl.state dt { color: var(--muted); }
+  dl.state dd { margin: 0; font: 400 12.5px var(--mono); }
+
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; }
+    .stage-wrap { padding: 20px 16px 12px; }
+    #stage { max-height: none; min-height: 0; }
+    .panel { border-left: 0; border-top: 2px solid var(--ink); position: static; max-height: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .glide, .floor, .method, .obj circle, .wire.spent { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main class="layout">
+  <section class="stage-wrap">
+    <header>
+      <p class="eyebrow">Surrounded context</p>
+      <h1 id="context-name"></h1>
+      <p class="provenance" id="provenance"></p>
+    </header>
+    <svg id="stage" viewBox="70 0 860 820" aria-label="The context, its roles, and the objects outside it"></svg>
+    <p class="hint" id="hint" aria-live="polite"></p>
+  </section>
+
+  <aside class="panel">
+    <section>
+      <h2>Triggers</h2>
+      <div id="triggers"></div>
+      <div class="cast-actions">
+        <button id="cast-default" type="button">Cast the default players</button>
+        <button id="clear-cast" type="button">Send everyone out</button>
+      </div>
+    </section>
+    <section>
+      <h2>Messages</h2>
+      <p class="empty" id="log-empty">Run a trigger to see the messages Ruby recorded.</p>
+      <ol id="log" aria-live="polite"></ol>
+    </section>
+    <section>
+      <h2>Selected object</h2>
+      <div id="inspector"></div>
+    </section>
+  </aside>
+</main>
+
+<script>const DATA = /*__CONTEXT_DATA__*/null;</script>
+<script>
+(() => {
+  "use strict";
+  if (!DATA) {
+    document.getElementById("hint").textContent = "This page has no context to show. Write it with Surrounded::Visualization::Html.";
+    return;
+  }
+
+  const NS = "http://www.w3.org/2000/svg";
+  const VIEW = {x: 70, y: 0, w: 860, h: 820};
+  const C = {x: 500, y: 410};
+  const R = 250, WALL = 16, ROLE_R = 50, OBJ_R = 37;
+  const ROLE_MAX = R - WALL / 2 - ROLE_R - 4;   // farthest a role may sit from the center
+  const AT_WALL = ROLE_MAX - 10;                // a role this far out stands at the wall
+  const OBJ_MIN = R + WALL / 2 + OBJ_R + 8;     // closest a loose object may come
+  const HOME = R + 115;
+  const SNAP = 96;                              // how near a loose object must be to dock
+  const PULL = 58;                              // how far past the wall to pull a player out
+  const HUES = ["#2B4BEE", "#D42A66", "#0B8457", "#C25E00", "#6F3BE0", "#087F9B"];
+  const REST_HINT = DATA.objects.length === 0
+    ? "No players were recorded for this context. Record a run to bring players to the page."
+    : "Drag an object to an empty role standing at the wall. To take it out again, drag the pair to the wall and keep pulling.";
+  const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const svg = document.getElementById("stage");
+  const hint = document.getElementById("hint");
+  const $ = (id) => document.getElementById(id);
+
+  const make = (name, attrs = {}, parent) => {
+    const node = document.createElementNS(NS, name);
+    for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+    if (parent) parent.appendChild(node);
+    return node;
+  };
+  const html = (name, props = {}, parent) => {
+    const node = Object.assign(document.createElement(name), props);
+    if (parent) parent.appendChild(node);
+    return node;
+  };
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const polar = (degrees, radius) => ({
+    x: C.x + radius * Math.cos(degrees * Math.PI / 180),
+    y: C.y + radius * Math.sin(degrees * Math.PI / 180)
+  });
+  const wait = (ms) => new Promise((done) => setTimeout(done, calm ? Math.min(ms, 250) : ms));
+  const place = (node, point) => { node.style.transform = `translate(${point.x}px, ${point.y}px)`; };
+  const glide = (node) => {
+    node.classList.add("glide");
+    setTimeout(() => node.classList.remove("glide"), 500);
+  };
+
+  // ---- header
+  $("context-name").textContent = DATA.context;
+  $("provenance").innerHTML = "";
+  if (DATA.source) $("provenance").append("Read from ", html("code", {textContent: DATA.source}), " with ");
+  else $("provenance").append("Read with ");
+  $("provenance").append(`Ruby ${DATA.ruby} and surrounded ${DATA.surrounded}.`);
+  document.title = `${DATA.context} · Surrounded context`;
+
+  // ---- layers
+  const floorLayer = make("g", {}, svg);
+  make("circle", {class: "floor", cx: C.x, cy: C.y, r: R}, floorLayer);
+  const declaredLayer = make("g", {}, svg);
+  const contextName = make("text", {class: "context-name", x: C.x, y: C.y + 5}, svg);
+  contextName.textContent = DATA.context;
+  make("circle", {class: "wall", cx: C.x, cy: C.y, r: R, "stroke-width": WALL}, svg);
+  const gateLayer = make("g", {}, svg);
+  const wireLayer = make("g", {}, svg);
+  const roleLayer = make("g", {}, svg);
+  const objectLayer = make("g", {}, svg);
+
+  // ---- model
+  let running = false;
+  let selected = null;
+  let drag = null;
+
+  const roles = DATA.roles.map((data, index) => {
+    const angle = -180 + (index + 0.5) * 360 / DATA.roles.length;
+    const role = {
+      ...data,
+      angle,
+      hue: HUES[index % HUES.length],
+      player: null,
+      ...polar(angle, ROLE_MAX)
+    };
+    role.node = make("g", {class: "role", "data-role": role.name}, roleLayer);
+    role.node.style.setProperty("--hue", role.hue);
+    make("circle", {class: "ring", r: ROLE_R}, role.node);
+    role.label = make("g", {}, role.node);
+    role.lines = [
+      Object.assign(make("text", {class: "role-name"}, role.label), {textContent: role.name}),
+      Object.assign(make("text", {class: "role-type"}, role.label), {textContent: String(role.type).replace("_", " ")}),
+      ...role.methods.map((name) =>
+        Object.assign(make("text", {class: "method", "data-method": name}, role.label), {textContent: name}))
+    ];
+    role.gate = make("path", {class: "gate", "stroke-width": WALL + 3}, gateLayer);
+    return role;
+  });
+  const roleNamed = (name) => roles.find((role) => role.name === name);
+
+  const castKeys = Object.values(DATA.default_cast || {});
+  const extras = DATA.objects.filter((object) => !castKeys.includes(object.key));
+  const objects = DATA.objects.map((data) => {
+    const castRole = roles.find((role) => (DATA.default_cast || {})[role.name] === data.key);
+    const angle = castRole
+      ? castRole.angle
+      : -180 + extras.indexOf(data) * 360 / Math.max(extras.length, 1) * (extras.length > 1 ? 1 : 0);
+    const home = polar(angle, HOME);
+    const object = {...data, home, x: home.x, y: home.y, role: null, near: null, leftovers: new Map()};
+    object.node = make("g", {
+      class: "obj", "data-object": object.key, tabindex: 0, role: "button",
+      "aria-label": `${object.label}, ${object.class}`
+    }, objectLayer);
+    make("circle", {r: OBJ_R}, object.node);
+    Object.assign(make("text", {class: "obj-name", y: -1}, object.node), {textContent: object.label});
+    Object.assign(make("text", {class: "obj-class", y: 14}, object.node), {textContent: object.class});
+    return object;
+  });
+  const objectKeyed = (key) => objects.find((object) => object.key === key);
+
+  const declared = (DATA.static_messages || [])
+    .filter((message, index, all) =>
+      all.findIndex((other) => other.from === message.from && other.to === message.to) === index)
+    .map((message) => ({
+      ...message,
+      node: make("line", {class: `declared${message.role_method ? "" : " own-method"}`}, declaredLayer)
+    }));
+
+  // ---- drawing
+  function drawRole(role) {
+    place(role.node, role);
+    const away = dist(role, C);
+    const inward = away < 30 ? {x: 0, y: 1} : {x: (C.x - role.x) / away, y: (C.y - role.y) / away};
+    // labels sit under a ring in the upper half and over a ring in the lower
+    // half, leaning toward the middle, so they stay inside the wall
+    const lineHeight = 16;
+    const height = role.lines.length * lineHeight;
+    const top = role.y <= C.y ? ROLE_R + 8 : -ROLE_R - 10 - height;
+    role.lines.forEach((line, index) => {
+      line.setAttribute("text-anchor", "middle");
+      line.setAttribute("x", inward.x * 30);
+      line.setAttribute("y", top + (index + 0.8) * lineHeight);
+    });
+
+    role.atWall = away >= AT_WALL;
+    if (role.atWall) {
+      const middle = Math.atan2(role.y - C.y, role.x - C.x);
+      const half = Math.asin((OBJ_R + 9) / R);
+      const from = {x: C.x + R * Math.cos(middle - half), y: C.y + R * Math.sin(middle - half)};
+      const to = {x: C.x + R * Math.cos(middle + half), y: C.y + R * Math.sin(middle + half)};
+      role.gate.setAttribute("d", `M ${from.x} ${from.y} A ${R} ${R} 0 0 1 ${to.x} ${to.y}`);
+      role.gate.style.display = "";
+    } else {
+      role.gate.style.display = "none";
+    }
+    role.node.classList.toggle("filled", Boolean(role.player));
+    if (role.player) {
+      role.player.x = role.x;
+      role.player.y = role.y;
+      drawObject(role.player);
+    }
+    drawDeclared();
+  }
+
+  function drawObject(object) {
+    place(object.node, object);
+    const hue = object.role ? object.role.hue : object.near ? object.near.hue : null;
+    object.node.classList.toggle("docked", Boolean(object.role));
+    object.node.classList.toggle("near", !object.role && Boolean(object.near));
+    if (hue) object.node.style.setProperty("--hue", hue);
+    object.node.classList.toggle("selected", selected === object);
+  }
+
+  function drawDeclared() {
+    declared.forEach((message) => {
+      const from = roleNamed(message.from), to = roleNamed(message.to);
+      if (!from || !to) return;
+      const [a, b] = between(from, to, ROLE_R + 4, ROLE_R + 4);
+      message.node.setAttribute("x1", a.x); message.node.setAttribute("y1", a.y);
+      message.node.setAttribute("x2", b.x); message.node.setAttribute("y2", b.y);
+    });
+  }
+
+  // the segment from a to b, shortened so it starts and ends outside the circles
+  function between(a, b, startGap, endGap) {
+    const length = dist(a, b) || 1;
+    const unit = {x: (b.x - a.x) / length, y: (b.y - a.y) / length};
+    const start = Math.min(startGap, length / 2), end = Math.min(endGap, length / 2);
+    return [
+      {x: a.x + unit.x * start, y: a.y + unit.y * start},
+      {x: b.x - unit.x * end, y: b.y - unit.y * end}
+    ];
+  }
+
+  // ---- casting
+  function dock(object, role) {
+    object.near = null;
+    object.role = role;
+    role.player = object;
+    drawRole(role);
+    refresh();
+  }
+
+  function undock(role) {
+    const object = role.player;
+    if (!object) return null;
+    role.player = null;
+    object.role = null;
+    drawRole(role);
+    drawObject(object);
+    refresh();
+    return object;
+  }
+
+  function sendHome(object) {
+    glide(object.node);
+    object.x = object.home.x;
+    object.y = object.home.y;
+    drawObject(object);
+  }
+
+  function moveLoose(object, point) {
+    const open = roles
+      .filter((role) => !role.player && role.atWall && dist(point, role) < SNAP)
+      .sort((a, b) => dist(point, a) - dist(point, b))[0];
+    if (open) {
+      object.near = open;
+      object.x = open.x;
+      object.y = open.y;
+      hint.textContent = `Let go to cast ${object.label} as ${open.name}.`;
+    } else {
+      object.near = null;
+      const away = dist(point, C);
+      let next = point;
+      if (away < OBJ_MIN) {
+        const unit = away === 0 ? {x: 0, y: -1} : {x: (point.x - C.x) / away, y: (point.y - C.y) / away};
+        next = {x: C.x + unit.x * OBJ_MIN, y: C.y + unit.y * OBJ_MIN};
+        const waiting = roles.some((role) => !role.player);
+        hint.textContent = waiting
+          ? "The wall is closed here. An object enters only where an empty role stands at the wall."
+          : "Every role has a player. Take one out to make room.";
+      } else {
+        hint.textContent = REST_HINT;
+      }
+      object.x = Math.max(VIEW.x + OBJ_R, Math.min(VIEW.x + VIEW.w - OBJ_R, next.x));
+      object.y = Math.max(VIEW.y + OBJ_R, Math.min(VIEW.y + VIEW.h - OBJ_R, next.y));
+    }
+    drawObject(object);
+  }
+
+  function moveRole(role, point, pointer) {
+    const pulled = dist(pointer, C) - R;
+    if (role.player && pulled > PULL) {
+      const angle = Math.atan2(pointer.y - C.y, pointer.x - C.x);
+      role.x = C.x + ROLE_MAX * Math.cos(angle);
+      role.y = C.y + ROLE_MAX * Math.sin(angle);
+      const object = undock(role);
+      drag = {kind: "object", object, dx: 0, dy: 0};
+      select(object);
+      moveLoose(object, pointer);
+      hint.textContent = `${object.label} left the context and the ${role.name} role stayed behind.`;
+      return;
+    }
+    const away = dist(point, C);
+    const scale = away > ROLE_MAX ? ROLE_MAX / away : 1;
+    role.x = C.x + (point.x - C.x) * scale;
+    role.y = C.y + (point.y - C.y) * scale;
+    drawRole(role);
+    if (role.player && pulled > 0) hint.textContent = `Keep pulling to take ${role.player.label} out of the context.`;
+    else if (!role.player && role.atWall) hint.textContent = `A gate is open at ${role.name}.`;
+    else hint.textContent = REST_HINT;
+  }
+
+  // ---- pointer
+  function toStage(event) {
+    const point = svg.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    return point.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  svg.addEventListener("pointerdown", (event) => {
+    if (running) return;
+    const objectNode = event.target.closest("[data-object]");
+    const roleNode = event.target.closest("[data-role]");
+    if (!objectNode && !roleNode) return;
+    const pointer = toStage(event);
+    if (objectNode) {
+      const object = objectKeyed(objectNode.dataset.object);
+      select(object);
+      drag = object.role
+        ? {kind: "role", role: object.role, dx: object.role.x - pointer.x, dy: object.role.y - pointer.y}
+        : {kind: "object", object, dx: object.x - pointer.x, dy: object.y - pointer.y};
+    } else {
+      const role = roleNamed(roleNode.dataset.role);
+      if (role.player) select(role.player);
+      drag = {kind: "role", role, dx: role.x - pointer.x, dy: role.y - pointer.y};
+    }
+    svg.classList.add("dragging");
+    svg.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+
+  svg.addEventListener("pointermove", (event) => {
+    if (!drag) return;
+    const pointer = toStage(event);
+    const point = {x: pointer.x + drag.dx, y: pointer.y + drag.dy};
+    if (drag.kind === "object") moveLoose(drag.object, point);
+    else moveRole(drag.role, point, pointer);
+  });
+
+  const release = () => {
+    if (!drag) return;
+    if (drag.kind === "object" && drag.object.near) {
+      const role = drag.object.near;
+      dock(drag.object, role);
+      hint.textContent = `${drag.object.label} now plays ${role.name}. The role's methods apply while a trigger runs.`;
+    }
+    drag = null;
+    svg.classList.remove("dragging");
+    renderInspector();
+  };
+  svg.addEventListener("pointerup", release);
+  svg.addEventListener("pointercancel", release);
+
+  // keyboard: Enter or Space casts a loose object into the first empty role, or takes it out
+  objects.forEach((object) => {
+    object.node.addEventListener("focus", () => select(object));
+    object.node.addEventListener("keydown", (event) => {
+      if (running || (event.key !== "Enter" && event.key !== " ")) return;
+      event.preventDefault();
+      if (object.role) {
+        const role = object.role;
+        undock(role);
+        sendHome(object);
+        hint.textContent = `${object.label} left the context and the ${role.name} role stayed behind.`;
+      } else {
+        const role = roles.find((candidate) => !candidate.player);
+        if (!role) { hint.textContent = "Every role has a player. Take one out to make room."; return; }
+        glide(object.node);
+        dock(object, role);
+        hint.textContent = `${object.label} now plays ${role.name}.`;
+      }
+      renderInspector();
+    });
+  });
+
+  $("cast-default").addEventListener("click", () => {
+    if (running) return;
+    roles.forEach((role) => { const object = undock(role); if (object) sendHome(object); });
+    roles.forEach((role) => {
+      const object = objectKeyed((DATA.default_cast || {})[role.name]);
+      if (!object) return;
+      glide(object.node);
+      dock(object, role);
+    });
+    hint.textContent = "The default players are cast. Run a trigger.";
+    renderInspector();
+  });
+
+  $("clear-cast").addEventListener("click", () => {
+    if (running) return;
+    roles.forEach((role) => { const object = undock(role); if (object) sendHome(object); });
+    objects.forEach((object) => { if (!object.role) sendHome(object); });
+    hint.textContent = REST_HINT;
+    renderInspector();
+  });
+
+  // ---- triggers
+  function currentRuns() {
+    if (!roles.every((role) => role.player)) return null;
+    return DATA.scenarios[roles.map((role) => role.player.key).join(",")] || {};
+  }
+
+  function refresh() {
+    const runs = currentRuns();
+    const filled = roles.filter((role) => role.player).length;
+    const box = $("triggers");
+    box.innerHTML = "";
+    DATA.triggers.forEach((name) => {
+      const row = html("div", {className: "trigger-row"}, box);
+      const button = html("button", {className: "trigger", type: "button", textContent: name}, row);
+      const note = html("p", {}, row);
+      const run = runs && runs[name];
+      if (!runs) {
+        button.disabled = true;
+        note.textContent = `Needs a player in every role. ${filled} of ${roles.length} cast.`;
+      } else if (!run) {
+        button.disabled = true;
+        note.textContent = "No run was recorded with these players.";
+      } else if (run.allowed === false) {
+        button.disabled = true;
+        note.textContent = `${DATA.context} disallows this with these players.`;
+      } else {
+        note.textContent = running ? "" : "Ready.";
+        button.disabled = running;
+      }
+      button.addEventListener("click", () => runTrigger(name));
+    });
+    $("cast-default").disabled = running || !DATA.default_cast;
+    $("clear-cast").disabled = running;
+  }
+
+  function log(className, ...parts) {
+    $("log-empty").hidden = true;
+    const item = html("li", {className}, $("log"));
+    item.append(...parts);
+    item.scrollIntoView({block: "nearest"});
+    return item;
+  }
+
+  async function runTrigger(name) {
+    const runs = currentRuns();
+    if (running || !runs || !runs[name]) return;
+    const run = runs[name];
+    running = true;
+    refresh();
+    $("log").innerHTML = "";
+    wireLayer.innerHTML = "";
+    roles.forEach((role) => role.node.classList.remove("failed"));
+    svg.classList.add("lit");
+    roles.forEach((role) => role.node.classList.add("applied"));
+    hint.textContent = `${name} is running. Every player has its role methods.`;
+    log("head", html("code", {textContent: `${DATA.context}#${name}`}));
+    renderInspector();
+    await wait(650);
+
+    for (const message of run.messages) await play(message);
+
+    if (run.error) {
+      const where = roleNamed(run.error.in);
+      if (where) where.node.classList.add("failed");
+      log("fail", `${run.error.class}: ${run.error.message}`);
+      hint.textContent = where
+        ? `${name} failed in ${where.name}. ${where.player.label} cannot do what that role needs.`
+        : `${name} failed before any role was called.`;
+    } else {
+      log("result", "Returned ", html("code", {textContent: run.result}));
+      hint.textContent = `${name} finished. The role methods are gone again.`;
+    }
+    await wait(900);
+
+    svg.classList.remove("lit");
+    roles.forEach((role) => {
+      role.node.classList.remove("applied");
+      role.lines.forEach((line) => line.classList.remove("called"));
+      (role.left_behind || []).forEach((left) => role.player.leftovers.set(left.method, {...left, role: role.name}));
+    });
+    wireLayer.innerHTML = "";
+    running = false;
+    refresh();
+    renderInspector();
+  }
+
+  async function play(message) {
+    const to = roleNamed(message.to);
+    const from = message.from === "context" ? null : roleNamed(message.from);
+    const call = `${message.method}(${(message.args || []).join(", ")})`;
+    log("step",
+      html("span", {className: "who", textContent: message.from === "context" ? DATA.context : message.from}),
+      " tells ",
+      html("span", {className: "who", textContent: message.to}),
+      " ", html("code", {textContent: call}));
+
+    // a role such as one player in a collection is not drawn on the stage
+    if (!to) {
+      await wait(450);
+      return;
+    }
+
+    const [a, b] = between(from || C, to, from ? ROLE_R + 6 : 14, ROLE_R + 6);
+    const wire = make("line", {class: "wire", x1: a.x, y1: a.y, x2: a.x, y2: a.y}, wireLayer);
+    const label = make("text", {class: "wire-label", x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 10}, wireLayer);
+    label.textContent = call;
+    const line = to.lines.find((node) => node.dataset && node.dataset.method === message.method);
+
+    if (calm) {
+      wire.setAttribute("x2", b.x); wire.setAttribute("y2", b.y);
+    } else {
+      const pulse = make("circle", {class: "pulse", r: 7, cx: a.x, cy: a.y}, wireLayer);
+      await new Promise((done) => {
+        const started = performance.now(), length = 800;
+        const frame = (now) => {
+          const t = Math.min((now - started) / length, 1);
+          const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+          const x = a.x + (b.x - a.x) * eased, y = a.y + (b.y - a.y) * eased;
+          pulse.setAttribute("cx", x); pulse.setAttribute("cy", y);
+          wire.setAttribute("x2", x); wire.setAttribute("y2", y);
+          if (t < 1) requestAnimationFrame(frame); else done();
+        };
+        requestAnimationFrame(frame);
+      });
+      pulse.remove();
+    }
+    if (line) line.classList.add("called");
+    await wait(650);
+    label.remove();
+    wire.classList.add("spent");
+  }
+
+  // ---- inspector
+  function select(object) {
+    selected = object;
+    objects.forEach(drawObject);
+    renderInspector();
+  }
+
+  function renderInspector() {
+    const box = $("inspector");
+    box.innerHTML = "";
+    if (!selected) {
+      html("p", {className: "empty", textContent: "Pick an object to see what it can do where it stands."}, box);
+      return;
+    }
+    const role = selected.role;
+    html("p", {className: "inspector-name", textContent: selected.label}, box);
+    html("p", {
+      className: "where",
+      textContent: role ? `${selected.class}, playing ${role.name} in ${DATA.context}` : `${selected.class}, outside the context`
+    }, box);
+
+    html("h3", {textContent: "Its own methods"}, box);
+    const own = html("ul", {className: "methods"}, box);
+    if (selected.methods.length === 0) html("li", {textContent: "None of its own."}, own);
+    selected.methods.forEach((name) => html("li", {}, own).append(html("code", {textContent: name})));
+
+    html("h3", {textContent: "Role methods"}, box);
+    const gained = html("ul", {className: "methods"}, box);
+    if (role) {
+      gained.style.setProperty("--hue", role.hue);
+      role.methods.forEach((name) => {
+        const item = html("li", {className: `role-method${running ? " applied" : ""}`}, gained);
+        item.append(html("code", {textContent: name}),
+          running ? ` from ${role.name}, applied now` : ` from ${role.name}, applied while a trigger runs`);
+      });
+    } else if (selected.leftovers.size > 0) {
+      selected.leftovers.forEach((left, name) => {
+        const item = html("li", {className: "leftover"}, gained);
+        item.append(html("code", {textContent: name}),
+          ` is still on ${selected.label} after playing ${left.role}. Out here it runs until it needs another role, then fails.`);
+      });
+    } else {
+      html("li", {textContent: `None. ${selected.label} has no role out here.`}, gained);
+    }
+
+    const state = Object.entries(selected.state || {});
+    if (state.length > 0) {
+      html("h3", {textContent: "State at the start of each run"}, box);
+      const list = html("dl", {className: "state"}, box);
+      state.forEach(([key, value]) => {
+        html("dt", {textContent: key}, list);
+        html("dd", {textContent: value}, list);
+      });
+    }
+  }
+
+  // ---- start
+  roles.forEach(drawRole);
+  objects.forEach(drawObject);
+  hint.textContent = REST_HINT;
+  refresh();
+  renderInspector();
+
+  window.contextStage = {roles, objects, dock, undock, runTrigger, isRunning: () => running};
+})();
+</script>
+</body>
+</html>
