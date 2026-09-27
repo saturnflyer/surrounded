@@ -4,6 +4,7 @@ require "surrounded/visualization/behavior"
 require "surrounded/visualization/roles"
 require "surrounded/visualization/no_declared_messages"
 require "surrounded/visualization/casting"
+require "surrounded/visualization/recording"
 
 module Surrounded
   # Show what a context is made of and what happens inside it.
@@ -19,6 +20,7 @@ module Surrounded
   #   Surrounded::Visualization
   #     .describe(MoneyTransfer, to: template)
   #     .cast(transfer, to: template)
+  #     .record(transfer, :send_money, to: template)
   #   template.write_to($stdout)
   #
   # Any object which answers the messages in
@@ -78,6 +80,27 @@ module Surrounded
       # @return [Surrounded::Visualization]
       def cast(context, to:, names: {})
         Casting.new(context, names: names).tell(to)
+        self
+      end
+
+      # Run a trigger and tell a template what happened: the players, each role
+      # method called, anything left on the players, and how the run ended.
+      #
+      # This runs the trigger. Whatever the trigger changes will be changed.
+      #
+      # Give a block to run the trigger with arguments.
+      #
+      #   Surrounded::Visualization.record(transfer, :send_money, to: page) do |context|
+      #     context.send_money(100)
+      #   end
+      #
+      # @param context [Object] an instance of a context class
+      # @param trigger [Symbol] the name of the trigger
+      # @param to [Template] the template to tell
+      # @param names [Hash] labels for players, keyed by role
+      # @return [Surrounded::Visualization]
+      def record(context, trigger, to:, names: {}, &action)
+        Recording.new(context, trigger, names: names, &action).tell(to)
         self
       end
 

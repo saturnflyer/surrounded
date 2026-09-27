@@ -179,6 +179,99 @@ describe Surrounded::Visualization do
       expect(spy.named(:player).map { |player| player[:label] }).must_equal ["Alice", "Bob", "The book", "Casey"]
     end
   end
+
+  describe ".record" do
+    it "returns the visualization" do
+      expect(Surrounded::Visualization.record(Visualized::Players.transfer, :audit, to: spy)).must_equal Surrounded::Visualization
+    end
+
+    it "tells the template the run in order" do
+      Surrounded::Visualization.record(Visualized::Players.transfer, :transfer, to: spy)
+
+      expect(spy.names).must_equal [
+        :run, :player, :player, :player, :player, :message, :message, :message, :leftover, :returned
+      ]
+      expect(spy.named(:run)).must_equal [{trigger: :transfer}]
+    end
+
+    it "tells the template each role method called and who called it" do
+      Surrounded::Visualization.record(Visualized::Players.transfer, :transfer, to: spy)
+
+      expect(spy.named(:message)).must_equal [
+        {from: :context, to: :depositor, name: :withdraw_and_send, arguments: ["100"]},
+        {from: :depositor, to: :recipient, name: :receive, arguments: ["100"]},
+        {from: :depositor, to: :ledger, name: :record, arguments: ['"Alice"', "100"]}
+      ]
+    end
+
+    it "runs the trigger" do
+      alice = Visualized::Account.new("Alice", 500)
+      bob = Visualized::Account.new("Bob", 50)
+      Surrounded::Visualization.record(Visualized::Players.transfer(depositor: alice, recipient: bob), :transfer, to: spy)
+
+      expect(alice.balance).must_equal 400
+      expect(bob.balance).must_equal 150
+    end
+
+    it "tells the template what the trigger returned" do
+      Surrounded::Visualization.record(Visualized::Players.transfer, :transfer, to: spy)
+
+      expect(spy.named(:returned)).must_equal [{value: "1"}]
+    end
+
+    it "tells the template what is left on the players" do
+      Surrounded::Visualization.record(Visualized::Players.transfer, :transfer, to: spy)
+
+      expect(spy.named(:leftover)).must_equal [{role: :depositor, name: :withdraw_and_send}]
+    end
+
+    it "runs the trigger with the block it is given" do
+      Surrounded::Visualization.record(Visualized::Players.transfer, :send_amount, to: spy) do |context|
+        context.send_amount(25, note: "lunch")
+      end
+
+      expect(spy.named(:run)).must_equal [{trigger: :send_amount}]
+      expect(spy.named(:message).first).must_equal(
+        {from: :context, to: :depositor, name: :withdraw_and_send, arguments: ["25"]}
+      )
+    end
+
+    it "tells the template when the context disallows the trigger" do
+      context = Visualized::Players.transfer(depositor: Visualized::Account.new("Dana", 20))
+      Surrounded::Visualization.record(context, :transfer, to: spy)
+
+      expect(spy.named(:disallowed)).must_equal [
+        {message: "access to Visualized::MoneyTransfer#transfer is not allowed"}
+      ]
+      expect(spy.named(:message)).must_equal []
+    end
+
+    it "tells the template where the trigger failed" do
+      context = Visualized::Players.transfer(ledger: Visualized::Clerk.new("Casey"))
+      Surrounded::Visualization.record(context, :transfer, to: spy)
+      failure = spy.named(:failed).first
+
+      expect(failure[:error]).must_equal "NameError"
+      expect(failure[:role]).must_equal :ledger
+      expect(failure[:message]).must_match(/entries/)
+      expect(failure[:message]).wont_match(/0x\h+/)
+      expect(spy.named(:message).size).must_equal 3
+    end
+
+    it "tells apart the players in a collection" do
+      context = Visualized::Meeting.new(
+        leader: User.new("Jim"),
+        members: [User.new("Amy"), User.new("Guille")],
+        room: Object.new
+      )
+      Surrounded::Visualization.record(context, :greet, to: spy)
+
+      expect(spy.named(:message).map { |message| message.slice(:from, :to, :name) }).must_equal [
+        {from: :context, to: :member_1, name: :greet},
+        {from: :context, to: :member_2, name: :greet}
+      ]
+    end
+  end
 end
 
 describe Surrounded::Visualization::Template do
