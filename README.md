@@ -847,6 +847,110 @@ context.allow?(:trigger_name) # => returns a boolean if the trigger may be run
 context.rebind(activator: another_object, account: another_account)
 ```
 
+## Seeing what a context does
+
+You can make a picture of a context from the code you already have. This is left out when you `require "surrounded"`, so ask for it by name.
+
+```ruby
+require "surrounded/visualization"
+```
+
+There are three things you may do, and each one tells a template what it found.
+
+```ruby
+page = Surrounded::Visualization::Markdown.new
+
+Surrounded::Visualization
+  .describe(MoneyTransfer, to: page)        # roles, role methods, triggers
+  .cast(transfer, to: page)                 # who plays each role
+  .record(transfer, :send_money, to: page)  # what happens when a trigger runs
+
+page.write_to($stdout)
+```
+
+`describe` needs only the context class. `cast` and `record` need a context object with its role players.
+
+Be aware that `record` runs the trigger. Whatever your trigger changes will be changed. If the trigger needs arguments, give a block.
+
+```ruby
+Surrounded::Visualization.record(transfer, :send_money, to: page) do |context|
+  context.send_money(100)
+end
+```
+
+An error raised by the trigger is told to the template. It is not raised to you.
+
+### Templates
+
+The visualization never formats anything. It sends messages to the template you give it and the template puts each value in the right place.
+
+```ruby
+Surrounded::Visualization::Markdown.new # an outline for documentation
+Surrounded::Visualization::Svg.new      # a picture of the roles and the messages between them
+Surrounded::Visualization::Html.new     # a page where you drag players into roles and play the recorded runs
+```
+
+Every template will write to anything which accepts `<<`.
+
+```ruby
+image = Surrounded::Visualization::Svg.new
+Surrounded::Visualization.describe(MoneyTransfer, to: image)
+File.open("money_transfer.svg", "w") { |file| image.write_to(file) }
+```
+
+The `Html` page plays the runs you recorded. Record a run for each cast of players you want to be able to play.
+
+### Making your own template
+
+A template is any object which answers these messages. Each message returns the template.
+
+| Message | Sent by | With |
+|---|---|---|
+| `context` | `describe` | `name:`, `source:` |
+| `role` | `describe` | `name:`, `type:`, `methods:`, `behavior:` |
+| `trigger` | `describe` | `name:` |
+| `declared_message` | `describe` | `from:`, `to:`, `name:`, `via:`, `role_method:` |
+| `player` | `cast`, `record` | `role:`, `label:`, `class_name:`, `methods:`, `state:` |
+| `run` | `record` | `trigger:` |
+| `message` | `record` | `from:`, `to:`, `name:`, `arguments:` |
+| `leftover` | `record` | `role:`, `name:` |
+| `returned` | `record` | `value:` |
+| `failed` | `record` | `error:`, `message:`, `role:` |
+| `disallowed` | `record` | `message:` |
+
+A run begins with `run` and ends with one of `returned`, `failed`, or `disallowed`.
+
+Inherit from `Surrounded::Visualization::Template` and define only the messages you care about. The rest are accepted and ignored.
+
+```ruby
+class RoleList < Surrounded::Visualization::Template
+  def role(name:, **)
+    names << name
+    self
+  end
+
+  private
+
+  def names
+    @names ||= []
+  end
+
+  def render
+    names.join(", ")
+  end
+end
+
+list = RoleList.new
+Surrounded::Visualization.describe(MoneyTransfer, to: list)
+list.write_to($stdout) # depositor, recipient
+```
+
+### What it needs
+
+Finding the messages written in your role methods is done by reading their source with [Prism](https://github.com/ruby/prism), which comes with Ruby 3.3 and later. If Prism is missing, or is older than 0.19, you will see a warning when you require the visualization and `declared_message` will not be sent. Everything else works, and nothing else in Surrounded needs Prism.
+
+A `leftover` is a role method which a player still answers after the trigger is finished. You will see these for roles applied with `extend`, because Ruby will not take a module away from an object. Use a wrapper, an interface, or [Casting](http://github.com/saturnflyer/casting) when you need the methods to be gone.
+
 ## Dependencies
 
 The dependencies are minimal. The plan is to keep it that way but allow you to configure things as you need. The [Triad](http://github.com/saturnflyer/triad) project was written specifically to manage the mapping of roles and objects to the modules which contain the behaviors. It is used in Surrounded to keep track of role player, roles, and role constant names but it is not a hard requirement. You may implement your own but presently you'll need to dive into the implementation to fully understand how. Future updates may provide better support and guidance.
