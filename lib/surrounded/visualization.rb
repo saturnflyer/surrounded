@@ -5,6 +5,7 @@ require "surrounded/visualization/roles"
 require "surrounded/visualization/no_declared_messages"
 require "surrounded/visualization/casting"
 require "surrounded/visualization/recording"
+require "surrounded/visualization/markdown"
 
 module Surrounded
   # Show what a context is made of and what happens inside it.
