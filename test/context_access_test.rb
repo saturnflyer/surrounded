@@ -159,3 +159,33 @@ describe Surrounded::Context, "access control with wrapped role players" do
     expect { blocked.reach_wrapper }.must_raise GuardedWrapperContext::AccessError
   end
 end
+
+describe Surrounded::Context, "access control in a context class without a name" do
+  let(:context_class) {
+    Class.new do
+      extend Surrounded::Context
+
+      protect_triggers
+
+      initialize :user
+
+      trigger :go do
+        "went"
+      end
+
+      disallow :go do
+        user.name == "Amy"
+      end
+    end
+  }
+
+  it "runs an allowed trigger" do
+    expect(context_class.new(user: User.new("Jim")).go).must_equal "went"
+  end
+
+  it "raises an access error for a disallowed trigger" do
+    error = expect { context_class.new(user: User.new("Amy")).go }.must_raise Surrounded::Context::AccessError
+
+    expect(error.message).must_match(/access to .*#go is not allowed/)
+  end
+end
