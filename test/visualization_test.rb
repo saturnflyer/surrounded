@@ -145,6 +145,40 @@ describe Surrounded::Visualization do
       ]
     end
   end
+
+  describe ".cast" do
+    let(:context) { Visualized::Players.transfer }
+
+    it "returns the visualization" do
+      expect(Surrounded::Visualization.cast(context, to: spy)).must_equal Surrounded::Visualization
+    end
+
+    it "tells the template who plays each role" do
+      Surrounded::Visualization.cast(context, to: spy)
+      players = spy.named(:player).map { |player| player.slice(:role, :label, :class_name) }
+
+      expect(players).must_equal [
+        {role: :depositor, label: "Alice", class_name: "Visualized::Account"},
+        {role: :recipient, label: "Bob", class_name: "Visualized::Account"},
+        {role: :ledger, label: "Visualized::Ledger", class_name: "Visualized::Ledger"},
+        {role: :auditor, label: "Casey", class_name: "Visualized::Clerk"}
+      ]
+    end
+
+    it "tells the template what each player can do and what it holds" do
+      Surrounded::Visualization.cast(context, to: spy)
+      alice = spy.named(:player).first
+
+      expect(alice[:methods]).must_equal [:balance, :balance=, :name]
+      expect(alice[:state]).must_equal({"name" => '"Alice"', "balance" => "500"})
+    end
+
+    it "uses the names it is given" do
+      Surrounded::Visualization.cast(context, to: spy, names: {ledger: "The book"})
+
+      expect(spy.named(:player).map { |player| player[:label] }).must_equal ["Alice", "Bob", "The book", "Casey"]
+    end
+  end
 end
 
 describe Surrounded::Visualization::Template do

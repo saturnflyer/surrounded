@@ -3,6 +3,7 @@ require "surrounded/visualization/template"
 require "surrounded/visualization/behavior"
 require "surrounded/visualization/roles"
 require "surrounded/visualization/no_declared_messages"
+require "surrounded/visualization/casting"
 
 module Surrounded
   # Show what a context is made of and what happens inside it.
@@ -17,6 +18,7 @@ module Surrounded
   #
   #   Surrounded::Visualization
   #     .describe(MoneyTransfer, to: template)
+  #     .cast(transfer, to: template)
   #   template.write_to($stdout)
   #
   # Any object which answers the messages in
@@ -64,6 +66,18 @@ module Surrounded
         Roles.new(context_class).tell(to).tell(declared)
         context_class.triggers.each { |name| to.trigger(name: name) }
         declared.tell(to)
+        self
+      end
+
+      # Tell a template which object plays each role in a context.
+      #
+      # @param context [Object] an instance of a context class
+      # @param to [Template] the template to tell
+      # @param names [Hash] labels for players, keyed by role, to use in place
+      #   of the label found from the object
+      # @return [Surrounded::Visualization]
+      def cast(context, to:, names: {})
+        Casting.new(context, names: names).tell(to)
         self
       end
 
