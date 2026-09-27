@@ -201,7 +201,13 @@ module Surrounded
         role_player || object
       end
 
+      # Behaviors are applied once for the outermost trigger and stay applied
+      # until it finishes. A trigger, or a disallow block, run from inside
+      # another trigger shares the behaviors which are already applied.
       def apply_behaviors
+        @__behavior_depth__ = behavior_depth + 1
+        return if behavior_depth > 1
+
         role_map.each do |role, mod_name, object|
           player = apply_behavior(role, mod_name, object)
           role_map.apply(role, player)
@@ -212,6 +218,9 @@ module Surrounded
       end
 
       def remove_behaviors
+        @__behavior_depth__ = [behavior_depth - 1, 0].max
+        return if behavior_depth > 0
+
         role_map.each do |role, mod_name, object|
           player = role_map.current_player(role)
           if player.respond_to?(:remove_context, true)
@@ -220,6 +229,11 @@ module Surrounded
           remove_behavior(role, mod_name, player)
         end
         role_map.reset_applied
+      end
+
+      # The number of triggers currently running in this context.
+      def behavior_depth
+        @__behavior_depth__ ||= 0
       end
 
       # List of possible methods to use to add behavior to an object from a module.
